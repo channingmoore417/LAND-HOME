@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homes for Sale in Lake Charles, LA | The Land &amp; Home Group</title>
+<meta name="description" content="Browse homes for sale in Lake Charles, Sulphur &amp; Southwest Louisiana with The Land &amp; Home Group, brokered by EXIT Realty Southern. Filter by price, beds, baths, type &amp; more.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --teal:#204860;--teal-deep:#163848;--teal-mid:#3A6B7E;
+  --aqua:#61C1CC;--aqua-soft:#D9F0F2;--aqua-line:#BFE4E8;
+  --sand:#F6F3EC;--paper:#FFFFFF;--off:#F8FAFB;
+  --ink:#1D2B33;--ink-muted:#5E7079;--line:#E6EDF0;
+  --maxw:1320px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;font-family:"Outfit",system-ui,sans-serif;font-size:17px;line-height:1.6;color:var(--ink);background:var(--off);-webkit-font-smoothing:antialiased;}
+body.no-scroll{overflow:hidden;}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button,select,input{font-family:inherit;}
+button{cursor:pointer;}
+.script{font-family:"Caveat",cursive;color:var(--aqua);font-weight:600;line-height:1;}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 30px;}
+
+.nav{background:var(--teal);border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:60;box-shadow:0 2px 20px rgba(22,56,72,.18);}
+.nav__inner{max-width:var(--maxw);margin:0 auto;padding:0 30px;height:78px;display:flex;align-items:center;justify-content:space-between;}
+.brand__logo{height:54px;width:auto;display:block;}
+.nav__links{display:flex;align-items:center;gap:36px;}
+.nav__links a{color:rgba(255,255,255,.82);font-size:.9rem;font-weight:500;transition:.2s;position:relative;padding:6px 0;}
+.nav__links a::after{content:"";position:absolute;left:0;bottom:0;width:0;height:2px;background:var(--aqua);transition:.25s;}
+.nav__links a:hover::after,.nav__links a.active::after{width:100%;}
+.nav__links a:hover,.nav__links a.active{color:#fff;}
+.nav__cta{background:var(--aqua);color:var(--teal-deep);padding:11px 22px;border-radius:30px;font-size:.86rem;font-weight:700;transition:.2s;border:0;}
+.nav__cta:hover{background:#fff;}
+.nav__toggle{display:none;background:none;border:0;color:#fff;font-size:1.5rem;}
+
+.hero{background:radial-gradient(circle at 88% 12%, rgba(97,193,204,.18), transparent 42%),linear-gradient(160deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;padding:60px 0 118px;position:relative;overflow:hidden;}
+.hero__wave{position:absolute;left:0;right:0;bottom:-1px;width:100%;display:block;}
+.hero__crumb{color:rgba(255,255,255,.6);font-size:.82rem;letter-spacing:.03em;margin-bottom:18px;}
+.hero__crumb a:hover{color:var(--aqua);}
+.hero__script{font-family:"Caveat",cursive;color:var(--aqua);font-size:clamp(2.2rem,4.6vw,3.3rem);font-weight:600;line-height:.9;display:block;margin-bottom:2px;}
+.hero h1{font-family:"Outfit",sans-serif;color:#fff;font-weight:700;font-size:clamp(2rem,4.2vw,3.2rem);line-height:1.05;margin:0;letter-spacing:-.01em;}
+.hero__sub{color:rgba(255,255,255,.78);font-size:1.05rem;margin-top:18px;max-width:54ch;font-weight:300;}
+.hero__meta{display:flex;gap:40px;margin-top:30px;}
+.hero__meta .n{font-size:2rem;font-weight:700;color:#fff;line-height:1;}
+.hero__meta .n b{color:var(--aqua);}
+.hero__meta .k{color:rgba(255,255,255,.6);font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;margin-top:6px;}
+
+.filterwrap{margin-top:-64px;position:relative;z-index:20;}
+.qbar{background:var(--paper);border-radius:18px;box-shadow:0 18px 50px rgba(32,72,96,.16);padding:16px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.qbar__search{flex:1;min-width:200px;position:relative;}
+.qbar__search input{width:100%;padding:14px 16px 14px 44px;border:1px solid var(--line);border-radius:12px;background:var(--off);color:var(--ink);font-size:.95rem;transition:.2s;}
+.qbar__search input::placeholder{color:#9AAAB1;}
+.qbar__search input:focus{outline:none;border-color:var(--aqua);background:#fff;box-shadow:0 0 0 3px var(--aqua-soft);}
+.qbar__search::before{content:"\2315";position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--teal-mid);font-size:1.1rem;}
+.qsel{position:relative;}
+.qsel select{appearance:none;-webkit-appearance:none;padding:14px 38px 14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--off);color:var(--ink);font-size:.9rem;font-weight:500;cursor:pointer;transition:.2s;}
+.qsel select:hover{border-color:var(--aqua-line);}
+.qsel select:focus{outline:none;border-color:var(--aqua);box-shadow:0 0 0 3px var(--aqua-soft);}
+.qsel::after{content:"\25BE";position:absolute;right:15px;top:50%;transform:translateY(-50%);color:var(--teal-mid);pointer-events:none;font-size:.7rem;}
+.qbar__more{display:flex;align-items:center;gap:9px;background:var(--teal);color:#fff;border:0;border-radius:12px;padding:14px 22px;font-weight:600;font-size:.9rem;transition:.2s;white-space:nowrap;}
+.qbar__more:hover{background:var(--teal-deep);}
+.qbar__more .badge{background:var(--aqua);color:var(--teal-deep);border-radius:20px;min-width:22px;height:22px;display:none;align-items:center;justify-content:center;font-size:.74rem;font-weight:800;padding:0 6px;}
+.qbar__more.has .badge{display:inline-flex;}
+
+.chips__row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:20px 0 0;}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--aqua-soft);border:1px solid var(--aqua-line);border-radius:24px;padding:7px 14px;font-size:.82rem;font-weight:500;color:var(--teal-deep);}
+.chip button{background:none;border:0;color:var(--teal-mid);font-size:1.05rem;line-height:1;padding:0;}
+.chip button:hover{color:var(--teal);}
+.chips__clear{background:none;border:0;color:var(--teal-mid);font-size:.84rem;font-weight:600;text-decoration:underline;text-underline-offset:3px;}
+
+.results{padding:34px 0 70px;}
+.results__head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.results__head .meta{color:var(--ink-muted);font-size:.96rem;}
+.results__head .meta b{color:var(--teal);font-weight:700;}
+.sortbox{display:flex;align-items:center;gap:10px;}
+.sortbox label{color:var(--ink-muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;font-weight:600;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+
+.empty{grid-column:1/-1;text-align:center;padding:70px 20px;background:var(--paper);border:1px dashed var(--aqua-line);border-radius:18px;}
+.empty .script{font-size:1.8rem;display:block;margin-bottom:6px;}
+.empty h3{font-family:"Outfit";font-weight:700;font-size:1.4rem;margin:0 0 8px;color:var(--teal);}
+.empty p{color:var(--ink-muted);margin:0 0 18px;}
+.empty button{background:var(--aqua);color:var(--teal-deep);border:0;border-radius:12px;padding:13px 26px;font-weight:700;}
+
+.pcard{background:var(--paper);border-radius:18px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;transition:.28s;}
+.pcard:hover{box-shadow:0 22px 50px rgba(32,72,96,.16);transform:translateY(-5px);border-color:var(--aqua-line);}
+.pcard__media{position:relative;aspect-ratio:4/3;overflow:hidden;background:#cfe0e4;}
+.pcard__media img{width:100%;height:100%;object-fit:cover;transition:.6s;}
+.pcard:hover .pcard__media img{transform:scale(1.06);}
+.pcard__status{position:absolute;left:14px;top:14px;background:var(--aqua);color:var(--teal-deep);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:6px 13px;border-radius:20px;}
+.pcard__status.is-new{background:#fff;color:var(--teal);}
+.pcard__fav{position:absolute;right:14px;top:14px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);border:0;color:var(--teal-mid);font-size:1.05rem;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.pcard__fav:hover,.pcard__fav.on{background:var(--aqua);color:#fff;}
+.pcard__photos{position:absolute;right:14px;bottom:14px;background:rgba(22,56,72,.78);color:#fff;font-size:.72rem;letter-spacing:.04em;padding:5px 11px;border-radius:16px;}
+.pcard__body{padding:20px 20px 22px;display:flex;flex-direction:column;flex:1;}
+.pcard__price{font-size:1.55rem;font-weight:700;color:var(--teal);letter-spacing:-.01em;line-height:1;}
+.pcard__specs{display:flex;gap:16px;margin:14px 0;color:var(--ink);font-size:.9rem;align-items:baseline;}
+.pcard__specs span{display:flex;align-items:baseline;gap:5px;}
+.pcard__specs b{font-weight:700;font-size:1rem;}
+.pcard__specs i{font-style:normal;color:var(--ink-muted);font-size:.78rem;}
+.pcard__specs .dot{color:var(--aqua-line);}
+.pcard__addr{font-size:1rem;color:var(--ink);font-weight:600;line-height:1.35;}
+.pcard__sub{font-size:.85rem;color:var(--ink-muted);margin-top:3px;}
+.pcard__foot{padding-top:16px;margin-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.pcard__mls{font-size:.7rem;color:var(--ink-muted);letter-spacing:.03em;}
+.pcard__cta{font-size:.82rem;font-weight:700;color:var(--teal);display:flex;align-items:center;gap:6px;transition:.2s;}
+.pcard:hover .pcard__cta{color:var(--aqua);}
+.pcard:hover .pcard__cta .arr{transform:translateX(4px);}
+.pcard__cta .arr{transition:.2s;}
+
+.leadband{grid-column:1/-1;border-radius:22px;overflow:hidden;position:relative;background:radial-gradient(circle at 90% 20%, rgba(97,193,204,.22), transparent 45%),linear-gradient(150deg,var(--teal) 0%,var(--teal-deep) 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:34px;padding:44px 46px;flex-wrap:wrap;}
+.leadband__txt .script{font-size:2rem;display:block;margin-bottom:2px;}
+.leadband__txt h3{font-family:"Outfit";font-weight:700;font-size:1.7rem;margin:0 0 8px;letter-spacing:-.01em;}
+.leadband__txt p{color:rgba(255,255,255,.78);margin:0;font-size:.98rem;max-width:46ch;font-weight:300;}
+.leadband__form{display:flex;gap:10px;flex-wrap:wrap;}
+.leadband__form input{padding:15px 18px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:.92rem;min-width:185px;}
+.leadband__form input::placeholder{color:rgba(255,255,255,.6);}
+.leadband__form input:focus{outline:none;border-color:var(--aqua);background:rgba(255,255,255,.16);}
+.btn-aqua{background:var(--aqua);color:var(--teal-deep);border:0;border-radius:12px;padding:15px 28px;font-weight:700;font-size:.9rem;transition:.2s;}
+.btn-aqua:hover{background:#fff;}
+
+.pager{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:54px;}
+.pager a,.pager span{min-width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--paper);font-size:.92rem;font-weight:600;color:var(--ink);transition:.2s;}
+.pager a:hover{border-color:var(--aqua);color:var(--teal);background:var(--aqua-soft);}
+.pager .current{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+.area{background:var(--sand);padding:64px 0;}
+.area__grid{display:grid;grid-template-columns:1.5fr 1fr;gap:54px;align-items:start;}
+.area .script{font-size:1.8rem;display:block;margin-bottom:2px;}
+.area h2{font-family:"Outfit";font-weight:700;font-size:1.8rem;margin:0 0 18px;letter-spacing:-.01em;color:var(--teal);}
+.area p{color:var(--ink);margin:0 0 16px;max-width:64ch;font-weight:300;font-size:1.02rem;}
+.area__stats{background:var(--paper);border-radius:18px;border:1px solid var(--line);overflow:hidden;box-shadow:0 12px 34px rgba(32,72,96,.07);}
+.area__stats .sh{background:var(--teal);color:#fff;padding:16px 24px;font-weight:600;font-size:.95rem;}
+.area__stats .row{display:flex;justify-content:space-between;padding:15px 24px;border-bottom:1px solid var(--line);font-size:.94rem;}
+.area__stats .row:last-child{border-bottom:0;}
+.area__stats .row span:first-child{color:var(--ink-muted);}
+.area__stats .row span:last-child{color:var(--teal);font-weight:700;}
+
+.footer{background:var(--teal-deep);color:rgba(255,255,255,.75);padding:60px 0 30px;}
+.footer__top{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:44px;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,.12);}
+.footer__logo{height:78px;width:auto;display:block;margin-bottom:18px;}
+.footer p{font-size:.9rem;line-height:1.7;color:rgba(255,255,255,.6);max-width:34ch;font-weight:300;}
+.footer h4{font-family:"Outfit";color:var(--aqua);font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;margin:0 0 16px;font-weight:600;}
+.footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+.footer ul a{font-size:.9rem;color:rgba(255,255,255,.75);transition:.2s;}
+.footer ul a:hover{color:var(--aqua);}
+.footer__bottom{padding-top:24px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-size:.76rem;color:rgba(255,255,255,.45);}
+
+/* ADVANCED FILTER PANEL */
+.overlay{position:fixed;inset:0;background:rgba(22,56,72,.5);opacity:0;visibility:hidden;transition:.3s;z-index:90;}
+.overlay.open{opacity:1;visibility:visible;}
+.panel{position:fixed;top:0;right:0;height:100%;width:440px;max-width:92vw;background:var(--paper);z-index:95;transform:translateX(100%);transition:transform .34s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-20px 0 60px rgba(22,56,72,.22);}
+.panel.open{transform:translateX(0);}
+.panel__head{padding:24px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.panel__head .script{font-size:1.5rem;display:block;}
+.panel__head h2{font-family:"Outfit";font-weight:700;font-size:1.3rem;margin:0;color:var(--teal);}
+.panel__close{background:var(--off);border:1px solid var(--line);border-radius:50%;width:40px;height:40px;font-size:1.3rem;color:var(--teal);display:flex;align-items:center;justify-content:center;}
+.panel__close:hover{background:var(--aqua-soft);border-color:var(--aqua-line);}
+.panel__body{padding:8px 26px 26px;overflow-y:auto;flex:1;}
+.fgroup{padding:22px 0;border-bottom:1px solid var(--line);}
+.fgroup:last-child{border-bottom:0;}
+.fgroup__label{font-weight:700;font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;color:var(--teal);margin-bottom:14px;display:block;}
+.range{position:relative;height:38px;margin:6px 4px 0;}
+.range input[type=range]{-webkit-appearance:none;appearance:none;position:absolute;width:100%;height:4px;background:none;pointer-events:none;margin:0;top:8px;}
+.range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--teal);border:3px solid #fff;box-shadow:0 1px 5px rgba(32,72,96,.4);cursor:pointer;pointer-events:auto;}
+.range input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--teal);border:3px solid #fff;cursor:pointer;pointer-events:auto;}
+.range__track{position:absolute;left:0;right:0;top:8px;height:4px;background:var(--line);border-radius:3px;}
+.range__fill{position:absolute;top:8px;height:4px;background:var(--aqua);border-radius:3px;}
+.range__out{display:flex;justify-content:space-between;margin-top:20px;font-size:.86rem;font-weight:600;color:var(--ink);}
+.pills{display:flex;flex-wrap:wrap;gap:8px;}
+.pills button{border:1px solid var(--line);background:var(--off);border-radius:24px;padding:9px 16px;font-size:.86rem;font-weight:500;color:var(--ink);transition:.18s;}
+.pills button:hover{border-color:var(--aqua-line);}
+.pills button.on{background:var(--teal);color:#fff;border-color:var(--teal);}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;}
+.checks label{display:flex;align-items:center;gap:9px;font-size:.88rem;color:var(--ink);cursor:pointer;}
+.checks input{width:18px;height:18px;accent-color:var(--teal);cursor:pointer;}
+.frow{display:flex;gap:12px;}
+.frow .qsel{flex:1;}
+.frow .qsel select{width:100%;}
+.panel__foot{padding:18px 26px;border-top:1px solid var(--line);display:flex;gap:12px;align-items:center;background:var(--paper);}
+.panel__reset{background:none;border:0;color:var(--teal-mid);font-weight:600;font-size:.9rem;text-decoration:underline;text-underline-offset:3px;}
+.panel__apply{flex:1;background:var(--teal);color:#fff;border:0;border-radius:12px;padding:15px;font-weight:700;font-size:.95rem;transition:.2s;}
+.panel__apply:hover{background:var(--teal-deep);}
+
+@media(max-width:1080px){.grid{grid-template-columns:repeat(2,1fr);}.footer__top{grid-template-columns:1fr 1fr;}.area__grid{grid-template-columns:1fr;gap:34px;}}
+@media(max-width:860px){.nav__links{display:none;}.nav__toggle{display:block;}.nav__cta{display:none;}}
+@media(max-width:680px){
+  body{font-size:16px;}.wrap,.nav__inner{padding-left:18px;padding-right:18px;}
+  .grid{grid-template-columns:1fr;}.hero{padding:46px 0 100px;}.hero__meta{gap:24px;flex-wrap:wrap;}
+  .filterwrap{margin-top:-54px;}.leadband{flex-direction:column;align-items:stretch;padding:34px 26px;}
+  .leadband__form input{min-width:0;flex:1;}.footer__top{grid-template-columns:1fr;gap:30px;}.checks{grid-template-columns:1fr;}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a class="brand" href="#"><img class="brand__logo" src="https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a29b0edff11dedc40eb9d4e.png" alt="The Land &amp; Home Group"></a>
+    <div class="nav__links"><a href="#" class="active">Buy</a><a href="#">Sell</a><a href="#">Listings</a><a href="#">About</a><a href="#">Contact</a></div>
+    <a class="nav__cta" href="tel:+13372450909">(337) 245-0909</a>
+    <button class="nav__toggle" aria-label="Menu">&#9776;</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero__crumb"><a href="#">Home</a> &nbsp;/&nbsp; <a href="#">Louisiana</a> &nbsp;/&nbsp; <a href="#">Calcasieu Parish</a> &nbsp;/&nbsp; Lake Charles</div>
+    <span class="hero__script">homes for sale in</span>
+    <h1>Lake Charles, Louisiana</h1>
+    <p class="hero__sub">Browse active listings across Lake Charles, Sulphur, and Southwest Louisiana — presented by The Land &amp; Home Group.</p>
+    <div class="hero__meta">
+      <div><div class="n"><b id="heroCount">48</b></div><div class="k">Active Listings</div></div>
+      <div><div class="n">$325k</div><div class="k">Median Price</div></div>
+      <div><div class="n">62</div><div class="k">Avg. Days on Market</div></div>
+    </div>
+  </div>
+  <svg class="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0,40 C240,90 480,90 720,55 C960,20 1200,20 1440,55 L1440,90 L0,90 Z" fill="#F8FAFB"/></svg>
+</header>
+
+<div class="wrap">
+  <div class="filterwrap">
+    <div class="qbar">
+      <div class="qbar__search"><input type="text" id="qSearch" placeholder="Search by address, ZIP, or neighborhood…"></div>
+      <div class="qsel"><select id="qBeds"><option value="0">Beds</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5+</option></select></div>
+      <div class="qsel"><select id="qBaths"><option value="0">Baths</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option></select></div>
+      <div class="qsel"><select id="qType"><option value="">Any Type</option><option>Single Family</option><option>Multi-Family</option><option>Land</option><option>New Construction</option></select></div>
+      <button class="qbar__more" id="moreBtn" onclick="openPanel()"><span>&#9776;</span> All Filters <span class="badge" id="moreBadge">0</span></button>
+    </div>
+    <div class="chips__row" id="chips"></div>
+  </div>
+</div>
+
+<main class="results">
+  <div class="wrap">
+    <div class="results__head">
+      <div class="meta">Showing <b id="showing">0</b> of <b id="total">0</b> homes in Lake Charles, LA</div>
+      <div class="sortbox">
+        <label>Sort</label>
+        <div class="qsel"><select id="sortSel" onchange="render()">
+          <option value="new">Newest</option><option value="plow">Price: Low to High</option><option value="phigh">Price: High to Low</option><option value="beds">Most Beds</option><option value="sqft">Largest</option>
+        </select></div>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <nav class="pager" id="pager" aria-label="Pagination"></nav>
+  </div>
+</main>
+
+<section class="area">
+  <div class="wrap">
+    <div class="area__grid">
+      <div>
+        <span class="script">welcome to</span>
+        <h2>Lake Charles, Louisiana</h2>
+        <p>Lake Charles sits at the heart of Southwest Louisiana — a lakefront city with a strong economy and established neighborhoods like Prien, Graywood, and the Charpentier Historic District. Buyers come here for newer construction in the surrounding suburbs and solid homes in flood zone X that don't require flood insurance.</p>
+        <p>Whether you're searching South Lake Charles for a family home near top-rated schools, or looking at land and new builds out toward Moss Bluff and Sulphur, The Land &amp; Home Group helps you find the right fit and move quickly when it counts.</p>
+      </div>
+      <div class="area__stats">
+        <div class="sh">Lake Charles Market Snapshot</div>
+        <div class="row"><span>Median List Price</span><span>$325,000</span></div>
+        <div class="row"><span>Active Listings</span><span>48</span></div>
+        <div class="row"><span>Avg. Days on Market</span><span>62</span></div>
+        <div class="row"><span>Price per Sq Ft</span><span>$148</span></div>
+        <div class="row"><span>Most Active ZIPs</span><span>70605 &middot; 70607</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <img class="footer__logo" src="https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a29b0edff11dedc40eb9d4e.png" alt="The Land &amp; Home Group">
+        <p>Modern coastal real estate, brokered by EXIT Realty Southern. Serving Sulphur, Lake Charles and Southwest Louisiana with a personal, no-pressure approach.</p>
+      </div>
+      <div><h4>Browse</h4><ul><li><a href="#">Lake Charles Homes</a></li><li><a href="#">Sulphur Homes</a></li><li><a href="#">Moss Bluff Homes</a></li><li><a href="#">Land &amp; Lots</a></li><li><a href="#">New Construction</a></li></ul></div>
+      <div><h4>Connect</h4><ul><li><a href="tel:+13372450909">(337) 245-0909</a></li><li><a href="#">thelandhomegroup</a></li><li><a href="#">3701 Maplewood Dr, Sulphur, LA</a></li><li><a href="#">Schedule a Call</a></li></ul></div>
+    </div>
+    <div class="footer__bottom">
+      <div>&copy; 2026 The Land &amp; Home Group &middot; EXIT Realty Southern. All rights reserved.</div>
+      <div>Equal Housing Opportunity &middot; Information deemed reliable but not guaranteed.</div>
+    </div>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<aside class="panel" id="panel" aria-label="All filters">
+  <div class="panel__head">
+    <div><span class="script">refine your</span><h2>All Filters</h2></div>
+    <button class="panel__close" onclick="closePanel()" aria-label="Close">&times;</button>
+  </div>
+  <div class="panel__body">
+    <div class="fgroup">
+      <span class="fgroup__label">Price Range</span>
+      <div class="range" id="priceRange"><div class="range__track"></div><div class="range__fill" id="priceFill"></div>
+        <input type="range" id="priceMin" min="0" max="1000000" step="10000" value="0">
+        <input type="range" id="priceMax" min="0" max="1000000" step="10000" value="1000000"></div>
+      <div class="range__out"><span id="priceMinOut">$0</span><span id="priceMaxOut">$1,000,000+</span></div>
+    </div>
+    <div class="fgroup">
+      <span class="fgroup__label">Square Feet</span>
+      <div class="range" id="sqftRange"><div class="range__track"></div><div class="range__fill" id="sqftFill"></div>
+        <input type="range" id="sqftMin" min="0" max="5000" step="100" value="0">
+        <input type="range" id="sqftMax" min="0" max="5000" step="100" value="5000"></div>
+      <div class="range__out"><span id="sqftMinOut">0</span><span id="sqftMaxOut">5,000+ sqft</span></div>
+    </div>
+    <div class="fgroup"><span class="fgroup__label">Bedrooms</span>
+      <div class="pills" id="bedsPills"><button data-v="0" class="on">Any</button><button data-v="1">1+</button><button data-v="2">2+</button><button data-v="3">3+</button><button data-v="4">4+</button><button data-v="5">5+</button></div>
+    </div>
+    <div class="fgroup"><span class="fgroup__label">Bathrooms</span>
+      <div class="pills" id="bathsPills"><button data-v="0" class="on">Any</button><button data-v="1">1+</button><button data-v="2">2+</button><button data-v="3">3+</button><button data-v="4">4+</button></div>
+    </div>
+    <div class="fgroup"><span class="fgroup__label">Property Type</span>
+      <div class="pills" id="typePills"><button data-v="Single Family">Single Family</button><button data-v="Multi-Family">Multi-Family</button><button data-v="New Construction">New Construction</button><button data-v="Land">Land</button></div>
+    </div>
+    <div class="fgroup"><span class="fgroup__label">Status</span>
+      <div class="pills" id="statusPills"><button data-v="For Sale">For Sale</button><button data-v="New">New</button><button data-v="Pending">Pending</button></div>
+    </div>
+    <div class="fgroup"><span class="fgroup__label">Location</span>
+      <div class="frow">
+        <div class="qsel"><select id="fCity"><option value="">Any City</option><option>Lake Charles</option><option>Sulphur</option><option>Moss Bluff</option></select></div>
+        <div class="qsel"><select id="fZip"><option value="">Any ZIP</option><option>70605</option><option>70607</option><option>70601</option><option>70663</option></select></div>
+      </div>
+    </div>
+    <div class="fgroup"><span class="fgroup__label">Year Built (min)</span>
+      <div class="qsel" style="width:100%"><select id="fYear" style="width:100%"><option value="0">Any Year</option><option value="1980">1980+</option><option value="2000">2000+</option><option value="2010">2010+</option><option value="2020">2020+</option></select></div>
+    </div>
+    <div class="fgroup"><span class="fgroup__label">Must-Have Features</span>
+      <div class="checks" id="featChecks">
+        <label><input type="checkbox" value="Pool"> Pool</label>
+        <label><input type="checkbox" value="Garage"> Garage</label>
+        <label><input type="checkbox" value="Waterfront"> Waterfront</label>
+        <label><input type="checkbox" value="Fireplace"> Fireplace</label>
+        <label><input type="checkbox" value="New Roof"> New Roof</label>
+        <label><input type="checkbox" value="Flood Zone X"> Flood Zone X</label>
+        <label><input type="checkbox" value="Open Floor Plan"> Open Floor Plan</label>
+        <label><input type="checkbox" value="Updated Kitchen"> Updated Kitchen</label>
+      </div>
+    </div>
+  </div>
+  <div class="panel__foot">
+    <button class="panel__reset" onclick="resetAll()">Reset all</button>
+    <button class="panel__apply" onclick="applyPanel()"><span id="applyCount">Show homes</span></button>
+  </div>
+</aside>
+
+<script>
+var LISTINGS=[
+ {id:1,price:424500,beds:4,baths:3,sqft:2645,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2008,photos:28,mls:"SWL26001234",addr:"4948 S Westridge Park Dr",sub:"South Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&q=80",feats:["Garage","Fireplace","Flood Zone X","Open Floor Plan","Updated Kitchen"],age:0},
+ {id:2,price:399000,beds:4,baths:2,sqft:2252,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2002,photos:19,mls:"SWL26001189",addr:"4324 Essex St",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80",feats:["Garage","Open Floor Plan"],age:3},
+ {id:3,price:475000,beds:4,baths:3,sqft:2893,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2015,photos:32,mls:"SWL26001142",addr:"6825 Bonne Meadow Ln",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=600&q=80",feats:["Garage","Pool","Updated Kitchen"],age:6},
+ {id:4,price:410000,beds:4,baths:4,sqft:3000,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2012,photos:24,mls:"SWL26001098",addr:"5737 Hemlock St",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=600&q=80",feats:["Garage","Fireplace","New Roof"],age:9},
+ {id:5,price:859000,beds:5,baths:5,sqft:3665,type:"New Construction",status:"New",city:"Lake Charles",zip:"70605",year:2024,photos:41,mls:"SWL26001301",addr:"4104 Calypso Ct",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80",feats:["Pool","Garage","Waterfront","Open Floor Plan","Updated Kitchen"],age:1},
+ {id:6,price:350000,beds:4,baths:3,sqft:2629,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2005,photos:22,mls:"SWL26001066",addr:"4948 Westridge Park Dr",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&q=80",feats:["Garage","Fireplace"],age:5},
+ {id:7,price:337500,beds:3,baths:3,sqft:2110,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2018,photos:18,mls:"SWL26002104",addr:"2513 Cassie Ln",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=600&q=80",feats:["Garage","Updated Kitchen","Open Floor Plan"],age:2},
+ {id:8,price:349900,beds:5,baths:3,sqft:3190,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2009,photos:27,mls:"SWL26002058",addr:"3925 Indian Bay Dr",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80",feats:["Pool","Garage","Waterfront"],age:7},
+ {id:9,price:424500,beds:4,baths:3,sqft:2645,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70605",year:2016,photos:30,mls:"SWL26001845",addr:"5015 Water Oak Ct",sub:"Lake Charles, LA 70605",img:"https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=600&q=80",feats:["Garage","Fireplace","Updated Kitchen"],age:4},
+ {id:10,price:182500,beds:3,baths:2,sqft:1500,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70601",year:1996,photos:14,mls:"SWL26002079",addr:"1808 S Tallowood Dr",sub:"Lake Charles, LA 70601",img:"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80",feats:["Garage"],age:11},
+ {id:11,price:625000,beds:3,baths:3,sqft:2400,type:"New Construction",status:"New",city:"Sulphur",zip:"70663",year:2026,photos:35,mls:"SWL26002201",addr:"3701 Maplewood Dr",sub:"Sulphur, LA 70663",img:"https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&q=80",feats:["Pool","Garage","Open Floor Plan","Updated Kitchen","New Roof"],age:0},
+ {id:12,price:289000,beds:3,baths:2,sqft:1764,type:"Single Family",status:"For Sale",city:"Sulphur",zip:"70663",year:2001,photos:21,mls:"SWL26002109",addr:"2505 Jayson St",sub:"Sulphur, LA 70663",img:"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=80",feats:["Garage","Fireplace"],age:8},
+ {id:13,price:145000,beds:2,baths:1,sqft:980,type:"Single Family",status:"For Sale",city:"Lake Charles",zip:"70601",year:1985,photos:12,mls:"SWL26002083",addr:"512 11th St",sub:"Lake Charles, LA 70601",img:"https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80",feats:[],age:12},
+ {id:14,price:540000,beds:4,baths:4,sqft:3401,type:"Single Family",status:"Pending",city:"Moss Bluff",zip:"70607",year:2019,photos:33,mls:"SWL26001572",addr:"125 Shell Beach Dr",sub:"Moss Bluff, LA 70607",img:"https://images.unsplash.com/photo-1599809275671-b5942cabc7a2?w=600&q=80",feats:["Pool","Garage","Waterfront","Open Floor Plan"],age:1},
+ {id:15,price:95000,beds:0,baths:0,sqft:0,type:"Land",status:"For Sale",city:"Lake Charles",zip:"70607",year:0,photos:6,mls:"SWL26001565",addr:"TBD Power Center Pkwy",sub:"Lake Charles, LA 70607",img:"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&q=80",feats:["Waterfront"],age:0}
+];
+
+var F={q:"",beds:0,baths:0,types:[],statuses:[],city:"",zip:"",year:0,priceMin:0,priceMax:1000000,sqftMin:0,sqftMax:5000,feats:[]};
+var PER=9,page=1;
+
+function money(n){return '$'+n.toLocaleString();}
+function priceLbl(n){return n>=1000000?'$1,000,000+':'$'+n.toLocaleString();}
+function sqftLbl(n){return n>=5000?'5,000+ sqft':n.toLocaleString();}
+
+function match(p){
+  if(F.q){var q=F.q.toLowerCase();if((p.addr+' '+p.sub+' '+p.zip+' '+p.city).toLowerCase().indexOf(q)<0)return false;}
+  if(F.beds&&p.beds<F.beds)return false;
+  if(F.baths&&p.baths<F.baths)return false;
+  if(F.types.length&&F.types.indexOf(p.type)<0)return false;
+  if(F.statuses.length&&F.statuses.indexOf(p.status)<0)return false;
+  if(F.city&&p.city!==F.city)return false;
+  if(F.zip&&p.zip!==F.zip)return false;
+  if(F.year&&(p.year||0)<F.year)return false;
+  if(p.price<F.priceMin)return false;
+  if(F.priceMax<1000000&&p.price>F.priceMax)return false;
+  if(p.sqft<F.sqftMin)return false;
+  if(F.sqftMax<5000&&p.sqft>F.sqftMax)return false;
+  if(F.feats.length){for(var i=0;i<F.feats.length;i++){if(p.feats.indexOf(F.feats[i])<0)return false;}}
+  return true;
+}
+function filtered(){return LISTINGS.filter(match);}
+function sortList(arr){
+  var s=document.getElementById('sortSel').value;arr=arr.slice();
+  if(s==='plow')arr.sort(function(a,b){return a.price-b.price;});
+  else if(s==='phigh')arr.sort(function(a,b){return b.price-a.price;});
+  else if(s==='beds')arr.sort(function(a,b){return b.beds-a.beds;});
+  else if(s==='sqft')arr.sort(function(a,b){return b.sqft-a.sqft;});
+  else arr.sort(function(a,b){return a.age-b.age;});
+  return arr;
+}
+function cardHTML(p){
+  var specs=p.type==='Land'?'<span><b>'+(p.sqft?p.sqft.toLocaleString():'—')+'</b><i>lot sqft</i></span>':'<span><b>'+p.beds+'</b><i>bd</i></span><span class="dot">&bull;</span><span><b>'+p.baths+'</b><i>ba</i></span><span class="dot">&bull;</span><span><b>'+p.sqft.toLocaleString()+'</b><i>sqft</i></span>';
+  var stCls=p.status==='New'?' is-new':'';
+  return '<a class="pcard" href="#"><div class="pcard__media"><img src="'+p.img+'" alt=""><span class="pcard__status'+stCls+'">'+p.status+'</span><button class="pcard__fav" aria-label="Save" onclick="fav(event,this)">&#9825;</button><span class="pcard__photos">&#9634; '+p.photos+'</span></div><div class="pcard__body"><div class="pcard__price">'+money(p.price)+'</div><div class="pcard__specs">'+specs+'</div><div class="pcard__addr">'+p.addr+'</div><div class="pcard__sub">'+p.sub+'</div><div class="pcard__foot"><span class="pcard__mls">MLS# '+p.mls+'</span><span class="pcard__cta">View Home <span class="arr">&rarr;</span></span></div></div></a>';
+}
+function render(){
+  var list=sortList(filtered()),total=list.length,grid=document.getElementById('grid');
+  document.getElementById('total').textContent=total;document.getElementById('heroCount').textContent=total;
+  if(total===0){
+    grid.innerHTML='<div class="empty"><span class="script">no matches</span><h3>No homes fit those filters</h3><p>Try widening your price range or clearing a filter or two.</p><button onclick="resetAll()">Reset all filters</button></div>';
+    document.getElementById('showing').textContent='0';document.getElementById('pager').innerHTML='';syncChips();syncBadge();return;
+  }
+  var pages=Math.ceil(total/PER);if(page>pages)page=pages;
+  var start=(page-1)*PER,slice=list.slice(start,start+PER),html='';
+  for(var i=0;i<slice.length;i++){
+    html+=cardHTML(slice[i]);
+    if(page===1&&i===5){html+='<div class="leadband"><div class="leadband__txt"><span class="script">be the first to know</span><h3>New listings, straight to your inbox.</h3><p>Tell us what you\'re looking for and we\'ll send matching homes the moment they hit the market.</p></div><form class="leadband__form" onsubmit="return false;"><input type="email" placeholder="Your email"><input type="tel" placeholder="Phone"><button class="btn-aqua" type="submit">Notify Me</button></form></div>';}
+  }
+  grid.innerHTML=html;document.getElementById('showing').textContent=slice.length;
+  var pg='<a href="#" onclick="go('+(page-1)+');return false;">&lsaquo;</a>';
+  for(var n=1;n<=pages;n++){pg+='<a href="#" class="'+(n===page?'current':'')+'" onclick="go('+n+');return false;">'+n+'</a>';}
+  pg+='<a href="#" onclick="go('+(page+1)+');return false;">&rsaquo;</a>';
+  document.getElementById('pager').innerHTML=pages>1?pg:'';
+  syncChips();syncBadge();
+}
+function go(n){var pages=Math.ceil(filtered().length/PER);if(n<1||n>pages)return;page=n;render();window.scrollTo({top:document.querySelector('.results').offsetTop-90,behavior:'smooth'});}
+
+function syncChips(){
+  var c=[];
+  if(F.q)c.push(['Search: "'+F.q+'"',function(){F.q='';document.getElementById('qSearch').value='';}]);
+  if(F.city)c.push([F.city,function(){F.city='';document.getElementById('fCity').value='';}]);
+  if(F.zip)c.push(['ZIP '+F.zip,function(){F.zip='';document.getElementById('fZip').value='';}]);
+  if(F.beds)c.push([F.beds+'+ beds',function(){F.beds=0;document.getElementById('qBeds').value='0';setPills('bedsPills',0);}]);
+  if(F.baths)c.push([F.baths+'+ baths',function(){F.baths=0;document.getElementById('qBaths').value='0';setPills('bathsPills',0);}]);
+  F.types.forEach(function(t){c.push([t,function(){F.types=F.types.filter(function(x){return x!==t;});setMulti('typePills',F.types);syncType();}]);});
+  F.statuses.forEach(function(s){c.push([s,function(){F.statuses=F.statuses.filter(function(x){return x!==s;});setMulti('statusPills',F.statuses);}]);});
+  if(F.year)c.push([F.year+'+ built',function(){F.year=0;document.getElementById('fYear').value='0';}]);
+  if(F.priceMin>0||F.priceMax<1000000)c.push([priceLbl(F.priceMin)+' – '+priceLbl(F.priceMax),function(){F.priceMin=0;F.priceMax=1000000;initRanges();}]);
+  if(F.sqftMin>0||F.sqftMax<5000)c.push([sqftLbl(F.sqftMin)+' – '+sqftLbl(F.sqftMax),function(){F.sqftMin=0;F.sqftMax=5000;initRanges();}]);
+  F.feats.forEach(function(ft){c.push([ft,function(){F.feats=F.feats.filter(function(x){return x!==ft;});syncFeatChecks();}]);});
+  var box=document.getElementById('chips');
+  if(!c.length){box.innerHTML='';return;}
+  var html='';for(var i=0;i<c.length;i++){html+='<span class="chip">'+c[i][0]+' <button aria-label="Remove">&times;</button></span>';}
+  html+='<button class="chips__clear" onclick="resetAll()">Clear all</button>';box.innerHTML=html;
+  var btns=box.querySelectorAll('.chip button');
+  for(var j=0;j<btns.length;j++){(function(idx){btns[idx].onclick=function(){c[idx][1]();page=1;render();};})(j);}
+}
+function syncBadge(){
+  var n=0;if(F.city)n++;if(F.zip)n++;if(F.year)n++;
+  if(F.priceMin>0||F.priceMax<1000000)n++;if(F.sqftMin>0||F.sqftMax<5000)n++;
+  n+=F.types.length+F.statuses.length+F.feats.length;
+  var btn=document.getElementById('moreBtn');document.getElementById('moreBadge').textContent=n;
+  if(n>0)btn.classList.add('has');else btn.classList.remove('has');
+  document.getElementById('applyCount').textContent='Show '+filtered().length+' homes';
+}
+function setPills(id,val){var bs=document.getElementById(id).querySelectorAll('button');for(var i=0;i<bs.length;i++){bs[i].classList.toggle('on',bs[i].getAttribute('data-v')===String(val));}}
+function setMulti(id,arr){var bs=document.getElementById(id).querySelectorAll('button');for(var i=0;i<bs.length;i++){bs[i].classList.toggle('on',arr.indexOf(bs[i].getAttribute('data-v'))>=0);}}
+function syncType(){var sel=document.getElementById('qType');if(F.types.length===1)sel.value=F.types[0];else sel.value='';}
+
+['bedsPills','bathsPills'].forEach(function(id){
+  document.getElementById(id).addEventListener('click',function(e){
+    if(e.target.tagName!=='BUTTON')return;var v=parseInt(e.target.getAttribute('data-v'),10);setPills(id,v);
+    if(id==='bedsPills'){F.beds=v;document.getElementById('qBeds').value=String(v);}else{F.baths=v;document.getElementById('qBaths').value=String(v);}
+    syncBadge();
+  });
+});
+['typePills','statusPills'].forEach(function(id){
+  document.getElementById(id).addEventListener('click',function(e){
+    if(e.target.tagName!=='BUTTON')return;var v=e.target.getAttribute('data-v');e.target.classList.toggle('on');
+    var arr=id==='typePills'?F.types:F.statuses;var ix=arr.indexOf(v);if(ix>=0)arr.splice(ix,1);else arr.push(v);
+    if(id==='typePills')syncType();syncBadge();
+  });
+});
+
+function initRanges(){
+  document.getElementById('priceMin').value=F.priceMin;document.getElementById('priceMax').value=F.priceMax;
+  document.getElementById('sqftMin').value=F.sqftMin;document.getElementById('sqftMax').value=F.sqftMax;
+  drawRange('price');drawRange('sqft');
+}
+function drawRange(key){
+  var min=document.getElementById(key+'Min'),max=document.getElementById(key+'Max');
+  var lo=parseInt(min.value,10),hi=parseInt(max.value,10);if(lo>hi){var t=lo;lo=hi;hi=t;}
+  var ceil=parseInt(max.max,10),fill=document.getElementById(key+'Fill');
+  fill.style.left=(lo/ceil*100)+'%';fill.style.width=((hi-lo)/ceil*100)+'%';
+  if(key==='price'){F.priceMin=lo;F.priceMax=hi;document.getElementById('priceMinOut').textContent=priceLbl(lo);document.getElementById('priceMaxOut').textContent=priceLbl(hi);}
+  else{F.sqftMin=lo;F.sqftMax=hi;document.getElementById('sqftMinOut').textContent=sqftLbl(lo);document.getElementById('sqftMaxOut').textContent=sqftLbl(hi);}
+}
+['price','sqft'].forEach(function(key){
+  document.getElementById(key+'Min').addEventListener('input',function(){drawRange(key);syncBadge();});
+  document.getElementById(key+'Max').addEventListener('input',function(){drawRange(key);syncBadge();});
+});
+
+document.getElementById('featChecks').addEventListener('change',function(){
+  F.feats=[];var cb=this.querySelectorAll('input:checked');for(var i=0;i<cb.length;i++)F.feats.push(cb[i].value);syncBadge();
+});
+function syncFeatChecks(){var cb=document.getElementById('featChecks').querySelectorAll('input');for(var i=0;i<cb.length;i++){cb[i].checked=F.feats.indexOf(cb[i].value)>=0;}}
+
+document.getElementById('qSearch').addEventListener('input',function(){F.q=this.value;page=1;render();});
+document.getElementById('qBeds').addEventListener('change',function(){F.beds=parseInt(this.value,10);setPills('bedsPills',F.beds);page=1;render();});
+document.getElementById('qBaths').addEventListener('change',function(){F.baths=parseInt(this.value,10);setPills('bathsPills',F.baths);page=1;render();});
+document.getElementById('qType').addEventListener('change',function(){F.types=this.value?[this.value]:[];setMulti('typePills',F.types);page=1;render();});
+document.getElementById('fCity').addEventListener('change',function(){F.city=this.value;syncBadge();});
+document.getElementById('fZip').addEventListener('change',function(){F.zip=this.value;syncBadge();});
+document.getElementById('fYear').addEventListener('change',function(){F.year=parseInt(this.value,10);syncBadge();});
+
+function openPanel(){document.getElementById('overlay').classList.add('open');document.getElementById('panel').classList.add('open');document.body.classList.add('no-scroll');syncBadge();}
+function closePanel(){document.getElementById('overlay').classList.remove('open');document.getElementById('panel').classList.remove('open');document.body.classList.remove('no-scroll');}
+function applyPanel(){page=1;render();closePanel();}
+function resetAll(){
+  F={q:"",beds:0,baths:0,types:[],statuses:[],city:"",zip:"",year:0,priceMin:0,priceMax:1000000,sqftMin:0,sqftMax:5000,feats:[]};
+  document.getElementById('qSearch').value='';document.getElementById('qBeds').value='0';document.getElementById('qBaths').value='0';document.getElementById('qType').value='';
+  document.getElementById('fCity').value='';document.getElementById('fZip').value='';document.getElementById('fYear').value='0';
+  setPills('bedsPills',0);setPills('bathsPills',0);setMulti('typePills',[]);setMulti('statusPills',[]);
+  initRanges();syncFeatChecks();page=1;render();
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closePanel();});
+function fav(e,btn){e.preventDefault();e.stopPropagation();btn.classList.toggle('on');btn.innerHTML=btn.classList.contains('on')?'\u2665':'\u2661';}
+initRanges();render();
+</script>
+</body>
+</html>

@@ -126,10 +126,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
       {/* Lead card */}
       <div className="card card--lead">
         <div className="card__inner">
-          <div className="eyebrow lead__eyebrow">Interested?</div>
+          <span className="script lead__script">come take a look</span>
           <h3 className="lead__title">Request a Tour</h3>
           <p className="lead__sub">See this home in person or by video — it&apos;s free, cancel anytime.</p>
-          <button className="btn btn--gold" onClick={openTour}>
+          <button className="btn btn--aqua" onClick={openTour}>
             Schedule a Showing
           </button>
           <button className="btn btn--ghost" onClick={openAsk}>
@@ -145,7 +145,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
       {/* Message form */}
       <div className="card">
         <div className="card__inner">
-          <div className="eyebrow lead__eyebrow">Send a Message</div>
+          <span className="script lead__script">say hello</span>
           <h3 className="lead__title" style={{ fontSize: "1.12rem", marginBottom: "16px" }}>
             Get more details
           </h3>
@@ -161,7 +161,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                 name="message"
                 placeholder={`I'd like to know more about ${address}…`}
               />
-              <button className="btn btn--dark" disabled={busy}>
+              <button className="btn btn--primary" disabled={busy}>
                 {busy ? "Sending…" : "Send Inquiry"}
               </button>
             </form>
@@ -182,7 +182,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
           >
             Payment
           </button>
-          <button className="sb--gold" onClick={openTour}>
+          <button className="sb--aqua" onClick={openTour}>
             Tour
           </button>
         </div>
@@ -192,7 +192,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
       <div className={`modal${tourOpen ? " open" : ""}`} onClick={closeTour}>
         <div className="modal__box" onClick={(e) => e.stopPropagation()}>
           <div className="modal__head">
-            <h3>Request a Tour</h3>
+            <div>
+              <span className="script">come take a look</span>
+              <h3>Request a Tour</h3>
+            </div>
             <button className="x" onClick={closeTour} aria-label="Close">
               &times;
             </button>
@@ -233,7 +236,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                 <input className="input" name="name" type="text" placeholder="First & last name" required />
                 <input className="input" name="phone" type="tel" placeholder="Phone" required />
                 <input className="input" name="email" type="email" placeholder="Email" required />
-                <button className="btn btn--gold" disabled={busy}>
+                <button className="btn btn--aqua" disabled={busy}>
                   {busy ? "Sending…" : "Confirm Tour Request"}
                 </button>
                 <p className="lead__legal">
@@ -250,7 +253,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
       <div className={`modal${askOpen ? " open" : ""}`} onClick={closeAsk}>
         <div className="modal__box" onClick={(e) => e.stopPropagation()}>
           <div className="modal__head">
-            <h3>Ask a Question</h3>
+            <div>
+              <span className="script">happy to help</span>
+              <h3>Ask a Question</h3>
+            </div>
             <button className="x" onClick={closeAsk} aria-label="Close">
               &times;
             </button>
@@ -272,7 +278,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                   placeholder="What would you like to know about this home?"
                   defaultValue={`I'd like more information about ${address}.`}
                 />
-                <button className="btn btn--gold" disabled={busy}>
+                <button className="btn btn--aqua" disabled={busy}>
                   {busy ? "Sending…" : "Send Question"}
                 </button>
                 <p className="lead__legal">

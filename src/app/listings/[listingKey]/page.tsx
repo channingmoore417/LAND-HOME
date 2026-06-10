@@ -175,11 +175,12 @@ export default async function ListingPage({
         <div className="wrap">
           <div className="hero__head">
             <div>
-              <div className="hero__loc">
-                {titleCase(listing.city)}
-                {listing.county_or_parish ? ` · ${titleCase(listing.county_or_parish)} Parish` : ""}
+              <div className="hero__crumb">
+                <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}
+                <Link href="/listings">{titleCase(listing.city)}</Link>
                 {listing.listing_id ? ` · MLS# ${listing.listing_id}` : ""}
               </div>
+              <span className="hero__script">welcome home to</span>
               <h1 className="hero__addr">
                 {addressLine}
                 <span>{cityState}</span>
@@ -239,8 +240,8 @@ export default async function ListingPage({
             <div>
               {showRemarks && listing.public_remarks && (
                 <section className="section">
-                  <div className="eyebrow section__eyebrow">About This Home</div>
-                  <hr className="rule--gold" />
+                  <span className="script section__script">about this home</span>
+                  <h2 className="section__title">About this home</h2>
                   <div className="prose">
                     <p>{listing.public_remarks}</p>
                   </div>
@@ -249,8 +250,8 @@ export default async function ListingPage({
 
               {details.length > 0 && (
                 <section className="section">
-                  <div className="eyebrow section__eyebrow">Property Details</div>
-                  <hr className="rule--gold" />
+                  <span className="script section__script">the details</span>
+                  <h2 className="section__title">Property details</h2>
                   <div className="features">
                     {details.map((d) => (
                       <div key={d.k}>
@@ -264,8 +265,8 @@ export default async function ListingPage({
 
               {amenities.length > 0 && (
                 <section className="section">
-                  <div className="eyebrow section__eyebrow">Features &amp; Finishes</div>
-                  <hr className="rule--gold" />
+                  <span className="script section__script">what you&apos;ll love</span>
+                  <h2 className="section__title">Features &amp; finishes</h2>
                   <div className="amenities">
                     {amenities.map((a) => (
                       <span key={a}>{a}</span>
@@ -275,14 +276,14 @@ export default async function ListingPage({
               )}
 
               <section className="section" id="calc">
-                <div className="eyebrow section__eyebrow">Estimate Your Payment</div>
-                <hr className="rule--gold" />
+                <span className="script section__script">run the numbers</span>
+                <h2 className="section__title">Estimate your payment</h2>
                 <MortgageCalculator price={listing.list_price ?? 0} taxAnnual={taxAnnual} />
               </section>
 
               <section className="section">
-                <div className="eyebrow section__eyebrow">Location</div>
-                <hr className="rule--gold" />
+                <span className="script section__script">the neighborhood</span>
+                <h2 className="section__title">Location</h2>
                 <div className="map">
                   <span className="map__pin">&#9679; {fullLabel}</span>
                 </div>
@@ -320,8 +321,12 @@ export default async function ListingPage({
       {similar.length > 0 && (
         <section className="similar">
           <div className="wrap">
-            <div className="eyebrow">More in {titleCase(listing.city)}</div>
-            <hr className="rule--gold" style={{ marginTop: "12px" }} />
+            <span className="script" style={{ fontSize: "1.7rem" }}>
+              more nearby
+            </span>
+            <h2 className="section__title" style={{ marginTop: 0 }}>
+              More homes in {titleCase(listing.city)}
+            </h2>
             <div className="sim__grid">
               {similar.map((s) => (
                 <Link className="sim__card" key={s.listing_key} href={`/listings/${s.listing_key}`}>

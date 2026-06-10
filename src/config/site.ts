@@ -9,7 +9,7 @@ export const site = {
   phone: "(337) 245-0909",
   phoneHref: "tel:+13372450909",
   logoUrl:
-    "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a29aa73944ae1c947c2e97c.png",
+    "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a29b0edff11dedc40eb9d4e.png",
   teamPhotoUrl:
     "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/69dd43d3328c56e1a03d8884.jpg",
   serviceArea: "Sulphur & Lake Charles, LA",
@@ -24,7 +24,7 @@ export const site = {
 
   footer: {
     blurb:
-      "Modern Southern luxury real estate, brokered by EXIT Realty Southern. Serving Sulphur, Lake Charles and Southwest Louisiana with a personal, no-pressure approach to buying and selling.",
+      "Modern coastal real estate, brokered by EXIT Realty Southern. Serving Sulphur, Lake Charles and Southwest Louisiana with a personal, no-pressure approach.",
     columns: [
       {
         title: "Explore",

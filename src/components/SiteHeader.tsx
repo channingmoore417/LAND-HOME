@@ -17,7 +17,7 @@ export default function SiteHeader() {
             </Link>
           ))}
         </div>
-        <a className="nav__phone" href={site.phoneHref}>
+        <a className="nav__cta" href={site.phoneHref}>
           {site.phone}
         </a>
         <button className="nav__toggle" aria-label="Menu">

@@ -36,8 +36,12 @@ export default async function Home() {
   return (
     <section className="similar" style={{ borderTop: 0, marginTop: 0 }}>
       <div className="wrap">
-        <div className="eyebrow">Featured Listings</div>
-        <hr className="rule--gold" style={{ marginTop: "12px" }} />
+        <span className="script" style={{ fontSize: "1.7rem" }}>
+          featured listings
+        </span>
+        <h2 className="section__title" style={{ marginTop: 0 }}>
+          Homes we love right now
+        </h2>
         <div className="sim__grid">
           {rows.map((s) => (
             <Link className="sim__card" key={s.listing_key} href={`/listings/${s.listing_key}`}>

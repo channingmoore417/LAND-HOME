@@ -7,7 +7,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: { default: site.name, template: `%s | ${site.name}` },
   description:
-    "Modern Southern luxury real estate across Lake Charles, Sulphur and Southwest Louisiana.",
+    "Modern coastal real estate across Lake Charles, Sulphur and Southwest Louisiana.",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
           crossOrigin=""
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>
