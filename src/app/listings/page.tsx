@@ -91,6 +91,8 @@ async function queryListings(f: ListingFilters, page: number) {
   q = q.neq("internet_display_yn", false);
   // Default browse = Active inventory; honor an explicit status filter.
   q = q.eq("standard_status", f.status || "Active");
+  // This is a "for sale" site — exclude rental/lease records.
+  q = q.not("property_type", "in", "(ResidentialLease,CommercialLease)");
 
   if (f.city) q = q.ilike("city", f.city);
   if (f.beds) q = q.gte("bedrooms_total", f.beds);
@@ -101,11 +103,14 @@ async function queryListings(f: ListingFilters, page: number) {
   if (f.maxSqft < SQFT_MAX) q = q.lte("living_area", f.maxSqft);
   if (f.year) q = q.gte("year_built", f.year);
 
-  if (f.type === "Single Family") q = q.ilike("property_sub_type", "%Single Family%");
+  // Map UI type → real RESO column values (see Supabase: property_type =
+  // Land/Residential/CommercialSale/ResidentialIncome; sub_type is
+  // camel-case e.g. SingleFamilyResidence, Duplex, Triplex).
+  if (f.type === "Single Family") q = q.eq("property_sub_type", "SingleFamilyResidence");
   else if (f.type === "Multi-Family")
-    q = q.or("property_sub_type.ilike.%Multi%,property_type.ilike.%Income%");
+    q = q.or("property_type.eq.ResidentialIncome,property_sub_type.eq.Duplex,property_sub_type.eq.Triplex");
   else if (f.type === "New Construction") q = q.eq("is_new_construction", true);
-  else if (f.type === "Land") q = q.ilike("property_type", "%Land%");
+  else if (f.type === "Land") q = q.eq("property_type", "Land");
 
   for (const key of f.features) {
     const col = FEATURE_COLUMN[key];
