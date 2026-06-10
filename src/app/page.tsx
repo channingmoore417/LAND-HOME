@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getPublicClient } from "@/lib/supabase";
 import { usd, int, titleCase } from "@/lib/format";
+import { photo } from "@/lib/images";
 
 export const revalidate = 300;
 
@@ -47,7 +48,7 @@ export default async function Home() {
             <Link className="sim__card" key={s.listing_key} href={`/listings/${s.listing_key}`}>
               {firstPhoto.get(s.listing_key) && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={firstPhoto.get(s.listing_key)} alt={s.unparsed_address ?? "Listing"} />
+                <img src={photo(firstPhoto.get(s.listing_key), 800)} alt={s.unparsed_address ?? "Listing"} />
               )}
               <div className="p">
                 <div className="sim__price">{usd(s.list_price)}</div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublicClient } from "@/lib/supabase";
 import { usd, int, titleCase } from "@/lib/format";
+import { photo } from "@/lib/images";
 import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
 import SortSelect from "@/components/SortSelect";
 import FavButton from "@/components/FavButton";
@@ -273,15 +274,16 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
               rows.map((c, i) => {
                 const badge = statusBadge(c);
                 const showAddr = c.internet_address_yn !== false;
-                const photo = photos.get(c.listing_key);
+                const raw = photos.get(c.listing_key);
+                const photoSrc = raw ? photo(raw, 800) : "";
                 const cityState = `${titleCase(c.city)}, ${c.state_or_province ?? "LA"} ${c.postal_code ?? ""}`.trim();
                 return (
                   <Box key={c.listing_key} index={i} page={page} criteria={f}>
                     <Link className="pcard" href={`/listings/${c.listing_key}`}>
                       <div className="pcard__media">
-                        {photo ? (
+                        {photoSrc ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={photo} alt={showAddr ? c.unparsed_address ?? "Listing" : "Listing"} loading="lazy" />
+                          <img src={photoSrc} alt={showAddr ? c.unparsed_address ?? "Listing" : "Listing"} loading="lazy" />
                         ) : (
                           <div style={{ width: "100%", height: "100%", background: "#cfe0e4" }} />
                         )}

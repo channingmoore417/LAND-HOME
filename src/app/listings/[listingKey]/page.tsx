@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getPublicClient } from "@/lib/supabase";
 import { site } from "@/config/site";
 import { usd, int, num, titleCase, splitFeatures, estAnnualTax } from "@/lib/format";
+import { photo } from "@/lib/images";
 import type { Listing, ListingMedia } from "@/lib/types";
 import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
@@ -121,7 +122,7 @@ export default async function ListingPage({
   const priceLabel = usd(listing.list_price);
 
   const photos: Photo[] = media.map((m, idx) => ({
-    url: m.media_url,
+    url: photo(m.media_url, 1600),
     alt: m.short_desc || `${addressLine} — photo ${idx + 1}`,
   }));
 
@@ -331,7 +332,7 @@ export default async function ListingPage({
               {similar.map((s) => (
                 <Link className="sim__card" key={s.listing_key} href={`/listings/${s.listing_key}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {s.photo && <img src={s.photo} alt={s.unparsed_address ?? "Listing"} />}
+                  {s.photo && <img src={photo(s.photo, 800)} alt={s.unparsed_address ?? "Listing"} />}
                   <div className="p">
                     <div className="sim__price">{usd(s.list_price)}</div>
                     <div className="sim__meta">
