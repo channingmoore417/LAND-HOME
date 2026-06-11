@@ -308,7 +308,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
                           <span className="pcard__cta">View Home <span className="arr">&rarr;</span></span>
                         </div>
                         {!c.is_lhg_listing && c.list_office_name && (
-                          <div className="pcard__courtesy">Courtesy of {titleCase(c.list_office_name)}</div>
+                          <div className="pcard__courtesy">Listing provided courtesy of {c.list_office_name}</div>
                         )}
                       </div>
                     </Link>

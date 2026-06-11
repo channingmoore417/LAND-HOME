@@ -289,6 +289,12 @@ export default async function ListingPage({
                   <span className="map__pin">&#9679; {fullLabel}</span>
                 </div>
               </section>
+
+              {!listing.is_lhg_listing && listing.list_office_name && (
+                <div className="idx-attribution">
+                  Listing provided courtesy of {listing.list_office_name}
+                </div>
+              )}
             </div>
 
             {/* SIDEBAR */}
@@ -308,9 +314,6 @@ export default async function ListingPage({
                   <div className="agent__lic">
                     {site.serviceArea} · {site.phone}
                   </div>
-                  {!listing.is_lhg_listing && listing.list_office_name && (
-                    <div className="courtesy">Courtesy of {titleCase(listing.list_office_name)}</div>
-                  )}
                 </div>
               </div>
             </aside>
