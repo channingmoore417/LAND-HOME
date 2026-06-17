@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 // Standalone contact form for the /contact page. Posts to the single
 // /api/forms endpoint with the stable `contact` form_id.
+//
+// Spam protection (no external service / keys required):
+//   1. Honeypot field ("company") — hidden from humans; bots fill it.
+//   2. Minimum submit time — the form's load timestamp is sent so the
+//      server can reject submissions completed in under a couple seconds.
+// Both are ENFORCED server-side in /api/forms; the client just supplies
+// the signals and silently shows success so bots get no useful feedback.
 export default function ContactForm() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const loadedAt = useRef<number>(Date.now());
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,6 +32,9 @@ export default function ContactForm() {
           email: f.get("email"),
           phone: f.get("phone"),
           message: `[${f.get("topic") || "General"}] ${f.get("message") || ""}`,
+          // Spam signals:
+          company: f.get("company") || "", // honeypot — should be empty
+          form_loaded_at: loadedAt.current,
           source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });
@@ -50,6 +61,17 @@ export default function ContactForm() {
 
   return (
     <form className="contact-form" onSubmit={onSubmit}>
+      {/* Honeypot — hidden from real users; bots tend to fill every field. */}
+      <div className="hp-field" aria-hidden="true">
+        <label htmlFor="company">Company (leave this blank)</label>
+        <input
+          type="text"
+          id="company"
+          name="company"
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
       <div className="hv-grid hv-grid--2">
         <div className="field">
           <label>Full Name</label>
