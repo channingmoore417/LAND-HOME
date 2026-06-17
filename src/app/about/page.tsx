@@ -87,28 +87,36 @@ export default async function AboutPage() {
     <>
       <JsonLd data={jsonLd} />
 
-      <header className="hero hero--index">
+      <header className="hero hero--index hero--about">
         <div className="wrap">
-          <nav className="hero__crumb" aria-label="Breadcrumb">
-            <Link href="/">Home</Link> &nbsp;/&nbsp; About
-          </nav>
-          <span className="hero__script">meet the team</span>
-          <h1>The people behind The Land &amp; Home Group</h1>
-          <p className="hero__sub">
-            We&apos;re a local team brokered by {site.brokerage}, helping families buy and sell across{" "}
-            {site.serviceArea} and all of Southwest Louisiana — with honest guidance and a genuinely
-            no-pressure approach.
-          </p>
-          <div className="hero__meta">
-            {team.length > 0 && (
-              <div><div className="n"><b>{team.length}</b></div><div className="k">Agents on Your Side</div></div>
-            )}
-            <div><div className="n">{cities.length}</div><div className="k">Communities Served</div></div>
-            <div><div className="n">{site.brokerage}</div><div className="k">Proudly Brokered By</div></div>
-          </div>
-          <div className="hero__cta">
-            <Link className="btn btn--aqua" href="/contact">Get in Touch</Link>
-            <Link className="btn btn--hollow" href="/listings">Browse Listings</Link>
+          <div className="hero__split">
+            <div className="hero__copy">
+              <nav className="hero__crumb" aria-label="Breadcrumb">
+                <Link href="/">Home</Link> &nbsp;/&nbsp; About
+              </nav>
+              <span className="hero__script">meet the team</span>
+              <h1>The people behind The Land &amp; Home Group</h1>
+              <p className="hero__sub">
+                We&apos;re a local team brokered by {site.brokerage}, helping families buy and sell
+                across {site.serviceArea} and all of Southwest Louisiana — with honest guidance and a
+                genuinely no-pressure approach.
+              </p>
+              <div className="hero__meta">
+                {team.length > 0 && (
+                  <div><div className="n"><b>{team.length}</b></div><div className="k">Agents on Your Side</div></div>
+                )}
+                <div><div className="n">{cities.length}</div><div className="k">Communities Served</div></div>
+                <div><div className="n">{site.brokerage}</div><div className="k">Proudly Brokered By</div></div>
+              </div>
+              <div className="hero__cta">
+                <Link className="btn btn--aqua" href="/contact">Get in Touch</Link>
+                <Link className="btn btn--hollow" href="/listings">Browse Listings</Link>
+              </div>
+            </div>
+            <div className="hero__photo">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={site.teamPhotoUrl} alt={`The ${site.name} team — ${site.serviceArea} REALTORS®`} />
+            </div>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -173,8 +181,8 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Team photo + Google map */}
-      <LocalMap href="/contact" ctaLabel="Contact the team" />
+      {/* Google map (team photo now lives in the hero) */}
+      <LocalMap href="/contact" ctaLabel="Contact the team" showPhoto={false} />
 
       {/* Pre-approval CTA — the referral flywheel */}
       <section className="preapproval">

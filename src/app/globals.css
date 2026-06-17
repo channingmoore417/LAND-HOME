@@ -543,6 +543,18 @@ textarea.input{resize:vertical;min-height:84px;}
 .value__t{font-family:"Outfit";font-weight:700;font-size:1.08rem;color:var(--teal);margin:0 0 8px;}
 .value__b{color:var(--ink-muted);font-size:.92rem;line-height:1.6;font-weight:300;margin:0;}
 
+/* People-focused About hero (text + team photo) */
+.hero--about{padding-bottom:128px;}
+.hero__split{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;}
+.hero__photo{position:relative;}
+.hero__photo img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:20px;box-shadow:0 26px 60px rgba(11,30,40,.42);border:1px solid rgba(255,255,255,.14);}
+.hero__photo::after{content:"";position:absolute;inset:0;border-radius:20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);pointer-events:none;}
+@media(max-width:880px){
+  .hero__split{grid-template-columns:1fr;gap:30px;}
+  .hero--about .hero__photo{order:-1;}
+  .hero--about .hero__photo img{aspect-ratio:16/10;}
+}
+
 /* Team roster (About page) */
 .team{background:var(--paper);padding:56px 0;border-top:1px solid var(--line);}
 .team .script{font-size:1.7rem;display:block;margin-bottom:2px;}
