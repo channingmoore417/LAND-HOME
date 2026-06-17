@@ -73,6 +73,24 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
   };
 }
 
+// Clean plural noun (no "for sale") for use inside sentences/FAQs, so we don't
+// produce "homes for sale are for sale".
+export function topicNoun(page: SeoPage): string {
+  if (page.page_type === "city") return "homes";
+  if (page.page_type === "land") return "land listings";
+  if (page.page_type === "single_family") return "single-family homes";
+  const map: Record<string, string> = {
+    waterfront: "waterfront homes",
+    pool: "homes with pools",
+    new_construction: "new-construction homes",
+    single_story: "single-story homes",
+    acre_plus: "properties with acreage",
+    updated: "updated homes",
+    garage: "homes with garages",
+  };
+  return (page.feature_key && map[page.feature_key]) || "homes";
+}
+
 // Short label for the page within its city (used in breadcrumbs + cluster nav).
 export function pageTopicLabel(page: SeoPage): string {
   if (page.page_type === "city") return "Homes for Sale";

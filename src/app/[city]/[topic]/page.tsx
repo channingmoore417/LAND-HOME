@@ -4,7 +4,7 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
 import { fetchCards, fetchFirstPhotos, listingStats, type ListingCriteria } from "@/lib/listings";
-import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, type SeoPage } from "@/lib/seo";
+import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
@@ -64,6 +64,7 @@ export default async function SeoLandingPage({
   const faqs = faqsFor(page, stats);
   const cityLabel = page.city || "Southwest Louisiana";
   const topicLabel = pageTopicLabel(page);
+  const noun = topicNoun(page);
   const citySlug = page.city ? slugifyCity(page.city) : "";
   const cityHubUrl = `${SITE}/${citySlug}/homes-for-sale`;
   const pageUrl = `${SITE}/${page.slug}`;
@@ -96,7 +97,7 @@ export default async function SeoLandingPage({
           <span className="hero__script">{topicLabel.toLowerCase()} in</span>
           <h1>{content.h1}</h1>
           <p className="hero__sub">
-            {stats.count.toLocaleString()} {topicLabel.toLowerCase()} for sale in {cityLabel}, Louisiana
+            {stats.count.toLocaleString()} {noun} for sale in {cityLabel}, Louisiana
             {range}. Updated live from the SWLAR MLS.
           </p>
           <div className="hero__meta">

@@ -7,7 +7,7 @@
 
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
-import { pageTopicLabel, type SeoPage } from "@/lib/seo";
+import { pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
 import type { Card, ListingStats } from "@/lib/listings";
 
 export interface ResolvedContent {
@@ -37,7 +37,7 @@ export interface Faq {
 
 export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
   const city = page.city || "Southwest Louisiana";
-  const topic = pageTopicLabel(page).toLowerCase();
+  const noun = topicNoun(page);
   const range =
     stats.priceMin && stats.priceMax
       ? `, priced from ${usd(stats.priceMin)} to ${usd(stats.priceMax)}`
@@ -45,8 +45,8 @@ export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
 
   const faqs: Faq[] = [
     {
-      q: `How many ${topic} are for sale in ${city}?`,
-      a: `There are currently ${stats.count.toLocaleString()} ${topic} for sale in ${city}, Louisiana${range}. The list updates automatically as new homes hit the market.`,
+      q: `How many ${noun} are for sale in ${city}?`,
+      a: `There are currently ${stats.count.toLocaleString()} ${noun} for sale in ${city}, Louisiana${range}. The list updates automatically as new listings hit the market.`,
     },
     {
       q: `Do homes in ${city} require flood insurance?`,
