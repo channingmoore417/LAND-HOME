@@ -35,6 +35,8 @@ export interface ListingCriteria {
   type?: string; // UI value: "Single Family" | "Multi-Family" | "New Construction" | "Land" | "Mobile / Manufactured"
   category?: "land" | "single_family" | "mobile"; // SEO-page shorthand
   features?: string[]; // feature keys (see FEATURE_COLUMN)
+  postalCode?: string; // ZIP (prefix match, tolerates ZIP+4)
+  subdivisionAny?: string[]; // neighborhood: subdivision_name ILIKE keywords (OR'd)
   q?: string; // free-text search
 }
 
@@ -98,6 +100,14 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   for (const key of c.features ?? []) {
     const col = FEATURE_COLUMN[key];
     if (col) query = query.eq(col, true);
+  }
+
+  if (c.postalCode) query = query.ilike("postal_code", `${c.postalCode}%`);
+
+  if (c.subdivisionAny?.length) {
+    query = query.or(
+      c.subdivisionAny.map((k) => `subdivision_name.ilike.%${k.replace(/[(),]/g, " ")}%`).join(","),
+    );
   }
 
   if (c.q) {

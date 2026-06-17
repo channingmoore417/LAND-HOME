@@ -22,7 +22,14 @@ export interface ListingFilters {
   maxSqft: number;
   year: number;
   features: string[];
+  zip: string;
+  neighborhood: string;
   sort: string;
+}
+
+export interface AreaOption {
+  slug: string;
+  name: string;
 }
 
 export const CITIES = [
@@ -56,9 +63,13 @@ function sqftLbl(n: number) {
 export default function ListingsControls({
   filters,
   total,
+  neighborhoods = [],
+  zips = [],
 }: {
   filters: ListingFilters;
   total: number;
+  neighborhoods?: AreaOption[];
+  zips?: AreaOption[];
 }) {
   const router = useRouter();
   const [panelOpen, setPanelOpen] = useState(false);
@@ -80,6 +91,8 @@ export default function ListingsControls({
     if (next.maxSqft < SQFT_MAX) p.set("maxSqft", String(next.maxSqft));
     if (next.year) p.set("year", String(next.year));
     for (const ft of next.features) p.append("feature", ft);
+    if (next.zip) p.set("zip", next.zip);
+    if (next.neighborhood) p.set("neighborhood", next.neighborhood);
     if (next.sort && next.sort !== "new") p.set("sort", next.sort);
     router.push(`/listings${p.toString() ? `?${p}` : ""}`);
   }
@@ -101,7 +114,7 @@ export default function ListingsControls({
   const empty: ListingFilters = {
     q: "", city: "", beds: 0, baths: 0, type: "", status: "",
     minPrice: 0, maxPrice: PRICE_MAX, minSqft: 0, maxSqft: SQFT_MAX,
-    year: 0, features: [], sort: "new",
+    year: 0, features: [], zip: "", neighborhood: "", sort: "new",
   };
   function resetAll() {
     setF(empty);
@@ -111,6 +124,8 @@ export default function ListingsControls({
   // Active-filter count for the "All Filters" badge.
   let badge = 0;
   if (f.city) badge++;
+  if (f.zip) badge++;
+  if (f.neighborhood) badge++;
   if (f.year) badge++;
   if (f.status) badge++;
   if (f.type) badge++;
@@ -122,6 +137,12 @@ export default function ListingsControls({
   const chips: [string, () => void][] = [];
   if (f.q) chips.push([`Search: "${f.q}"`, () => setAndApply("q", "")]);
   if (f.city) chips.push([f.city, () => setAndApply("city", "")]);
+  if (f.neighborhood)
+    chips.push([
+      neighborhoods.find((n) => n.slug === f.neighborhood)?.name ?? f.neighborhood,
+      () => setAndApply("neighborhood", ""),
+    ]);
+  if (f.zip) chips.push([`ZIP ${f.zip}`, () => setAndApply("zip", "")]);
   if (f.beds) chips.push([`${f.beds}+ beds`, () => setAndApply("beds", 0)]);
   if (f.baths) chips.push([`${f.baths}+ baths`, () => setAndApply("baths", 0)]);
   if (f.type) chips.push([f.type, () => setAndApply("type", "")]);
@@ -265,16 +286,38 @@ export default function ListingsControls({
             </div>
           </div>
           <div className="fgroup">
-            <span className="fgroup__label">Location</span>
+            <span className="fgroup__label">City</span>
             <div className="frow">
-              <div className="qsel">
-                <select value={f.city} onChange={(e) => set("city", e.target.value)}>
+              <div className="qsel" style={{ width: "100%" }}>
+                <select value={f.city} style={{ width: "100%" }} onChange={(e) => set("city", e.target.value)}>
                   <option value="">Any City</option>
                   {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
           </div>
+          {neighborhoods.length > 0 && (
+            <div className="fgroup">
+              <span className="fgroup__label">Neighborhood</span>
+              <div className="qsel" style={{ width: "100%" }}>
+                <select value={f.neighborhood} style={{ width: "100%" }} onChange={(e) => set("neighborhood", e.target.value)}>
+                  <option value="">Any Neighborhood</option>
+                  {neighborhoods.map((n) => <option key={n.slug} value={n.slug}>{n.name}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+          {zips.length > 0 && (
+            <div className="fgroup">
+              <span className="fgroup__label">ZIP Code</span>
+              <div className="qsel" style={{ width: "100%" }}>
+                <select value={f.zip} style={{ width: "100%" }} onChange={(e) => set("zip", e.target.value)}>
+                  <option value="">Any ZIP</option>
+                  {zips.map((z) => <option key={z.slug} value={z.slug}>{z.name}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
           <div className="fgroup">
             <span className="fgroup__label">Year Built (min)</span>
             <div className="qsel" style={{ width: "100%" }}>

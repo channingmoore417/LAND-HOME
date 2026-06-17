@@ -8,6 +8,7 @@ import {
   fetchCards, fetchFirstPhotos, PRICE_MAX, SQFT_MAX,
   type ListingCriteria, type SortKey,
 } from "@/lib/listings";
+import { neighborhoodsFor, zipAreasFor, findNeighborhood } from "@/lib/neighborhoods";
 
 // IDX search page. ALL filtering/sorting/pagination happens server-side
 // against Supabase so it scales to the full feed (3,000+ listings) — the
@@ -40,12 +41,14 @@ function parseFilters(sp: SP): ListingFilters {
     maxSqft: Number(one(sp.maxSqft)) || SQFT_MAX,
     year: Number(one(sp.year)) || 0,
     features: arr(sp.feature),
+    zip: one(sp.zip),
+    neighborhood: one(sp.neighborhood),
     sort: one(sp.sort) || "new",
   };
 }
 
 function toCriteria(f: ListingFilters): ListingCriteria {
-  return {
+  const crit: ListingCriteria = {
     status: f.status || undefined,
     city: f.city || undefined,
     bedsMin: f.beds || undefined,
@@ -59,6 +62,13 @@ function toCriteria(f: ListingFilters): ListingCriteria {
     features: f.features,
     q: f.q || undefined,
   };
+  if (f.zip) crit.postalCode = f.zip;
+  if (f.neighborhood && f.city) {
+    const n = findNeighborhood(f.city, f.neighborhood);
+    if (n?.keywords?.length) crit.subdivisionAny = n.keywords;
+    if (n?.zip) crit.postalCode = n.zip;
+  }
+  return crit;
 }
 
 export default async function ListingsPage({ searchParams }: { searchParams: SP }) {
@@ -127,7 +137,12 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
       </header>
 
       <div className="wrap">
-        <ListingsControls filters={f} total={total} />
+        <ListingsControls
+          filters={f}
+          total={total}
+          neighborhoods={neighborhoodsFor("Lake Charles").map((n) => ({ slug: n.slug, name: n.name }))}
+          zips={zipAreasFor("Lake Charles").map((z) => ({ slug: z.slug, name: `${z.name} · ${z.zip}` }))}
+        />
       </div>
 
       <main className="results">

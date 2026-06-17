@@ -9,6 +9,8 @@ import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, 
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
+import AreaShowcase from "@/components/AreaShowcase";
+import { neighborhoodCards, zipCards } from "@/lib/neighborhoods";
 
 // Render fresh per request: SEO copy lives in seo_pages and is edited often,
 // and listing counts change constantly — caching risks serving stale content.
@@ -84,6 +86,15 @@ export default async function SeoLandingPage({
 
   const showMap = page.city === site.localSeo.city;
   const seeAll = searchHref(page);
+
+  // Neighborhood + ZIP showcases — only on the city hub page.
+  const isHub = page.page_type === "city";
+  const [hoodCards, zoneCards] =
+    isHub && page.city
+      ? await Promise.all([neighborhoodCards(page.city), zipCards(page.city)])
+      : [[], []];
+  const hoodHref = (slug: string) => `/listings?city=${encodeURIComponent(cityLabel)}&neighborhood=${slug}`;
+  const zipHref = (slug: string) => `/listings?city=${encodeURIComponent(cityLabel)}&zip=${slug}`;
 
   const jsonLd = jsonLdGraph({
     content, stats, cards: rows, faqs, siteUrl: SITE, pageUrl, cityHubUrl, cityLabel, topicLabel,
@@ -178,6 +189,24 @@ export default async function SeoLandingPage({
             </div>
           </div>
         </section>
+      )}
+
+      {/* Neighborhoods + ZIP showcases (city hub only) */}
+      {isHub && (
+        <AreaShowcase
+          eyebrow="by neighborhood"
+          title={`${cityLabel} neighborhoods`}
+          cards={hoodCards}
+          hrefFor={hoodHref}
+        />
+      )}
+      {isHub && (
+        <AreaShowcase
+          eyebrow="by zip code"
+          title={`Search ${cityLabel} by ZIP code`}
+          cards={zoneCards}
+          hrefFor={zipHref}
+        />
       )}
 
       {/* Pre-approval CTA → Bayou Mortgage quote page */}
