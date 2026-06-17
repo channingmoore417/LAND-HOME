@@ -15,7 +15,24 @@ export const site = {
   serviceArea: "Sulphur & Lake Charles, LA",
 
   nav: [
-    { label: "Buy", href: "/buy" },
+    {
+      label: "Buy",
+      href: "/buy",
+      children: [
+        { label: "All Homes for Sale", href: "/buy" },
+        { label: "Lake Charles", href: "/lake-charles/homes-for-sale" },
+        { label: "Sulphur", href: "/sulphur/homes-for-sale" },
+        { label: "Iowa", href: "/iowa/homes-for-sale" },
+        { label: "Westlake", href: "/westlake/homes-for-sale" },
+        { label: "Ragley", href: "/ragley/homes-for-sale" },
+        { label: "Jennings", href: "/jennings/homes-for-sale" },
+        { label: "DeRidder", href: "/deridder/homes-for-sale" },
+        { label: "Vinton", href: "/vinton/homes-for-sale" },
+        { label: "Cameron", href: "/cameron/homes-for-sale" },
+        { label: "Welsh", href: "/welsh/homes-for-sale" },
+        { label: "Moss Bluff", href: "/moss-bluff/homes-for-sale" },
+      ],
+    },
     { label: "Sell", href: "/sell" },
     { label: "Listings", href: "/listings" },
     { label: "About", href: "/about" },
