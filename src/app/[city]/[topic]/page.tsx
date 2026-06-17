@@ -4,13 +4,39 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
-import { fetchCards, fetchFirstPhotos, listingStats, type ListingCriteria } from "@/lib/listings";
+import { fetchCards, fetchFirstPhotos, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
 import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
 import AreaShowcase from "@/components/AreaShowcase";
-import { neighborhoodCards, zipCards } from "@/lib/neighborhoods";
+import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
+import { neighborhoodCards, zipCards, neighborhoodsFor, zipAreasFor } from "@/lib/neighborhoods";
+
+// Seed the on-page filter sidebar with this landing page's own criteria, so a
+// pools page opens with "Pool" checked, a 4-bedroom page with 4+ beds, etc.
+function pageToFilters(page: SeoPage): ListingFilters {
+  return {
+    q: "",
+    city: page.city ?? "",
+    beds: page.page_type === "beds" ? page.beds_min ?? 0 : 0,
+    baths: 0,
+    type:
+      page.page_type === "land" ? "Land"
+        : page.page_type === "single_family" ? "Single Family"
+        : page.page_type === "mobile" ? "Mobile / Manufactured" : "",
+    status: "",
+    minPrice: page.price_min ?? 0,
+    maxPrice: page.price_max ?? PRICE_MAX,
+    minSqft: 0,
+    maxSqft: SQFT_MAX,
+    year: 0,
+    features: page.feature_key ? [page.feature_key] : [],
+    zip: "",
+    neighborhood: "",
+    sort: "new",
+  };
+}
 
 // Render fresh per request: SEO copy lives in seo_pages and is edited often,
 // and listing counts change constantly — caching risks serving stale content.
@@ -134,34 +160,43 @@ export default async function SeoLandingPage({
 
       <main className="results">
         <div className="wrap">
-          <div className="results__head">
-            <div className="meta">
-              Showing <b>{Math.min(rows.length, stats.count)}</b> of <b>{stats.count.toLocaleString()}</b> {topicLabel.toLowerCase()}
-            </div>
-            <Link className="seo-seeall" href={seeAll}>Search &amp; filter all &rarr;</Link>
-          </div>
-
-          {rows.length === 0 ? (
-            <div className="empty">
-              <span className="script">nothing active</span>
-              <h3>No {topicLabel.toLowerCase()} are active right now</h3>
-              <p>Inventory changes daily — check back soon or browse all listings.</p>
-              <Link href="/listings">Browse all listings</Link>
-            </div>
-          ) : (
-            <>
-              <div className="listings__grid">
-                {rows.map((c) => <ListingCard key={c.listing_key} c={c} />)}
-              </div>
-              {stats.count > rows.length && (
-                <div className="seo-cta">
-                  <Link className="btn btn--primary" href={seeAll} style={{ maxWidth: 360, margin: "0 auto" }}>
-                    View all {stats.count.toLocaleString()} {topicLabel.toLowerCase()} in {cityLabel}
-                  </Link>
+          <div className="searchgrid">
+            <ListingsControls
+              filters={pageToFilters(page)}
+              total={stats.count}
+              neighborhoods={neighborhoodsFor(page.city).map((n) => ({ slug: n.slug, name: n.name }))}
+              zips={zipAreasFor(page.city).map((z) => ({ slug: z.slug, name: `${z.name} · ${z.zip}` }))}
+            />
+            <div className="searchgrid__main">
+              <div className="results__head">
+                <div className="meta">
+                  Showing <b>{Math.min(rows.length, stats.count)}</b> of <b>{stats.count.toLocaleString()}</b> {topicLabel.toLowerCase()}
                 </div>
+              </div>
+
+              {rows.length === 0 ? (
+                <div className="empty">
+                  <span className="script">nothing active</span>
+                  <h3>No {topicLabel.toLowerCase()} are active right now</h3>
+                  <p>Inventory changes daily — check back soon or browse all listings.</p>
+                  <Link href="/listings">Browse all listings</Link>
+                </div>
+              ) : (
+                <>
+                  <div className="listings__grid">
+                    {rows.map((c) => <ListingCard key={c.listing_key} c={c} />)}
+                  </div>
+                  {stats.count > rows.length && (
+                    <div className="seo-cta">
+                      <Link className="btn btn--primary" href={seeAll} style={{ maxWidth: 360, margin: "0 auto" }}>
+                        View all {stats.count.toLocaleString()} {topicLabel.toLowerCase()} in {cityLabel}
+                      </Link>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </main>
 
