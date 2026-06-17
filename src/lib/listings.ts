@@ -32,8 +32,8 @@ export interface ListingCriteria {
   sqftMin?: number;
   sqftMax?: number;
   yearMin?: number;
-  type?: string; // UI value: "Single Family" | "Multi-Family" | "New Construction" | "Land"
-  category?: "land" | "single_family"; // SEO-page shorthand
+  type?: string; // UI value: "Single Family" | "Multi-Family" | "New Construction" | "Land" | "Mobile / Manufactured"
+  category?: "land" | "single_family" | "mobile"; // SEO-page shorthand
   features?: string[]; // feature keys (see FEATURE_COLUMN)
   q?: string; // free-text search
 }
@@ -83,14 +83,17 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   if (c.sqftMax && c.sqftMax < SQFT_MAX) query = query.lte("living_area", c.sqftMax);
   if (c.yearMin) query = query.gte("year_built", c.yearMin);
 
+  const MOBILE_SUBTYPES = ["MobileHome", "ManufacturedHome", "ManufacturedOnLand"];
   if (c.category === "land") query = query.eq("property_type", "Land");
   else if (c.category === "single_family") query = query.eq("property_sub_type", "SingleFamilyResidence");
+  else if (c.category === "mobile") query = query.in("property_sub_type", MOBILE_SUBTYPES);
 
   if (c.type === "Single Family") query = query.eq("property_sub_type", "SingleFamilyResidence");
   else if (c.type === "Multi-Family")
     query = query.or("property_type.eq.ResidentialIncome,property_sub_type.eq.Duplex,property_sub_type.eq.Triplex");
   else if (c.type === "New Construction") query = query.eq("is_new_construction", true);
   else if (c.type === "Land") query = query.eq("property_type", "Land");
+  else if (c.type === "Mobile / Manufactured") query = query.in("property_sub_type", MOBILE_SUBTYPES);
 
   for (const key of c.features ?? []) {
     const col = FEATURE_COLUMN[key];

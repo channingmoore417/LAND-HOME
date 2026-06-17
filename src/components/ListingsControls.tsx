@@ -29,7 +29,7 @@ export const CITIES = [
   "Lake Charles", "Sulphur", "Moss Bluff", "Iowa", "Vinton", "Cameron",
   "Ragley", "DeQuincy", "DeRidder", "Jennings", "Welsh", "Carlyss", "Westlake",
 ];
-export const TYPES = ["Single Family", "Multi-Family", "New Construction", "Land"];
+export const TYPES = ["Single Family", "Multi-Family", "New Construction", "Land", "Mobile / Manufactured"];
 export const STATUSES = ["Active", "Pending"];
 // Feature keys map to indexed boolean columns in Supabase (see lib/types.ts).
 export const FEATURES: { key: string; label: string }[] = [

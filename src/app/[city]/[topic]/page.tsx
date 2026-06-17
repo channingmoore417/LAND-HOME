@@ -21,6 +21,8 @@ function searchHref(page: SeoPage): string {
   if (page.city) p.set("city", page.city);
   if (page.page_type === "land") p.set("type", "Land");
   else if (page.page_type === "single_family") p.set("type", "Single Family");
+  else if (page.page_type === "mobile") p.set("type", "Mobile / Manufactured");
+  if (page.page_type === "beds" && page.beds_min) p.set("beds", String(page.beds_min));
   if (page.feature_key) p.append("feature", page.feature_key);
   return `/listings${p.toString() ? `?${p}` : ""}`;
 }
@@ -97,13 +99,18 @@ export default async function SeoLandingPage({
           <span className="hero__script">{topicLabel.toLowerCase()} in</span>
           <h1>{content.h1}</h1>
           <p className="hero__sub">
-            {stats.count.toLocaleString()} {noun} for sale in {cityLabel}, Louisiana
-            {range}. Updated live from the SWLAR MLS.
+            {stats.count.toLocaleString()} {noun} for sale in {cityLabel}, Louisiana{range}.
           </p>
           <div className="hero__meta">
             <div><div className="n"><b>{stats.count.toLocaleString()}</b></div><div className="k">Active Listings</div></div>
             {stats.priceMin ? <div><div className="n">{usd(stats.priceMin)}</div><div className="k">Starting Price</div></div> : null}
-            <div><div className="n">SWLAR</div><div className="k">MLS Feed</div></div>
+            {stats.priceMax ? <div><div className="n">{usd(stats.priceMax)}</div><div className="k">Up To</div></div> : null}
+          </div>
+          <div className="hero__cta">
+            <Link className="btn btn--aqua" href={seeAll}>Browse {cityLabel} {noun}</Link>
+            <a className="btn btn--hollow" href={site.bayou.ctaHref} target="_blank" rel="noopener">
+              Get Pre-Approved
+            </a>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -151,11 +158,34 @@ export default async function SeoLandingPage({
             <span className="script">about {cityLabel.toLowerCase()}</span>
             <h2 className="section__title">{topicLabel} in {cityLabel}, Louisiana</h2>
             <div className="prose">
-              {bodyParas.map((p, i) => <p key={i}>{p}</p>)}
+              {bodyParas.map((p, i) =>
+                p.startsWith("## ") ? (
+                  <h3 key={i} className="seo-h3">{p.slice(3)}</h3>
+                ) : (
+                  <p key={i}>{p}</p>
+                ),
+              )}
             </div>
           </div>
         </section>
       )}
+
+      {/* Pre-approval CTA → Bayou Mortgage quote page */}
+      <section className="preapproval">
+        <div className="wrap preapproval__inner">
+          <div className="preapproval__txt">
+            <span className="script">first step</span>
+            <h2>Know what you can afford in {cityLabel}</h2>
+            <p>
+              Get pre-approved with Bayou Mortgage — our preferred local Louisiana lender — so you can
+              shop with confidence and move fast when you find the one.
+            </p>
+          </div>
+          <a className="btn btn--aqua preapproval__btn" href={site.bayou.ctaHref} target="_blank" rel="noopener">
+            Get Pre-Approved
+          </a>
+        </div>
+      </section>
 
       {/* Internal-linking cluster */}
       {siblings.length > 1 && (
@@ -170,6 +200,7 @@ export default async function SeoLandingPage({
                   <Link key={s.id} className="cluster__link" href={`/${s.slug}`}>
                     <span className="cluster__t">{pageTopicLabel(s)}</span>
                     <span className="cluster__c">in {s.city}</span>
+                    <span className="cluster__btn">View Listings &rarr;</span>
                   </Link>
                 ))}
             </div>

@@ -68,7 +68,13 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
     priceMin: page.price_min ?? undefined,
     priceMax: page.price_max ?? undefined,
     category:
-      page.page_type === "land" ? "land" : page.page_type === "single_family" ? "single_family" : undefined,
+      page.page_type === "land"
+        ? "land"
+        : page.page_type === "single_family"
+          ? "single_family"
+          : page.page_type === "mobile"
+            ? "mobile"
+            : undefined,
     features: page.feature_key ? [page.feature_key] : undefined,
   };
 }
@@ -79,6 +85,8 @@ export function topicNoun(page: SeoPage): string {
   if (page.page_type === "city") return "homes";
   if (page.page_type === "land") return "land listings";
   if (page.page_type === "single_family") return "single-family homes";
+  if (page.page_type === "mobile") return "mobile & manufactured homes";
+  if (page.page_type === "beds") return `${page.beds_min ?? 4}+ bedroom homes`;
   const map: Record<string, string> = {
     waterfront: "waterfront homes",
     pool: "homes with pools",
@@ -96,6 +104,8 @@ export function pageTopicLabel(page: SeoPage): string {
   if (page.page_type === "city") return "Homes for Sale";
   if (page.page_type === "land") return "Land for Sale";
   if (page.page_type === "single_family") return "Single-Family Homes";
+  if (page.page_type === "mobile") return "Mobile & Manufactured Homes";
+  if (page.page_type === "beds") return `${page.beds_min ?? 4}+ Bedroom Homes`;
   const map: Record<string, string> = {
     waterfront: "Waterfront Homes",
     pool: "Homes with Pools",

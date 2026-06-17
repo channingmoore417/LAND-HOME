@@ -363,6 +363,29 @@ textarea.input{resize:vertical;min-height:84px;}
 .faq__item[open] summary::after{content:"\2013";}
 .faq__item p{margin:0 0 18px;color:var(--ink);font-weight:300;line-height:1.65;max-width:72ch;}
 
+/* Hero CTAs (on the dark coastal hero) */
+.hero__cta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap;}
+.hero__cta .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:14px 26px;}
+.btn--hollow{background:transparent;border:1.5px solid rgba(255,255,255,.55);color:#fff;}
+.btn--hollow:hover{background:#fff;color:var(--teal-deep);border-color:#fff;}
+
+/* Body subheadings in SEO long-form copy */
+.seo-h3{font-family:"Outfit";font-weight:700;font-size:1.2rem;color:var(--teal);margin:28px 0 10px;}
+.seo-body .prose p{font-size:1.05rem;}
+
+/* "View Listings" button inside each cluster card */
+.cluster__btn{margin-top:12px;color:var(--teal);font-weight:700;font-size:.85rem;}
+.cluster__link:hover .cluster__btn{color:var(--aqua);}
+
+/* Pre-approval CTA band */
+.preapproval{background:linear-gradient(150deg,var(--teal),var(--teal-deep));color:#fff;padding:48px 0;}
+.preapproval__inner{display:flex;align-items:center;justify-content:space-between;gap:30px;flex-wrap:wrap;}
+.preapproval__txt .script{font-size:1.7rem;display:block;color:var(--aqua);}
+.preapproval__txt h2{font-family:"Outfit";font-weight:700;font-size:1.6rem;margin:2px 0 8px;color:#fff;letter-spacing:-.01em;}
+.preapproval__txt p{color:rgba(255,255,255,.82);margin:0;max-width:58ch;font-weight:300;}
+.preapproval__btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:16px 32px;white-space:nowrap;}
+@media(max-width:680px){.preapproval__btn{width:100%;}}
+
 /* Advanced filter panel */
 .overlay{position:fixed;inset:0;background:rgba(22,56,72,.5);opacity:0;visibility:hidden;transition:.3s;z-index:90;}
 .overlay.open{opacity:1;visibility:visible;}
