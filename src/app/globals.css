@@ -563,6 +563,12 @@ textarea.input{resize:vertical;min-height:84px;}
 .hvhero__trust{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;color:rgba(255,255,255,.72);font-size:.84rem;}
 .hvhero__trust span{white-space:nowrap;}
 
+/* ---- home-value: confirmed address bar ---- */
+.hv-confirm{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--aqua-soft);border:1px solid var(--aqua-line);border-radius:12px;padding:11px 14px;margin-bottom:20px;}
+.hv-confirm__addr{color:var(--teal-deep);font-weight:600;font-size:.92rem;line-height:1.3;}
+.hv-confirm__change{flex:none;background:var(--paper);border:1px solid var(--aqua-line);color:var(--teal);font-size:.76rem;font-weight:700;padding:6px 13px;border-radius:20px;cursor:pointer;transition:.2s;}
+.hv-confirm__change:hover{background:var(--teal);color:#fff;border-color:var(--teal);}
+
 /* ---- home-value: in-card address field ---- */
 .hv-addr{display:flex;align-items:center;background:var(--off);border:1px solid var(--line);border-radius:12px;padding:3px 14px;transition:.2s;}
 .hv-addr:focus-within{border-color:var(--aqua);box-shadow:0 0 0 3px var(--aqua-soft);background:var(--paper);}

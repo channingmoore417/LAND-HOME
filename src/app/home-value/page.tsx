@@ -48,10 +48,15 @@ export default function HomeValuePage() {
     }, 400);
   }
 
-  function pick(c: GeoResult) {
-    // Always keep the house number the user typed; the geocoder label has none.
+  // Prepend the house number the user typed (the geocoder label never has one),
+  // so both the suggestions and the saved address always show the full street.
+  function composeAddress(c: GeoResult) {
     const m = query.trim().match(/^\s*(\d+[A-Za-z-]*)\b/);
-    const addr = m && !/^\d/.test(c.address) ? `${m[1]} ${c.address}` : c.address;
+    return m && !/^\d/.test(c.address) ? `${m[1]} ${c.address}` : c.address;
+  }
+
+  function pick(c: GeoResult) {
+    const addr = composeAddress(c);
     setPicked({ ...c, address: addr });
     setQuery(addr);
     setCandidates([]);
@@ -208,6 +213,13 @@ export default function HomeValuePage() {
                 <div className="wiz__label">Step {step} of 4 · {STEP_LABELS[step - 1]}</div>
               </div>
 
+              {step >= 2 && picked && (
+                <div className="hv-confirm">
+                  <span className="hv-confirm__addr">📍 {picked.address}</span>
+                  <button type="button" className="hv-confirm__change" onClick={() => setStep(1)}>Change</button>
+                </div>
+              )}
+
               {step === 1 && (
                 <div className="wiz__step">
                   <h2 className="wiz__q">Let&apos;s start with your address</h2>
@@ -221,7 +233,7 @@ export default function HomeValuePage() {
                     </div>
                     {candidates.length > 0 && (
                       <div className="hv-suggest">
-                        {candidates.map((c, i) => (<button type="button" key={i} onClick={() => pick(c)}>{c.address}</button>))}
+                        {candidates.map((c, i) => (<button type="button" key={i} onClick={() => pick(c)}>{composeAddress(c)}</button>))}
                       </div>
                     )}
                   </div>
