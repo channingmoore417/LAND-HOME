@@ -5,18 +5,10 @@ import Link from "next/link";
 import { site } from "@/config/site";
 
 interface GeoResult { address: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
-interface Comp {
-  address: string; beds: number | null; baths: number | null; sqft: number | null;
-  close_price: number | null; close_date: string | null; ppsf: number | null;
-}
 interface Estimate {
   comp_count: number; basis?: string; ppsf_median?: number;
   est_low?: number; est_median?: number; est_high?: number; median_sold_price?: number;
-  comps?: Comp[];
 }
-
-const fmtDate = (d?: string | null) =>
-  d ? new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "";
 
 const usd = (n?: number) => (n || n === 0 ? "$" + Math.round(n).toLocaleString("en-US") : "—");
 const STEP_LABELS = ["Your address", "About your home", "A few details", "Where to send it"];
@@ -136,20 +128,6 @@ export default function HomeValuePage() {
         `Based on the ${result.comp_count} most comparable sales in ${picked?.city} over the last 6 months` +
         (result.ppsf_median ? ` (median ${usd(result.ppsf_median)}/sq ft).` : "."),
         40, y, { maxWidth: W - 80 }); y += 30;
-      if (result.comps && result.comps.length) {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...teal);
-        doc.text("Most comparable recent sales", 40, y); y += 17;
-        for (const c of result.comps) {
-          doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(...ink);
-          doc.text(c.address, 40, y);
-          doc.text(usd(c.close_price ?? undefined), W - 40, y, { align: "right" }); y += 13;
-          doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(110, 120, 127);
-          doc.text(
-            `${c.beds ?? "—"} bd · ${c.baths ?? "—"} ba · ${c.sqft ? c.sqft.toLocaleString() : "—"} sqft · sold ${fmtDate(c.close_date)}`,
-            40, y); y += 17;
-        }
-        y += 6;
-      }
     }
     doc.setDrawColor(225, 233, 237); doc.line(40, y, W - 40, y); y += 22;
     doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...teal);
@@ -303,20 +281,6 @@ export default function HomeValuePage() {
                       {result!.ppsf_median ? <div><b>{usd(result!.ppsf_median)}</b><span>median $/sq ft</span></div> : null}
                       <div><b>6 mo</b><span>recent sales</span></div>
                     </div>
-                    {result!.comps && result!.comps.length > 0 && (
-                      <div className="hv-comps">
-                        <div className="hv-comps__h">Most comparable recent sales</div>
-                        {result!.comps.map((c, i) => (
-                          <div className="hv-comp" key={i}>
-                            <div className="hv-comp__addr">{c.address}</div>
-                            <div className="hv-comp__meta">
-                              {c.beds ?? "—"} bd · {c.baths ?? "—"} ba · {c.sqft ? c.sqft.toLocaleString() : "—"} sqft · sold {fmtDate(c.close_date)}
-                            </div>
-                            <div className="hv-comp__price">{usd(c.close_price ?? undefined)}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </>
                 ) : (
                   <p className="prose" style={{ marginTop: 10 }}>

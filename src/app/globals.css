@@ -544,15 +544,6 @@ textarea.input{resize:vertical;min-height:84px;}
 .wiz__nav .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:13px 28px;}
 @keyframes wizIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
-/* ---- comparable sales on the result ---- */
-.hv-comps{text-align:left;margin:6px 0 4px;}
-.hv-comps__h{color:rgba(255,255,255,.78);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;text-align:center;}
-.hv-comp{display:grid;grid-template-columns:1fr auto;gap:2px 14px;padding:11px 0;border-top:1px solid rgba(255,255,255,.14);}
-.hv-comp:first-of-type{border-top:0;}
-.hv-comp__addr{font-weight:700;font-size:.92rem;color:#fff;}
-.hv-comp__meta{grid-column:1;color:rgba(255,255,255,.68);font-size:.78rem;}
-.hv-comp__price{grid-column:2;grid-row:1 / span 2;align-self:center;font-family:"Outfit";font-weight:800;font-size:1.05rem;color:var(--aqua);white-space:nowrap;}
-
 @media(max-width:680px){.hv-grid{grid-template-columns:1fr 1fr;}.hv-grid--2{grid-template-columns:1fr;}}
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;}}
