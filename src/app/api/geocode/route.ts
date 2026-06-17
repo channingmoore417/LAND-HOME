@@ -3,31 +3,48 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Address autocomplete via the free U.S. Census geocoder (no API key).
-// Proxied server-side to avoid CORS. Returns up to 5 matched addresses with
-// coordinates + city/state/ZIP parsed out.
+// Live address autocomplete via Photon (OpenStreetMap, no API key). Unlike the
+// Census geocoder, Photon returns suggestions as you type. Biased toward
+// Southwest Louisiana. Proxied server-side to avoid CORS.
+const SWLA_LAT = 30.2272;
+const SWLA_LON = -93.3336;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toResult(f: any) {
+  const p = f?.properties ?? {};
+  if (p.countrycode && p.countrycode !== "US") return null;
+  const city = p.city || p.town || p.village || p.locality || p.county || "";
+  const street = [p.housenumber, p.street].filter(Boolean).join(" ");
+  const label = [street || p.name, city, p.state, p.postcode].filter(Boolean).join(", ");
+  if (!label) return null;
+  const coords = f?.geometry?.coordinates ?? [];
+  return {
+    address: label,
+    lat: coords[1] ?? null,
+    lng: coords[0] ?? null,
+    city,
+    state: p.state || "",
+    zip: p.postcode || "",
+  };
+}
+
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams.get("q")?.trim();
-  if (!q || q.length < 5) return NextResponse.json({ results: [] });
+  if (!q || q.length < 3) return NextResponse.json({ results: [] });
 
   const url =
-    `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress` +
-    `?address=${encodeURIComponent(q)}&benchmark=Public_AR_Current&format=json`;
+    `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}` +
+    `&limit=6&lang=en&lat=${SWLA_LAT}&lon=${SWLA_LON}`;
 
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, { cache: "no-store", headers: { "User-Agent": "landhomegroup.com" } });
     if (!res.ok) return NextResponse.json({ results: [] });
     const data = await res.json();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const matches = (data?.result?.addressMatches as any[]) ?? [];
-    const results = matches.slice(0, 5).map((m) => ({
-      address: m.matchedAddress as string,
-      lat: m.coordinates?.y ?? null,
-      lng: m.coordinates?.x ?? null,
-      city: m.addressComponents?.city ?? "",
-      state: m.addressComponents?.state ?? "",
-      zip: m.addressComponents?.zip ?? "",
-    }));
+    const results = ((data?.features as any[]) ?? [])
+      .map(toResult)
+      .filter((r): r is NonNullable<typeof r> => r !== null)
+      .slice(0, 6);
     return NextResponse.json({ results });
   } catch (e) {
     console.error("[geocode] failed:", (e as Error).message);

@@ -2,14 +2,12 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { site } from "@/config/site";
 
 interface GeoResult { address: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
 interface Estimate {
-  comp_count: number;
-  basis?: string;
-  ppsf_median?: number;
-  est_low?: number; est_median?: number; est_high?: number;
-  median_sold_price?: number;
+  comp_count: number; basis?: string; ppsf_median?: number;
+  est_low?: number; est_median?: number; est_high?: number; median_sold_price?: number;
 }
 
 const usd = (n?: number) => (n || n === 0 ? "$" + Math.round(n).toLocaleString("en-US") : "—");
@@ -22,15 +20,20 @@ export default function HomeValuePage() {
   const [baths, setBaths] = useState("");
   const [sqft, setSqft] = useState("");
   const [year, setYear] = useState("");
+  const [condition, setCondition] = useState("");
+  const [timeframe, setTimeframe] = useState("");
+  const [notes, setNotes] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Estimate | null>(null);
+  const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
-  const [leadSent, setLeadSent] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function onAddressChange(v: string) {
-    setQuery(v);
-    setPicked(null);
+    setQuery(v); setPicked(null);
     if (timer.current) clearTimeout(timer.current);
     if (v.trim().length < 5) { setCandidates([]); return; }
     timer.current = setTimeout(async () => {
@@ -41,63 +44,125 @@ export default function HomeValuePage() {
       } catch { setCandidates([]); }
     }, 450);
   }
+  function pick(c: GeoResult) { setPicked(c); setQuery(c.address); setCandidates([]); }
 
-  function pick(c: GeoResult) {
-    setPicked(c);
-    setQuery(c.address);
-    setCandidates([]);
-  }
-
-  async function getEstimate(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr("");
-    setResult(null);
-    const city = picked?.city || "";
-    if (!city) { setErr("Please pick your address from the suggestions so we know the city."); return; }
+    if (!picked?.city) { setErr("Please choose your address from the suggestions so we know the city."); return; }
+    if (!name || !email || !phone) { setErr("Please add your name, email, and phone to get your report."); return; }
     setLoading(true);
+    let est: Estimate | null = null;
     try {
       const res = await fetch("/api/valuation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          city,
-          zip: picked?.zip || undefined,
+          city: picked.city, zip: picked.zip || undefined,
           livingArea: sqft ? Number(sqft.replace(/[^0-9.]/g, "")) : undefined,
           beds: beds ? Number(beds) : undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) { setErr(data.error || "Could not generate an estimate."); }
-      else setResult(data);
-    } catch { setErr("Something went wrong. Please try again."); }
+      if (res.ok) est = await res.json();
+    } catch { /* keep going — we still capture the lead */ }
+
+    // Capture the lead regardless of whether an automated estimate was produced.
+    try {
+      await fetch("/api/forms", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          form_id: "home_valuation", name, email, phone,
+          message: `Home valuation request for ${picked.address}`,
+          criteria: {
+            address: picked.address, city: picked.city, zip: picked.zip,
+            beds, baths, sqft, year, condition, timeframe, notes,
+            estimate: est && est.comp_count > 0
+              ? { low: est.est_low, median: est.est_median, high: est.est_high, comps: est.comp_count }
+              : null,
+          },
+          source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
+        }),
+      });
+    } catch { /* non-fatal */ }
+
+    setResult(est);
+    setDone(true);
     setLoading(false);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function submitLead(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    const res = await fetch("/api/forms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        form_id: "home_valuation",
-        name: f.get("name"),
-        email: f.get("email"),
-        phone: f.get("phone"),
-        message: `Home valuation request for ${picked?.address ?? query}`,
-        criteria: {
-          address: picked?.address ?? query,
-          city: picked?.city, zip: picked?.zip,
-          beds, baths, sqft, year,
-          estimate: result ? { low: result.est_low, median: result.est_median, high: result.est_high } : null,
-        },
-        source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-      }),
-    });
-    if (res.ok) setLeadSent(true);
+  async function downloadPdf() {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+    const W = 612;
+    const teal: [number, number, number] = [32, 72, 96];
+    const aqua: [number, number, number] = [97, 193, 204];
+    const ink: [number, number, number] = [50, 60, 67];
+
+    // Header band
+    doc.setFillColor(...teal); doc.rect(0, 0, W, 92, "F");
+    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+    doc.text(site.name, 40, 44);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(...aqua);
+    doc.text("Home Value Estimate", 40, 66);
+    doc.setTextColor(210, 230, 235); doc.setFontSize(9);
+    doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), 40, 82);
+
+    let y = 130;
+    doc.setTextColor(...ink); doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+    doc.text(picked?.address ?? query, 40, y);
+    y += 30;
+
+    if (result && result.comp_count > 0) {
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(110, 120, 127);
+      doc.text("Estimated value range", 40, y); y += 26;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(26); doc.setTextColor(...teal);
+      doc.text(`${usd(result.est_low)}  -  ${usd(result.est_high)}`, 40, y); y += 26;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(12); doc.setTextColor(...ink);
+      doc.text(`Most likely around ${usd(result.est_median)}`, 40, y); y += 30;
+      doc.setFontSize(10); doc.setTextColor(110, 120, 127);
+      doc.text(
+        `Based on the ${result.comp_count} most comparable sales in ${picked?.city} over the last 6 months` +
+        (result.ppsf_median ? ` (median ${usd(result.ppsf_median)}/sq ft).` : "."),
+        40, y, { maxWidth: W - 80 },
+      );
+      y += 34;
+    }
+
+    // Home details
+    doc.setDrawColor(225, 233, 237); doc.line(40, y, W - 40, y); y += 22;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...teal);
+    doc.text("Home details you provided", 40, y); y += 18;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...ink);
+    const details = [
+      ["Bedrooms", beds || "—"], ["Bathrooms", baths || "—"],
+      ["Living area", sqft ? `${sqft} sq ft` : "—"], ["Year built", year || "—"],
+      ["Condition", condition || "—"], ["Timeframe to sell", timeframe || "—"],
+    ];
+    for (const [k, v] of details) { doc.text(`${k}: ${v}`, 40, y); y += 16; }
+
+    // Disclaimer
+    y += 12; doc.setFillColor(244, 247, 250); doc.rect(40, y, W - 80, 72, "F");
+    doc.setFontSize(8.5); doc.setTextColor(110, 120, 127);
+    doc.text(
+      "This is an automated estimate based on recent comparable sales and is NOT an appraisal or a " +
+      "formal opinion of value. Your home's condition, upgrades, location, and current demand can move " +
+      "the figure meaningfully. For your home's exact value, schedule a free, no-obligation consultation " +
+      "with The Land & Home Group.",
+      48, y + 18, { maxWidth: W - 96 },
+    );
+    y += 92;
+
+    doc.setTextColor(...teal); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+    doc.text(`Schedule your free consultation:  ${site.phone}`, 40, y);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(110, 120, 127);
+    doc.text(`${site.name} · ${site.brokerage} · ${site.serviceArea}`, 40, y + 16);
+
+    const safe = (picked?.address ?? "home").replace(/[^a-z0-9]+/gi, "-").slice(0, 40);
+    doc.save(`Home-Value-Estimate-${safe}.pdf`);
   }
 
   const hasEstimate = result && result.comp_count > 0;
+  const firstName = name.trim().split(" ")[0];
 
   return (
     <>
@@ -107,10 +172,10 @@ export default function HomeValuePage() {
             <Link href="/">Home</Link> &nbsp;/&nbsp; Home Value
           </nav>
           <span className="hero__script">what&apos;s my home worth?</span>
-          <h1>Free Home Value Estimate</h1>
+          <h1>Free Home Value Report</h1>
           <p className="hero__sub">
-            Get an instant estimate based on recent comparable sales across Southwest Louisiana —
-            then talk to a local expert for a precise, professional valuation.
+            Tell us about your home and we&apos;ll build a custom value range from recent comparable sales —
+            plus a downloadable report. It only takes a minute.
           </p>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -120,97 +185,128 @@ export default function HomeValuePage() {
 
       <main className="results">
         <div className="wrap" style={{ maxWidth: 760 }}>
-          <div className="hv-card">
-            <form onSubmit={getEstimate}>
-              <div className="field" style={{ position: "relative" }}>
-                <label>Property Address</label>
-                <input
-                  className="input" type="text" autoComplete="off"
-                  placeholder="Start typing your address…"
-                  value={query}
-                  onChange={(e) => onAddressChange(e.target.value)}
-                />
-                {candidates.length > 0 && (
-                  <div className="hv-suggest">
-                    {candidates.map((c, i) => (
-                      <button type="button" key={i} onClick={() => pick(c)}>{c.address}</button>
-                    ))}
+          {!done && (
+            <div className="hv-card">
+              <form onSubmit={onSubmit}>
+                <div className="field" style={{ position: "relative" }}>
+                  <label>Property Address</label>
+                  <input className="input" type="text" autoComplete="off" placeholder="Start typing your address…"
+                    value={query} onChange={(e) => onAddressChange(e.target.value)} />
+                  {candidates.length > 0 && (
+                    <div className="hv-suggest">
+                      {candidates.map((c, i) => (
+                        <button type="button" key={i} onClick={() => pick(c)}>{c.address}</button>
+                      ))}
+                    </div>
+                  )}
+                  {picked && <div className="hv-picked">✓ {picked.city}, {picked.state} {picked.zip}</div>}
+                </div>
+
+                <div className="hv-grid">
+                  <div className="field"><label>Bedrooms</label>
+                    <input className="input" type="number" min={0} value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="3" /></div>
+                  <div className="field"><label>Bathrooms</label>
+                    <input className="input" type="number" min={0} value={baths} onChange={(e) => setBaths(e.target.value)} placeholder="2" /></div>
+                  <div className="field"><label>Living Area (sq ft)</label>
+                    <input className="input" type="number" min={0} value={sqft} onChange={(e) => setSqft(e.target.value)} placeholder="2,000" /></div>
+                  <div className="field"><label>Year Built</label>
+                    <input className="input" type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="2005" /></div>
+                </div>
+
+                <div className="hv-grid hv-grid--2">
+                  <div className="field"><label>Condition</label>
+                    <div className="qsel" style={{ width: "100%" }}>
+                      <select value={condition} style={{ width: "100%" }} onChange={(e) => setCondition(e.target.value)}>
+                        <option value="">Select…</option>
+                        <option>Excellent / updated</option>
+                        <option>Good</option>
+                        <option>Average</option>
+                        <option>Needs work</option>
+                      </select>
+                    </div>
                   </div>
-                )}
-                {picked && <div className="hv-picked">✓ {picked.city}, {picked.state} {picked.zip}</div>}
-              </div>
+                  <div className="field"><label>When are you thinking of selling?</label>
+                    <div className="qsel" style={{ width: "100%" }}>
+                      <select value={timeframe} style={{ width: "100%" }} onChange={(e) => setTimeframe(e.target.value)}>
+                        <option value="">Select…</option>
+                        <option>Just curious</option>
+                        <option>0–3 months</option>
+                        <option>3–6 months</option>
+                        <option>6–12 months</option>
+                        <option>Already listed</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="hv-grid">
-                <div className="field"><label>Bedrooms</label>
-                  <input className="input" type="number" min={0} value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="3" /></div>
-                <div className="field"><label>Bathrooms</label>
-                  <input className="input" type="number" min={0} value={baths} onChange={(e) => setBaths(e.target.value)} placeholder="2" /></div>
-                <div className="field"><label>Living Area (sq ft)</label>
-                  <input className="input" type="number" min={0} value={sqft} onChange={(e) => setSqft(e.target.value)} placeholder="2,000" /></div>
-                <div className="field"><label>Year Built</label>
-                  <input className="input" type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="2005" /></div>
-              </div>
+                <div className="field"><label>Anything we should know? (optional)</label>
+                  <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Recent renovations, lot size, condition notes…" /></div>
 
-              {err && <p className="hv-err">{err}</p>}
-              <button className="btn btn--primary" disabled={loading}>
-                {loading ? "Calculating…" : "Get My Estimate"}
-              </button>
-              <p className="hv-fine">Tip: for the most accurate estimate, pick your address from the suggestions and enter your square footage.</p>
-            </form>
-          </div>
+                <div className="hv-contact">
+                  <span className="script" style={{ fontSize: "1.3rem" }}>where to send it</span>
+                  <div className="hv-grid hv-grid--2">
+                    <div className="field"><label>Full Name</label>
+                      <input className="input" type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
+                    <div className="field"><label>Phone</label>
+                      <input className="input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
+                  </div>
+                  <div className="field"><label>Email</label>
+                    <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+                </div>
 
-          {result && !hasEstimate && (
-            <div className="hv-result">
-              <h2 className="section__title">Not enough recent sales to estimate</h2>
-              <p className="prose">We don&apos;t have enough comparable sales near that address to generate an
-                automated estimate — but we can still help. Reach out for a personalized valuation.</p>
-              <Link className="btn btn--aqua" href="/contact" style={{ maxWidth: 320 }}>Request a Valuation</Link>
+                {err && <p className="hv-err">{err}</p>}
+                <button className="btn btn--primary" disabled={loading}>
+                  {loading ? "Building your report…" : "Get My Home Value Report"}
+                </button>
+                <p className="hv-fine">By submitting you agree to be contacted by The Land &amp; Home Group about your home. Consent is not a condition of any purchase or sale.</p>
+              </form>
             </div>
           )}
 
-          {hasEstimate && (
-            <div className="hv-result">
-              <span className="script" style={{ fontSize: "1.6rem" }}>your estimated value</span>
-              <div className="hv-range">{usd(result!.est_low)} – {usd(result!.est_high)}</div>
-              <div className="hv-mid">Most likely around <strong>{usd(result!.est_median)}</strong></div>
-              <div className="hv-stats">
-                <div><b>{result!.comp_count.toLocaleString()}</b><span>comparable sales</span></div>
-                {result!.ppsf_median ? <div><b>{usd(result!.ppsf_median)}</b><span>median $/sq ft</span></div> : null}
-                {picked?.city ? <div><b>{picked.city}</b><span>market area</span></div> : null}
+          {done && (
+            <div className="hv-thanks">
+              <div className="hv-result">
+                <span className="script" style={{ fontSize: "1.6rem" }}>thank you{firstName ? `, ${firstName}` : ""}!</span>
+                {hasEstimate ? (
+                  <>
+                    <div className="hv-mid" style={{ marginTop: 8 }}>Your estimated value range</div>
+                    <div className="hv-range">{usd(result!.est_low)} – {usd(result!.est_high)}</div>
+                    <div className="hv-mid">Most likely around <strong>{usd(result!.est_median)}</strong></div>
+                    <div className="hv-stats">
+                      <div><b>{result!.comp_count}</b><span>comparable sales</span></div>
+                      {result!.ppsf_median ? <div><b>{usd(result!.ppsf_median)}</b><span>median $/sq ft</span></div> : null}
+                      <div><b>6 mo</b><span>recent sales</span></div>
+                    </div>
+                  </>
+                ) : (
+                  <p className="prose" style={{ marginTop: 10 }}>
+                    We&apos;ve got your details. There aren&apos;t enough recent comparable sales near your
+                    address for an automated range, so we&apos;ll prepare a personalized valuation by hand.
+                  </p>
+                )}
+                <p className="hv-disclaimer">
+                  Remember: this is an <strong>automated estimate only</strong> — not an appraisal or a formal
+                  opinion of value. Your home&apos;s condition, upgrades, and current demand can change the
+                  number significantly. <strong>To get your exact numbers, schedule an appointment</strong> for
+                  a free, no-obligation consultation.
+                </p>
+                <div className="hv-cta-row">
+                  <a className="btn btn--aqua" href={site.phoneHref}>Schedule an Appointment · {site.phone}</a>
+                  {hasEstimate && (
+                    <button className="btn btn--hollow-teal" onClick={downloadPdf}>Download PDF Report</button>
+                  )}
+                </div>
               </div>
-              <p className="hv-disclaimer">
-                This is an automated estimate based on recent comparable sales in the area — not an
-                appraisal or a formal opinion of value. Your home&apos;s condition, upgrades, and lot can
-                move the number meaningfully. For a precise figure, get a free professional valuation below.
-              </p>
               {picked?.city && (
-                <Link className="seo-seeall" href={`/listings?city=${encodeURIComponent(picked.city)}`}>
-                  See what&apos;s for sale in {picked.city} &rarr;
-                </Link>
+                <p style={{ textAlign: "center", marginTop: 18 }}>
+                  <Link className="seo-seeall" href={`/listings?city=${encodeURIComponent(picked.city)}`}>
+                    See what&apos;s for sale in {picked.city} &rarr;
+                  </Link>
+                </p>
               )}
             </div>
           )}
-
-          {/* Soft CTA / lead capture */}
-          <div className="hv-card hv-lead">
-            <span className="script" style={{ fontSize: "1.5rem" }}>the real number</span>
-            <h2 className="section__title" style={{ marginTop: 2 }}>Get a professional valuation</h2>
-            <p className="prose" style={{ marginTop: 0 }}>
-              An automated estimate is a starting point. For a true market value — factoring in your
-              updates, condition, and current demand — The Land &amp; Home Group will prepare a free,
-              no-obligation comparative market analysis.
-            </p>
-            {leadSent ? (
-              <p className="form__ok">Thanks — we&apos;ll reach out shortly with your personalized valuation.</p>
-            ) : (
-              <form onSubmit={submitLead}>
-                <input className="input" name="name" type="text" placeholder="Full name" required />
-                <input className="input" name="phone" type="tel" placeholder="Phone" />
-                <input className="input" name="email" type="email" placeholder="Email" required />
-                <button className="btn btn--aqua">Request My Free Valuation</button>
-              </form>
-            )}
-          </div>
         </div>
       </main>
     </>

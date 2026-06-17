@@ -524,6 +524,14 @@ textarea.input{resize:vertical;min-height:84px;}
 .hv-result .seo-seeall{color:#fff;text-decoration:underline;text-underline-offset:3px;}
 .hv-lead{margin-top:24px;}
 .hv-lead .script{font-size:1.5rem;display:block;}
-@media(max-width:680px){.hv-grid{grid-template-columns:1fr 1fr;}}
+.hv-grid--2{grid-template-columns:1fr 1fr;}
+.hv-card textarea.input{min-height:70px;}
+.hv-contact{border-top:1px solid var(--line);margin-top:18px;padding-top:18px;}
+.hv-contact .script{display:block;margin-bottom:10px;}
+.hv-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+.hv-cta-row .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:14px 26px;}
+.btn--hollow-teal{background:transparent;border:1.5px solid #fff;color:#fff;}
+.btn--hollow-teal:hover{background:#fff;color:var(--teal-deep);}
+@media(max-width:680px){.hv-grid{grid-template-columns:1fr 1fr;}.hv-grid--2{grid-template-columns:1fr;}}
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;}}
