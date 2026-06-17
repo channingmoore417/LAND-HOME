@@ -34,6 +34,7 @@ export const site = {
       ],
     },
     { label: "Sell", href: "/home-value" },
+    { label: "Our Listings", href: "/our-listings" },
     { label: "Listings", href: "/listings" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },

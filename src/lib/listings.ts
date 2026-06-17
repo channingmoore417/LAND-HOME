@@ -38,6 +38,7 @@ export interface ListingCriteria {
   postalCode?: string; // ZIP (prefix match, tolerates ZIP+4)
   subdivisionAny?: string[]; // neighborhood: subdivision_name ILIKE keywords (OR'd)
   q?: string; // free-text search
+  lhgOnly?: boolean; // only The Land & Home Group's own listings
 }
 
 export const CARD_SELECT =
@@ -76,6 +77,7 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   query = query.eq("standard_status", c.status || "Active");
   query = query.not("property_type", "in", "(ResidentialLease,CommercialLease)");
 
+  if (c.lhgOnly) query = query.eq("is_lhg_listing", true);
   if (c.city) query = query.ilike("city", c.city);
   if (c.bedsMin) query = query.gte("bedrooms_total", c.bedsMin);
   if (c.bathsMin) query = query.gte("bathrooms_total", c.bathsMin);

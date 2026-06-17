@@ -12,7 +12,7 @@ const OPTIONS: { value: string; label: string }[] = [
   { value: "sqft", label: "Largest" },
 ];
 
-export default function SortSelect({ sort, baseQuery }: { sort: string; baseQuery: string }) {
+export default function SortSelect({ sort, baseQuery, basePath = "/listings" }: { sort: string; baseQuery: string; basePath?: string }) {
   const router = useRouter();
   return (
     <div className="sortbox">
@@ -24,7 +24,7 @@ export default function SortSelect({ sort, baseQuery }: { sort: string; baseQuer
             const p = new URLSearchParams(baseQuery);
             if (e.target.value === "new") p.delete("sort");
             else p.set("sort", e.target.value);
-            router.push(`/listings${p.toString() ? `?${p}` : ""}`);
+            router.push(`${basePath}${p.toString() ? `?${p}` : ""}`);
           }}
         >
           {OPTIONS.map((o) => (
