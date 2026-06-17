@@ -33,7 +33,7 @@ export const site = {
         { label: "Moss Bluff", href: "/moss-bluff/homes-for-sale" },
       ],
     },
-    { label: "Sell", href: "/sell" },
+    { label: "Sell", href: "/home-value" },
     { label: "Listings", href: "/listings" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
