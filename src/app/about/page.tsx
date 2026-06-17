@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE}/about` },
 };
 
+const CLOSINGS = [
+  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f58bc828629fa81bf19.webp",
+  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f556dd61c546a1271f7.webp",
+  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f526dd61c546a1271d1.webp",
+  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f4fad2dd4493c2d6eda.webp",
+  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f4c1c5d711b354ca43e.webp",
+];
+
 const VALUES = [
   {
     icon: "🤝",
@@ -163,6 +171,24 @@ export default async function AboutPage() {
           </div>
         </section>
       )}
+
+      {/* Recent closings — social proof */}
+      <section className="closings">
+        <div className="wrap">
+          <span className="script">the best part</span>
+          <h2 className="section__title" style={{ marginTop: 0 }}>Recent closings &amp; happy homeowners</h2>
+          <p className="prose" style={{ maxWidth: "60ch" }}>
+            Nothing beats handing over the keys. Here are some of the families we&apos;ve recently
+            helped find home across Southwest Louisiana.
+          </p>
+          <div className="closings__grid">
+            {CLOSINGS.map((src, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={src} src={src} alt={`The Land & Home Group closing day ${i + 1}`} loading="lazy" />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Values */}
       <section className="cluster" style={{ background: "var(--sand)" }}>
