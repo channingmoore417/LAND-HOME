@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // which reads the locked sold_comps table and returns ONLY aggregates (a value
 // range + comp count + $/sqft) — no raw sold data is ever exposed.
 export async function POST(req: Request) {
-  let body: { city?: string; zip?: string; livingArea?: number; beds?: number };
+  let body: { city?: string; zip?: string; livingArea?: number; beds?: number; baths?: number; lat?: number; lng?: number };
   try {
     body = await req.json();
   } catch {
@@ -24,6 +24,9 @@ export async function POST(req: Request) {
     p_zip: body.zip || null,
     p_living_area: body.livingArea && body.livingArea > 0 ? body.livingArea : null,
     p_beds: body.beds || null,
+    p_baths: body.baths || null,
+    p_lat: typeof body.lat === "number" ? body.lat : null,
+    p_lng: typeof body.lng === "number" ? body.lng : null,
     p_property_type: "Residential",
   });
 

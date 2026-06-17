@@ -83,6 +83,9 @@ export default function HomeValuePage() {
           city: picked!.city, zip: picked!.zip || undefined,
           livingArea: sqft ? Number(sqft.replace(/[^0-9.]/g, "")) : undefined,
           beds: beds ? Number(beds) : undefined,
+          baths: baths ? Number(baths) : undefined,
+          lat: typeof picked!.lat === "number" ? picked!.lat : undefined,
+          lng: typeof picked!.lng === "number" ? picked!.lng : undefined,
         }),
       });
       if (res.ok) est = await res.json();
