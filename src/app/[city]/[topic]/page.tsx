@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { site } from "@/config/site";
@@ -158,13 +159,20 @@ export default async function SeoLandingPage({
             <span className="script">about {cityLabel.toLowerCase()}</span>
             <h2 className="section__title">{topicLabel} in {cityLabel}, Louisiana</h2>
             <div className="prose">
-              {bodyParas.map((p, i) =>
-                p.startsWith("## ") ? (
-                  <h3 key={i} className="seo-h3">{p.slice(3)}</h3>
-                ) : (
-                  <p key={i}>{p}</p>
-                ),
-              )}
+              {bodyParas.map((block, i) => {
+                if (block.startsWith("## ")) {
+                  const nl = block.indexOf("\n");
+                  const heading = nl === -1 ? block.slice(3) : block.slice(3, nl);
+                  const rest = nl === -1 ? "" : block.slice(nl + 1).trim();
+                  return (
+                    <Fragment key={i}>
+                      <h3 className="seo-h3">{heading}</h3>
+                      {rest && <p>{rest}</p>}
+                    </Fragment>
+                  );
+                }
+                return <p key={i}>{block}</p>;
+              })}
             </div>
           </div>
         </section>

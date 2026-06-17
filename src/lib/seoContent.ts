@@ -48,14 +48,6 @@ export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
       q: `How many ${noun} are for sale in ${city}?`,
       a: `There are currently ${stats.count.toLocaleString()} ${noun} for sale in ${city}, Louisiana${range}. The list updates automatically as new listings hit the market.`,
     },
-    {
-      q: `Do homes in ${city} require flood insurance?`,
-      a: `It depends on the property's flood zone. Many ${city} homes sit in flood zone X, where lenders typically don't require flood insurance, while others fall in higher-risk zones. Check the flood details on each listing and confirm the specific zone before purchasing.`,
-    },
-    {
-      q: `How often are these ${city} listings updated?`,
-      a: `Every 15 minutes. Listings sync directly from the Southwest Louisiana Association of Realtors (SWLAR) MLS, so new homes, price changes and status updates appear throughout the day.`,
-    },
   ];
 
   // One feature/category-specific Q where it adds real value.
@@ -63,7 +55,7 @@ export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
   if (fk === "waterfront") {
     faqs.push({
       q: `Where are the waterfront homes in ${city}?`,
-      a: `Waterfront properties in ${city} sit along the lake, bayous and canals throughout the area. Each waterfront listing shows its location and photos — use the map and details on the listing page to explore the setting.`,
+      a: `Waterfront properties in ${city} sit along the lake, bayous, canals and the Calcasieu River throughout the area. Each waterfront listing shows its location and photos — use the map and details on the listing page to explore the setting.`,
     });
   } else if (fk === "pool") {
     faqs.push({
@@ -78,16 +70,66 @@ export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
   } else if (page.page_type === "land") {
     faqs.push({
       q: `Can I build on land for sale in ${city}?`,
-      a: `Most ${city} lots and acreage are suitable for building, but always verify zoning, utilities, flood zone and any deed restrictions for a specific parcel before purchasing. We're happy to help you do that diligence.`,
+      a: `Most ${city} lots and acreage are suitable for building, but always verify zoning, utilities, access and any deed restrictions for a specific parcel before purchasing. We're happy to help you do that diligence.`,
+    });
+  } else if (page.page_type === "beds") {
+    faqs.push({
+      q: `Are larger homes affordable in ${city}?`,
+      a: `Yes — one of the advantages of ${city} is that bigger homes remain attainable compared with most of the country. There are ${stats.count.toLocaleString()} ${noun} on the market right now${range}, spanning practical family homes to spacious estates.`,
     });
   }
 
+  faqs.push(...cityLivingFaqs(page, city));
+
+  faqs.push({
+    q: `How often are these ${city} listings updated?`,
+    a: `Continuously. Listings refresh from the local MLS throughout the day, so new homes, price changes and status updates appear automatically.`,
+  });
   faqs.push({
     q: `Who can help me buy a home in ${city}?`,
     a: `${site.name}, brokered by ${site.brokerage}, serves ${city} and all of Southwest Louisiana. Call ${site.phone} or request a tour on any listing to get started — there's no pressure and no obligation.`,
   });
 
   return faqs;
+}
+
+// Relocation / "living in" questions — strong AEO + local SEO. Lake Charles
+// answers are specific; add other cities here as the program expands. The
+// richest set lands on the city hub; a couple appear on every page.
+function cityLivingFaqs(page: SeoPage, city: string): Faq[] {
+  if (city !== "Lake Charles") return [];
+  const isHub = page.page_type === "city";
+  const out: Faq[] = [
+    {
+      q: `Is Lake Charles, Louisiana a good place to live?`,
+      a: `Lake Charles is widely considered a good place to live for buyers who value affordability and an easygoing, outdoor lifestyle. The cost of living runs below the national average, homes are attainable, and residents enjoy the lakefront, a lively festival calendar (Mardi Gras, Contraband Days and more), casinos and dining, and an easy drive to Houston. Like anywhere on the Gulf Coast, summers are hot and humid, but many buyers find the value and the community more than worth it.`,
+    },
+    {
+      q: `Is it expensive to live in Lake Charles?`,
+      a: `No — Lake Charles is considered affordable. The overall cost of living sits below the U.S. average, and housing in particular is a bargain compared with most of the country. Louisiana's homestead exemption also lowers property taxes for primary residences, helping a budget go further.`,
+    },
+  ];
+  if (isHub) {
+    out.push(
+      {
+        q: `What are the best family neighborhoods in Lake Charles?`,
+        a: `South Lake Charles is the most popular choice for families, thanks to well-regarded schools, newer subdivisions, parks and convenient shopping along Nelson Road. Other favorites include the Graywood and Country Club areas (larger lots and newer custom homes), the Prien Lake area, and the growing suburbs toward Moss Bluff and Sulphur just outside the city. The right fit depends on schools, commute and budget — we're glad to help you compare.`,
+      },
+      {
+        q: `What is the average income in Lake Charles, Louisiana?`,
+        a: `The median household income in Lake Charles is roughly $48,000 according to recent U.S. Census estimates — a bit below the national median — but the area's low cost of living, and especially its affordable housing, means that income tends to go further here than in many larger metros.`,
+      },
+      {
+        q: `What is there to do in Lake Charles?`,
+        a: `Plenty. Lake Charles is known for its casinos and entertainment, lakefront promenade and parks, fishing and boating, and a busy festival schedule including Mardi Gras and Contraband Days. McNeese State University adds college sports and events, and the Gulf beaches at Cameron are a short drive away.`,
+      },
+      {
+        q: `What are property taxes like in Lake Charles?`,
+        a: `Property taxes in Calcasieu Parish are relatively low, and Louisiana's homestead exemption shields the first $75,000 of a primary residence's value from most parish taxes, keeping annual bills modest for owner-occupants. Exact taxes vary by location and assessed value — each listing's details and your closing documents reflect the specifics.`,
+      },
+    );
+  }
+  return out;
 }
 
 // JSON-LD graph for the page. Returns an array of schema.org objects.

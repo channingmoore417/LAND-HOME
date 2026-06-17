@@ -374,8 +374,9 @@ textarea.input{resize:vertical;min-height:84px;}
 .seo-body .prose p{font-size:1.05rem;}
 
 /* "View Listings" button inside each cluster card */
-.cluster__btn{margin-top:12px;color:var(--teal);font-weight:700;font-size:.85rem;}
-.cluster__link:hover .cluster__btn{color:var(--aqua);}
+.cluster__link{align-items:flex-start;}
+.cluster__btn{margin-top:14px;display:inline-block;background:var(--aqua-soft);border:1px solid var(--aqua-line);color:var(--teal-deep);font-weight:700;font-size:.82rem;padding:9px 16px;border-radius:10px;transition:.2s;}
+.cluster__link:hover .cluster__btn{background:var(--aqua);color:var(--teal-deep);border-color:var(--aqua);}
 
 /* Pre-approval CTA band */
 .preapproval{background:linear-gradient(150deg,var(--teal),var(--teal-deep));color:#fff;padding:48px 0;}
