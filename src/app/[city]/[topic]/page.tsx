@@ -9,6 +9,7 @@ import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, 
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
+import LocalMap from "@/components/LocalMap";
 import AreaShowcase from "@/components/AreaShowcase";
 import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
 import { neighborhoodCards, zipCards, neighborhoodsFor, zipAreasFor } from "@/lib/neighborhoods";
@@ -283,36 +284,7 @@ export default async function SeoLandingPage({
       )}
 
       {/* Local map (client's Google Business Profile) — local SEO */}
-      {showMap && (
-        <section className="localmap">
-          <div className="wrap">
-            <div className="localmap__grid">
-              <div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="localmap__photo" src={site.teamPhotoUrl} alt={`${site.name} — ${cityLabel} real estate team`} />
-                <span className="script">find us</span>
-                <h2 className="section__title">Your local {cityLabel} real estate team</h2>
-                <p className="prose">
-                  {site.name}, brokered by {site.brokerage}, serves {cityLabel} and all of Southwest
-                  Louisiana. Reach us at <a href={site.phoneHref}><strong>{site.phone}</strong></a> — no
-                  pressure, just local expertise.
-                </p>
-                <Link className="btn btn--aqua" href={seeAll} style={{ maxWidth: 320 }}>
-                  Browse {cityLabel} listings
-                </Link>
-              </div>
-              <iframe
-                title={`${cityLabel} map — ${site.localSeo.gbpName}`}
-                src={site.localSeo.mapEmbedUrl}
-                className="localmap__frame"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </section>
-      )}
+      {showMap && <LocalMap cityLabel={cityLabel} href={seeAll} ctaLabel={`Browse ${cityLabel} listings`} />}
 
       {/* FAQ — rendered as native disclosures (content in the DOM for AEO) */}
       <section className="faq">

@@ -8,6 +8,22 @@
 
 import { getLiveClient } from "@/lib/supabase";
 import { fetchFirstPhotos } from "@/lib/listings";
+import { getCityHubs } from "@/lib/seo";
+
+// One-line descriptors for the city photo cards on the Buy hub.
+const CITY_BLURB: Record<string, string> = {
+  "Lake Charles": "The lakefront hub of Southwest Louisiana — the region's deepest inventory.",
+  "Sulphur": "Family-friendly living just west of Lake Charles, with newer subdivisions.",
+  "Iowa": "Rural acreage and newer homes a short drive east of the city.",
+  "Westlake": "Established neighborhoods and new growth across the river.",
+  "Ragley": "Country living, acreage, and room to roam north of town.",
+  "Jennings": "Small-town charm and affordability along the I-10 corridor.",
+  "DeRidder": "Affordable homes and plentiful land in Beauregard Parish.",
+  "Vinton": "Affordable homes and acreage near the Texas line.",
+  "Cameron": "Gulf-coast camps, waterfront, and coastal land.",
+  "Welsh": "Affordable rural living in Jefferson Davis Parish.",
+  "Moss Bluff": "Larger lots and good schools just north of Lake Charles.",
+};
 
 export interface Neighborhood {
   slug: string;
@@ -184,4 +200,36 @@ export function neighborhoodCards(city: string): Promise<AreaCard[]> {
 }
 export function zipCards(city: string): Promise<AreaCard[]> {
   return fetchAreaCards(city, zipAreasFor(city));
+}
+
+// City photo cards for the Buy hub: count + representative photo per city hub.
+export async function cityCards(): Promise<AreaCard[]> {
+  const hubs = await getCityHubs(); // { slug: "lake-charles/homes-for-sale", city }
+  const supabase = getLiveClient();
+  const reps = await Promise.all(
+    hubs.map(async (h) => {
+      const { data, count } = await supabase
+        .from("listings")
+        .select("listing_key", { count: "exact" })
+        .eq("standard_status", "Active")
+        .neq("internet_display_yn", false)
+        .not("property_type", "in", "(ResidentialLease,CommercialLease)")
+        .ilike("city", h.city)
+        .gt("photos_count", 0)
+        .order("modification_timestamp", { ascending: false })
+        .limit(1);
+      const key = (data as { listing_key: string }[])?.[0]?.listing_key;
+      return { h, key, count: count ?? 0 };
+    }),
+  );
+  const photos = await fetchFirstPhotos(reps.map((r) => r.key).filter(Boolean) as string[]);
+  return reps
+    .map((r) => ({
+      slug: r.h.slug, // full hub slug → href is `/${slug}`
+      name: r.h.city,
+      blurb: CITY_BLURB[r.h.city] ?? "",
+      count: r.count,
+      photoUrl: r.key ? photos.get(r.key) ?? null : null,
+    }))
+    .sort((a, b) => b.count - a.count);
 }
