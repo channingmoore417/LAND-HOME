@@ -214,15 +214,14 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
               </p>
               <p>
                 The Land &amp; Home Group helps you find the right fit and move quickly when it
-                counts. Every listing here is pulled live from the SWLAR MLS feed.
+                counts. Every listing here is updated live throughout the day.
               </p>
             </div>
             <div className="area__stats">
               <div className="sh">{f.city || "Southwest Louisiana"} Snapshot</div>
               <div className="row"><span>Matching Listings</span><span>{total.toLocaleString()}</span></div>
               <div className="row"><span>Communities Served</span><span>13 SWLA Cities</span></div>
-              <div className="row"><span>MLS Feed</span><span>SWLAR · Trestle</span></div>
-              <div className="row"><span>Data Refresh</span><span>Continuous Sync</span></div>
+              <div className="row"><span>Data Refresh</span><span>Continuous</span></div>
             </div>
           </div>
         </div>
