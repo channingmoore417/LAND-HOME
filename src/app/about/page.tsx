@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { site } from "@/config/site";
-import { listingStats } from "@/lib/listings";
 import { cityCards } from "@/lib/neighborhoods";
+import { getTeam } from "@/lib/team";
 import LocalMap from "@/components/LocalMap";
+import TeamGrid from "@/components/TeamGrid";
 import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").r
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Meet The Land & Home Group, brokered by EXIT Realty Southern — a local, no-pressure real estate team serving Lake Charles, Sulphur and all of Southwest Louisiana with live MLS listings and honest guidance.",
+    "Meet the agents behind The Land & Home Group, brokered by EXIT Realty Southern — a local, no-pressure real estate team helping families buy and sell across Lake Charles, Sulphur and all of Southwest Louisiana.",
   alternates: { canonical: `${SITE}/about` },
 };
 
@@ -30,18 +31,18 @@ const VALUES = [
   },
   {
     icon: "⚡",
-    title: "Fast & responsive",
-    body: "Real estate moves quickly here. We answer calls and texts, line up tours fast, and keep you ahead of new listings the moment they hit the market.",
+    title: "Always reachable",
+    body: "Real estate moves quickly here. Every client gets a real person — we answer calls and texts, line up tours fast, and keep you ahead of the market.",
   },
   {
     icon: "🔑",
     title: "Start to close",
-    body: "From your first question to the keys in your hand, we handle the details — and connect you with trusted local lending so financing never slows you down.",
+    body: "From your first question to the keys in your hand, our team handles the details — and connects you with trusted local lending so financing never slows you down.",
   },
 ];
 
 export default async function AboutPage() {
-  const [stats, cities] = await Promise.all([listingStats({}), cityCards()]);
+  const [team, cities] = await Promise.all([getTeam(), cityCards()]);
 
   const jsonLd = [
     {
@@ -71,6 +72,14 @@ export default async function AboutPage() {
         latitude: site.localSeo.latitude,
         longitude: site.localSeo.longitude,
       },
+      employee: team.map((a) => ({
+        "@type": "RealEstateAgent",
+        name: a.full_name,
+        ...(a.title ? { jobTitle: a.title } : {}),
+        ...(a.phone ? { telephone: a.phone } : {}),
+        ...(a.email ? { email: a.email } : {}),
+        ...(a.photo_url ? { image: a.photo_url } : {}),
+      })),
     },
   ];
 
@@ -83,21 +92,23 @@ export default async function AboutPage() {
           <nav className="hero__crumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link> &nbsp;/&nbsp; About
           </nav>
-          <span className="hero__script">who we are</span>
-          <h1>Real estate, done the Louisiana way</h1>
+          <span className="hero__script">meet the team</span>
+          <h1>The people behind The Land &amp; Home Group</h1>
           <p className="hero__sub">
-            {site.name} is a local team brokered by {site.brokerage}, serving {site.serviceArea} and
-            all of Southwest Louisiana — with live MLS listings, honest guidance, and a genuinely
+            We&apos;re a local team brokered by {site.brokerage}, helping families buy and sell across{" "}
+            {site.serviceArea} and all of Southwest Louisiana — with honest guidance and a genuinely
             no-pressure approach.
           </p>
           <div className="hero__meta">
-            <div><div className="n"><b>{stats.count.toLocaleString()}</b></div><div className="k">Live Listings</div></div>
+            {team.length > 0 && (
+              <div><div className="n"><b>{team.length}</b></div><div className="k">Agents on Your Side</div></div>
+            )}
             <div><div className="n">{cities.length}</div><div className="k">Communities Served</div></div>
-            <div><div className="n">SWLA</div><div className="k">Born &amp; Based Here</div></div>
+            <div><div className="n">{site.brokerage}</div><div className="k">Proudly Brokered By</div></div>
           </div>
           <div className="hero__cta">
-            <Link className="btn btn--aqua" href="/listings">Browse Listings</Link>
-            <Link className="btn btn--hollow" href="/contact">Get in Touch</Link>
+            <Link className="btn btn--aqua" href="/contact">Get in Touch</Link>
+            <Link className="btn btn--hollow" href="/listings">Browse Listings</Link>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -105,39 +116,45 @@ export default async function AboutPage() {
         </svg>
       </header>
 
-      {/* Our story */}
+      {/* Our story — about the team, not the tech */}
       <section className="seo-body">
         <div className="wrap">
-          <span className="script">our story</span>
+          <span className="script">who we are</span>
           <h2 className="section__title">Local people, helping local people move</h2>
           <div className="prose">
             <p>
               {site.name} was built on a simple idea: buying or selling a home in Southwest Louisiana
-              should feel personal, not transactional. We&apos;re a local team — we know these
-              neighborhoods, these parishes, and the families who call them home.
+              should feel personal, not transactional. We&apos;re neighbors first — we know these
+              communities, these parishes, and the families who call them home, because we&apos;re part
+              of them.
             </p>
             <p>
-              Brokered by {site.brokerage}, we pair real local expertise with modern tools. Our site
-              pulls live MLS data so you&apos;re always seeing real, current listings — and when
-              you&apos;re ready, we&apos;re a call or text away to tour homes, talk strategy, or just
-              answer a question with no strings attached.
+              Brokered by {site.brokerage}, our agents bring real local expertise and a hands-on,
+              relationship-driven approach to every client. Whether you&apos;re a first-time buyer, a
+              growing family, or ready to sell, you get a partner who listens, communicates, and has
+              your back from the first showing to the closing table.
             </p>
             <h3 className="seo-h3">From the lake to the country</h3>
             <p>
               We help buyers and sellers across all 13 SWLA communities — from in-town Lake Charles
               and family-friendly Sulphur and Westlake, to acreage and waterfront in Moss Bluff,
               Iowa, Ragley, Jennings, DeRidder, Vinton, Cameron and Welsh. Wherever you&apos;re
-              headed in the region, we&apos;ve got you covered.
-            </p>
-            <h3 className="seo-h3">Financing made simple</h3>
-            <p>
-              When it&apos;s time to make a move, we connect you with {site.bayou.name}, our preferred
-              local Louisiana lender, for a fast, no-pressure pre-approval — so you shop with
-              confidence and never miss the right home over financing.
+              headed in the region, one of our agents knows it well.
             </p>
           </div>
         </div>
       </section>
+
+      {/* The team */}
+      {team.length > 0 && (
+        <section className="team">
+          <div className="wrap">
+            <span className="script">our agents</span>
+            <h2 className="section__title" style={{ marginTop: 0 }}>Meet the team</h2>
+            <TeamGrid team={team} />
+          </div>
+        </section>
+      )}
 
       {/* Values */}
       <section className="cluster" style={{ background: "var(--sand)" }}>
