@@ -360,6 +360,9 @@ textarea.input{resize:vertical;min-height:84px;}
 .cluster__link{display:flex;flex-direction:column;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 20px;transition:.2s;}
 .cluster__link:hover{border-color:var(--aqua-line);box-shadow:0 12px 30px rgba(32,72,96,.10);transform:translateY(-2px);}
 .cluster__t{font-weight:700;color:var(--teal);font-size:1rem;}
+.citypills{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+.citypill{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:11px 22px;font-weight:600;color:var(--teal);transition:.2s;}
+.citypill:hover{border-color:var(--aqua);background:var(--aqua-soft);color:var(--teal-deep);}
 .cluster__c{color:var(--ink-muted);font-size:.85rem;}
 .localmap{background:var(--paper);padding:56px 0;border-top:1px solid var(--line);}
 .localmap__grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;}

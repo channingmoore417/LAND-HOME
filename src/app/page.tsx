@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getLiveClient } from "@/lib/supabase";
 import { usd, int, titleCase } from "@/lib/format";
 import { photo } from "@/lib/images";
-import { getCitySiblings, pageTopicLabel } from "@/lib/seo";
+import { getCitySiblings, getCityHubs, pageTopicLabel } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +36,7 @@ export default async function Home() {
   }
 
   const lcPages = await getCitySiblings("Lake Charles");
+  const cityHubs = await getCityHubs();
 
   return (
     <>
@@ -67,6 +68,22 @@ export default async function Home() {
         </div>
       </div>
     </section>
+
+    {cityHubs.length > 0 && (
+      <section className="cluster" style={{ background: "var(--paper)" }}>
+        <div className="wrap">
+          <span className="script" style={{ fontSize: "1.7rem" }}>where we work</span>
+          <h2 className="section__title" style={{ marginTop: 0 }}>
+            Search by city across Southwest Louisiana
+          </h2>
+          <div className="citypills">
+            {cityHubs.map((h) => (
+              <Link key={h.slug} className="citypill" href={`/${h.slug}`}>{h.city}</Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
 
     {lcPages.length > 0 && (
       <section className="cluster">

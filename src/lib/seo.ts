@@ -49,6 +49,17 @@ export async function getSeoPage(slug: string): Promise<SeoPage | null> {
   return (data as SeoPage) ?? null;
 }
 
+// All city hub pages — for cross-city internal linking (home, footer).
+export async function getCityHubs(): Promise<{ slug: string; city: string }[]> {
+  const supabase = getLiveClient();
+  const { data } = await supabase
+    .from("seo_pages")
+    .select("slug, city")
+    .eq("page_type", "city")
+    .eq("active", true);
+  return ((data as { slug: string; city: string }[]) ?? []).sort((a, b) => a.city.localeCompare(b.city));
+}
+
 // All active pages for a city — used to render the internal-linking cluster.
 export async function getCitySiblings(city: string): Promise<SeoPage[]> {
   const supabase = getLiveClient();

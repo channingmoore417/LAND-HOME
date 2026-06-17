@@ -17,6 +17,94 @@ export interface ResolvedContent {
   intro: string;
 }
 
+// Short, localized descriptor per city — woven into generated copy so each
+// city's pages read uniquely (not just a find-and-replace of the name).
+const CITY_FACTS: Record<string, string> = {
+  "Lake Charles":
+    "Lake Charles is the largest city in Southwest Louisiana — a lakefront community known for its affordability, established neighborhoods, and an economy anchored by industry, the port, and a growing tourism scene.",
+  "Sulphur":
+    "Just west of Lake Charles, Sulphur is a family-friendly community known for good schools, newer subdivisions, and quick access to I-10 and the region's industrial corridor.",
+  "Iowa":
+    "A small, fast-growing town just east of Lake Charles, Iowa is prized for rural acreage, newer homes, and an easy commute into the city.",
+  "Westlake":
+    "Across the river from Lake Charles, Westlake blends established neighborhoods with new industrial-driven growth and convenient riverfront access.",
+  "Ragley":
+    "A rural community north of Lake Charles, Ragley is prized for acreage, country living, and room to roam.",
+  "Jennings":
+    "The seat of Jefferson Davis Parish, Jennings offers small-town charm, affordability, and historic neighborhoods along the I-10 corridor.",
+  "DeRidder":
+    "The heart of Beauregard Parish, DeRidder offers affordable homes, plentiful acreage, and a relaxed pace north of Lake Charles.",
+  "Vinton":
+    "A small town near the Texas line, Vinton offers affordable homes, the Delta Downs racetrack, and easy I-10 access.",
+  "Cameron":
+    "On the Gulf Coast south of Lake Charles, Cameron is a fishing and waterfront community known for camps, coastal land, and the great outdoors.",
+  "Welsh":
+    "A friendly rural town in Jefferson Davis Parish, Welsh offers affordable homes and farmland along the I-10 corridor.",
+  "Moss Bluff":
+    "A sought-after suburb just north of Lake Charles, Moss Bluff is known for larger lots, good schools, and a semi-rural feel close to town.",
+};
+
+const CLOSE_CTA =
+  "Every listing here updates throughout the day. When you're ready to tour or make an offer, The Land & Home Group — brokered by EXIT Realty Southern — is here to help, and a quick pre-approval from Bayou Mortgage puts you in the strongest position to buy.";
+
+// Generates localized body copy (with ## subheadings) for any page that has no
+// hand-written gen_intro/custom copy. Lets us roll out cities without seeding
+// long copy per row; custom_body/custom_intro always override.
+export function generatedBody(page: SeoPage): string {
+  const city = page.city || "Southwest Louisiana";
+  const fact = CITY_FACTS[city] || `${city} is part of Southwest Louisiana — an affordable, friendly place to call home.`;
+  const t = page.page_type;
+  const fk = page.feature_key;
+
+  if (t === "city") {
+    return [
+      fact,
+      `## Homes for sale in ${city}\nFrom starter homes to acreage and new construction, ${city} offers a range of properties at prices that stay attainable compared with much of the country. Browse the live listings above to see what's available right now.`,
+      `## Buying in ${city} with The Land & Home Group\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
+  if (t === "land") {
+    return [
+      `${fact} Land is one of the most active segments of the market here.`,
+      `## Land for sale in ${city}\nFrom build-ready lots to wooded and pasture acreage, ${city} offers parcels across a wide range of sizes and price points — ideal for building a custom home, investing, or simply finding room to spread out.`,
+      `## Before you buy land\nConfirm zoning, available utilities, access, and drainage for any parcel before purchasing. The Land & Home Group can help you evaluate options and line up financing through Bayou Mortgage.`,
+    ].join("\n\n");
+  }
+  if (t === "single_family") {
+    return [
+      fact,
+      `## Single-family homes in ${city}\nSingle-family homes are the heart of the ${city} market — from classic ranch styles to newer construction — and remain attainable for first-time and move-up buyers alike.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
+  if (t === "mobile") {
+    return [
+      fact,
+      `## Mobile & manufactured homes in ${city}\nMobile and manufactured homes are one of the most affordable paths to ownership in ${city}, and many are sold on their own land — combining a budget-friendly home with the value of the property underneath it.`,
+      `## Financing\nManufactured-home financing differs from a standard mortgage; confirm land ownership and utilities up front. The Land & Home Group and Bayou Mortgage can walk you through it.`,
+    ].join("\n\n");
+  }
+  if (t === "beds") {
+    return [
+      fact,
+      `## Larger homes in ${city}\nFour-bedroom and larger homes give growing and multi-generational families room to spread out — and ${city} keeps them attainable compared with most of the country.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
+  // feature pages
+  const featBlocks: Record<string, string> = {
+    single_story: `## One-level living in ${city}\nSingle-story homes are popular in ${city} for their easy accessibility, simpler maintenance, and open, connected layouts — a great fit for families and downsizers alike.`,
+    acre_plus: `## Acreage and large lots in ${city}\nProperties on an acre or more give you space for a shop, animals, gardens, or simply privacy. ${city} and the surrounding countryside offer a healthy selection.`,
+    pool: `## Pool homes in ${city}\nThrough the warm Southwest Louisiana summers, a backyard pool turns a house into a retreat. ${city} offers pool homes across a range of neighborhoods and price points.`,
+    new_construction: `## New construction in ${city}\nNew builds bring modern layouts, energy efficiency, and warranties. Browse new-construction homes in ${city}, from move-in ready to still being built.`,
+    waterfront: `## Waterfront living in ${city}\nWaterfront property is among the most sought-after in the area, offering boating, fishing, and views right out the back door. Look closely at docks, bulkheads, and access when you tour.`,
+    updated: `## Updated & remodeled homes in ${city}\nMove-in-ready, recently updated homes save you the work of renovating. Browse remodeled homes in ${city} with newer kitchens, baths, and systems.`,
+    garage: `## Homes with garages in ${city}\nGarage space means storage, workshop room, and protected parking. Browse ${city} homes with attached and detached garages.`,
+  };
+  const block = (fk && featBlocks[fk]) || `## ${pageTopicLabel(page)} in ${city}\nBrowse ${topicNoun(page)} for sale in ${city}, updated live throughout the day.`;
+  return [fact, block, `## Ready to tour?\n${CLOSE_CTA}`].join("\n\n");
+}
+
 export function resolveContent(page: SeoPage): ResolvedContent {
   const cityLa = page.city ? `${page.city}, LA` : "Southwest Louisiana";
   const topic = pageTopicLabel(page);
@@ -25,8 +113,8 @@ export function resolveContent(page: SeoPage): ResolvedContent {
   const metaDesc =
     page.custom_meta_desc ||
     page.gen_meta_desc ||
-    `Browse ${topic.toLowerCase()} in ${cityLa} with ${site.name}. Live MLS listings, updated every 15 minutes.`;
-  const intro = page.custom_intro || page.gen_intro || "";
+    `Browse ${topic.toLowerCase()} in ${cityLa} with ${site.name}. Live MLS listings, updated throughout the day.`;
+  const intro = page.custom_intro || page.gen_intro || generatedBody(page);
   return { h1, title, metaDesc, intro };
 }
 
