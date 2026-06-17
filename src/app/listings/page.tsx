@@ -125,10 +125,6 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
               <div className="n">13</div>
               <div className="k">SWLA Communities</div>
             </div>
-            <div>
-              <div className="n">SWLAR</div>
-              <div className="k">MLS Feed</div>
-            </div>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -136,17 +132,16 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
         </svg>
       </header>
 
-      <div className="wrap">
-        <ListingsControls
-          filters={f}
-          total={total}
-          neighborhoods={neighborhoodsFor("Lake Charles").map((n) => ({ slug: n.slug, name: n.name }))}
-          zips={zipAreasFor("Lake Charles").map((z) => ({ slug: z.slug, name: `${z.name} · ${z.zip}` }))}
-        />
-      </div>
-
       <main className="results">
         <div className="wrap">
+          <div className="searchgrid">
+            <ListingsControls
+              filters={f}
+              total={total}
+              neighborhoods={neighborhoodsFor("Lake Charles").map((n) => ({ slug: n.slug, name: n.name }))}
+              zips={zipAreasFor("Lake Charles").map((z) => ({ slug: z.slug, name: `${z.name} · ${z.zip}` }))}
+            />
+            <div className="searchgrid__main">
           <div className="results__head">
             <div className="meta">
               {total > 0 ? (
@@ -200,6 +195,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
               {page < pages ? <Link href={pageHref(page + 1)}>&rsaquo;</Link> : <span className="disabled">&rsaquo;</span>}
             </nav>
           )}
+            </div>
+          </div>
         </div>
       </main>
 

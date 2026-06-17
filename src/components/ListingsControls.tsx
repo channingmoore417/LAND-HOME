@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Interactive filter UI for the IDX search page: the quick bar, the slide-in
-// "All Filters" panel, and the active-filter chips. All state lives in the URL
-// query string — this component just composes it and pushes. The server
-// component (app/listings/page.tsx) does the actual Supabase filtering, so
-// results stay correct across all 3,000+ listings (no client-side array).
+// Persistent filter sidebar for the IDX search page. Always visible on
+// desktop; collapses behind a "Filters" toggle on mobile. All state lives in
+// the URL query string — this composes it and navigates; the server component
+// does the actual filtering.
 
 export interface ListingFilters {
   q: string;
@@ -38,7 +37,6 @@ export const CITIES = [
 ];
 export const TYPES = ["Single Family", "Multi-Family", "New Construction", "Land", "Mobile / Manufactured"];
 export const STATUSES = ["Active", "Pending"];
-// Feature keys map to indexed boolean columns in Supabase (see lib/types.ts).
 export const FEATURES: { key: string; label: string }[] = [
   { key: "pool", label: "Pool" },
   { key: "garage", label: "Garage" },
@@ -53,13 +51,6 @@ export const FEATURES: { key: string; label: string }[] = [
 const PRICE_MAX = 1_000_000;
 const SQFT_MAX = 5_000;
 
-function priceLbl(n: number) {
-  return n >= PRICE_MAX ? "$1,000,000+" : "$" + n.toLocaleString();
-}
-function sqftLbl(n: number) {
-  return n >= SQFT_MAX ? "5,000+ sqft" : n.toLocaleString();
-}
-
 export default function ListingsControls({
   filters,
   total,
@@ -72,11 +63,9 @@ export default function ListingsControls({
   zips?: AreaOption[];
 }) {
   const router = useRouter();
-  const [panelOpen, setPanelOpen] = useState(false);
   const [f, setF] = useState<ListingFilters>(filters);
+  const [open, setOpen] = useState(false); // mobile show/hide
 
-  // Build the query string from a filter set and navigate. Always resets to
-  // page 1 (filters changed → new result set).
   function apply(next: ListingFilters) {
     const p = new URLSearchParams();
     if (next.q) p.set("q", next.q);
@@ -94,257 +83,193 @@ export default function ListingsControls({
     if (next.zip) p.set("zip", next.zip);
     if (next.neighborhood) p.set("neighborhood", next.neighborhood);
     if (next.sort && next.sort !== "new") p.set("sort", next.sort);
-    router.push(`/listings${p.toString() ? `?${p}` : ""}`);
+    router.push(`/listings${p.toString() ? `?${p}` : ""}`, { scroll: false });
   }
 
-  function set<K extends keyof ListingFilters>(key: K, val: ListingFilters[K]) {
-    setF((prev) => ({ ...prev, [key]: val }));
-  }
-  // Quick-bar controls apply immediately; panel controls wait for "Apply".
-  function setAndApply<K extends keyof ListingFilters>(key: K, val: ListingFilters[K]) {
+  // Update + navigate immediately (used by selects, pills, checkboxes).
+  function setApply<K extends keyof ListingFilters>(key: K, val: ListingFilters[K]) {
     const next = { ...f, [key]: val };
     setF(next);
     apply(next);
   }
-
   function toggleFeature(key: string) {
-    set("features", f.features.includes(key) ? f.features.filter((x) => x !== key) : [...f.features, key]);
+    const features = f.features.includes(key)
+      ? f.features.filter((x) => x !== key)
+      : [...f.features, key];
+    setApply("features", features);
   }
 
   const empty: ListingFilters = {
     q: "", city: "", beds: 0, baths: 0, type: "", status: "",
     minPrice: 0, maxPrice: PRICE_MAX, minSqft: 0, maxSqft: SQFT_MAX,
-    year: 0, features: [], zip: "", neighborhood: "", sort: "new",
+    year: 0, features: [], zip: "", neighborhood: "", sort: f.sort,
   };
   function resetAll() {
     setF(empty);
     apply(empty);
   }
 
-  // Active-filter count for the "All Filters" badge.
-  let badge = 0;
-  if (f.city) badge++;
-  if (f.zip) badge++;
-  if (f.neighborhood) badge++;
-  if (f.year) badge++;
-  if (f.status) badge++;
-  if (f.type) badge++;
-  if (f.minPrice > 0 || f.maxPrice < PRICE_MAX) badge++;
-  if (f.minSqft > 0 || f.maxSqft < SQFT_MAX) badge++;
-  badge += f.features.length;
+  let active = 0;
+  if (f.q) active++;
+  if (f.city) active++;
+  if (f.neighborhood) active++;
+  if (f.zip) active++;
+  if (f.beds) active++;
+  if (f.baths) active++;
+  if (f.type) active++;
+  if (f.status) active++;
+  if (f.year) active++;
+  if (f.minPrice > 0 || f.maxPrice < PRICE_MAX) active++;
+  if (f.minSqft > 0 || f.maxSqft < SQFT_MAX) active++;
+  active += f.features.length;
 
-  // Build chip list: [label, onRemove].
-  const chips: [string, () => void][] = [];
-  if (f.q) chips.push([`Search: "${f.q}"`, () => setAndApply("q", "")]);
-  if (f.city) chips.push([f.city, () => setAndApply("city", "")]);
-  if (f.neighborhood)
-    chips.push([
-      neighborhoods.find((n) => n.slug === f.neighborhood)?.name ?? f.neighborhood,
-      () => setAndApply("neighborhood", ""),
-    ]);
-  if (f.zip) chips.push([`ZIP ${f.zip}`, () => setAndApply("zip", "")]);
-  if (f.beds) chips.push([`${f.beds}+ beds`, () => setAndApply("beds", 0)]);
-  if (f.baths) chips.push([`${f.baths}+ baths`, () => setAndApply("baths", 0)]);
-  if (f.type) chips.push([f.type, () => setAndApply("type", "")]);
-  if (f.status) chips.push([f.status, () => setAndApply("status", "")]);
-  if (f.year) chips.push([`${f.year}+ built`, () => setAndApply("year", 0)]);
-  if (f.minPrice > 0 || f.maxPrice < PRICE_MAX)
-    chips.push([`${priceLbl(f.minPrice)} – ${priceLbl(f.maxPrice)}`, () => {
-      const next = { ...f, minPrice: 0, maxPrice: PRICE_MAX };
-      setF(next); apply(next);
-    }]);
-  if (f.minSqft > 0 || f.maxSqft < SQFT_MAX)
-    chips.push([`${sqftLbl(f.minSqft)} – ${sqftLbl(f.maxSqft)}`, () => {
-      const next = { ...f, minSqft: 0, maxSqft: SQFT_MAX };
-      setF(next); apply(next);
-    }]);
-  for (const ft of f.features) {
-    const label = FEATURES.find((x) => x.key === ft)?.label ?? ft;
-    chips.push([label, () => setAndApply("features", f.features.filter((x) => x !== ft))]);
-  }
-
-  const numOr = (v: string, fallback: number) => (v === "" ? fallback : Number(v));
+  const numOr = (v: string, fb: number) => (v === "" ? fb : Number(v));
 
   return (
     <>
-      <div className="filterwrap">
-        <div className="qbar">
-          <div className="qbar__search">
-            <input
-              type="text"
-              placeholder="Search by address, ZIP, or neighborhood…"
-              defaultValue={f.q}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") setAndApply("q", (e.target as HTMLInputElement).value);
-              }}
-              onBlur={(e) => {
-                if (e.target.value !== f.q) setAndApply("q", e.target.value);
-              }}
-            />
-          </div>
-          <div className="qsel">
-            <select value={f.beds} onChange={(e) => setAndApply("beds", Number(e.target.value))}>
-              <option value={0}>Beds</option>
-              {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}+</option>)}
-            </select>
-          </div>
-          <div className="qsel">
-            <select value={f.baths} onChange={(e) => setAndApply("baths", Number(e.target.value))}>
-              <option value={0}>Baths</option>
-              {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}+</option>)}
-            </select>
-          </div>
-          <div className="qsel">
-            <select value={f.type} onChange={(e) => setAndApply("type", e.target.value)}>
-              <option value="">Any Type</option>
-              {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          <button className={`qbar__more${badge ? " has" : ""}`} onClick={() => setPanelOpen(true)}>
-            <span>&#9776;</span> All Filters <span className="badge">{badge}</span>
-          </button>
+      <button className="filters__toggle" onClick={() => setOpen((o) => !o)}>
+        &#9776; Filters{active ? ` (${active})` : ""}
+      </button>
+
+      <aside className={`filters${open ? " open" : ""}`} aria-label="Filters">
+        <div className="filters__head">
+          <span>Filters</span>
+          {active > 0 && <button className="filters__reset" onClick={resetAll}>Reset all</button>}
         </div>
 
-        {chips.length > 0 && (
-          <div className="chips__row">
-            {chips.map(([label, onRemove], i) => (
-              <span className="chip" key={i}>
-                {label}{" "}
-                <button aria-label="Remove" onClick={onRemove}>&times;</button>
-              </span>
+        <div className="fgroup">
+          <span className="fgroup__label">Search</span>
+          <input
+            className="finput"
+            type="text"
+            placeholder="Address, ZIP, neighborhood…"
+            defaultValue={f.q}
+            onKeyDown={(e) => { if (e.key === "Enter") setApply("q", (e.target as HTMLInputElement).value); }}
+            onBlur={(e) => { if (e.target.value !== f.q) setApply("q", e.target.value); }}
+          />
+        </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Price Range</span>
+          <div className="fnum">
+            <input type="number" placeholder="No min" step={10000} defaultValue={f.minPrice || ""}
+              onBlur={(e) => setApply("minPrice", numOr(e.target.value, 0))} />
+            <input type="number" placeholder="No max" step={10000} defaultValue={f.maxPrice < PRICE_MAX ? f.maxPrice : ""}
+              onBlur={(e) => setApply("maxPrice", numOr(e.target.value, PRICE_MAX))} />
+          </div>
+        </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Square Feet</span>
+          <div className="fnum">
+            <input type="number" placeholder="No min" step={100} defaultValue={f.minSqft || ""}
+              onBlur={(e) => setApply("minSqft", numOr(e.target.value, 0))} />
+            <input type="number" placeholder="No max" step={100} defaultValue={f.maxSqft < SQFT_MAX ? f.maxSqft : ""}
+              onBlur={(e) => setApply("maxSqft", numOr(e.target.value, SQFT_MAX))} />
+          </div>
+        </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Bedrooms</span>
+          <div className="pills">
+            {[0, 1, 2, 3, 4, 5].map((n) => (
+              <button key={n} className={f.beds === n ? "on" : ""} onClick={() => setApply("beds", n)}>
+                {n === 0 ? "Any" : `${n}+`}
+              </button>
             ))}
-            <button className="chips__clear" onClick={resetAll}>Clear all</button>
           </div>
-        )}
-      </div>
-
-      {/* Slide-in advanced panel */}
-      <div className={`overlay${panelOpen ? " open" : ""}`} onClick={() => setPanelOpen(false)} />
-      <aside className={`panel${panelOpen ? " open" : ""}`} aria-label="All filters">
-        <div className="panel__head">
-          <div>
-            <span className="script">refine your</span>
-            <h2>All Filters</h2>
-          </div>
-          <button className="panel__close" onClick={() => setPanelOpen(false)} aria-label="Close">&times;</button>
         </div>
-        <div className="panel__body">
-          <div className="fgroup">
-            <span className="fgroup__label">Price Range</span>
-            <div className="fnum">
-              <input type="number" placeholder="No min" value={f.minPrice || ""} step={10000}
-                onChange={(e) => set("minPrice", numOr(e.target.value, 0))} />
-              <input type="number" placeholder="No max" value={f.maxPrice < PRICE_MAX ? f.maxPrice : ""} step={10000}
-                onChange={(e) => set("maxPrice", numOr(e.target.value, PRICE_MAX))} />
-            </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Bathrooms</span>
+          <div className="pills">
+            {[0, 1, 2, 3, 4].map((n) => (
+              <button key={n} className={f.baths === n ? "on" : ""} onClick={() => setApply("baths", n)}>
+                {n === 0 ? "Any" : `${n}+`}
+              </button>
+            ))}
           </div>
-          <div className="fgroup">
-            <span className="fgroup__label">Square Feet</span>
-            <div className="fnum">
-              <input type="number" placeholder="No min" value={f.minSqft || ""} step={100}
-                onChange={(e) => set("minSqft", numOr(e.target.value, 0))} />
-              <input type="number" placeholder="No max" value={f.maxSqft < SQFT_MAX ? f.maxSqft : ""} step={100}
-                onChange={(e) => set("maxSqft", numOr(e.target.value, SQFT_MAX))} />
-            </div>
+        </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Property Type</span>
+          <div className="pills">
+            {TYPES.map((t) => (
+              <button key={t} className={f.type === t ? "on" : ""}
+                onClick={() => setApply("type", f.type === t ? "" : t)}>{t}</button>
+            ))}
           </div>
-          <div className="fgroup">
-            <span className="fgroup__label">Bedrooms</span>
-            <div className="pills">
-              {[0, 1, 2, 3, 4, 5].map((n) => (
-                <button key={n} className={f.beds === n ? "on" : ""} onClick={() => set("beds", n)}>
-                  {n === 0 ? "Any" : `${n}+`}
-                </button>
-              ))}
-            </div>
+        </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Status</span>
+          <div className="pills">
+            {STATUSES.map((s) => (
+              <button key={s} className={f.status === s ? "on" : ""}
+                onClick={() => setApply("status", f.status === s ? "" : s)}>{s}</button>
+            ))}
           </div>
-          <div className="fgroup">
-            <span className="fgroup__label">Bathrooms</span>
-            <div className="pills">
-              {[0, 1, 2, 3, 4].map((n) => (
-                <button key={n} className={f.baths === n ? "on" : ""} onClick={() => set("baths", n)}>
-                  {n === 0 ? "Any" : `${n}+`}
-                </button>
-              ))}
-            </div>
+        </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">City</span>
+          <div className="qsel" style={{ width: "100%" }}>
+            <select value={f.city} style={{ width: "100%" }} onChange={(e) => setApply("city", e.target.value)}>
+              <option value="">Any City</option>
+              {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
+        </div>
+
+        {neighborhoods.length > 0 && (
           <div className="fgroup">
-            <span className="fgroup__label">Property Type</span>
-            <div className="pills">
-              {TYPES.map((t) => (
-                <button key={t} className={f.type === t ? "on" : ""}
-                  onClick={() => set("type", f.type === t ? "" : t)}>{t}</button>
-              ))}
-            </div>
-          </div>
-          <div className="fgroup">
-            <span className="fgroup__label">Status</span>
-            <div className="pills">
-              {STATUSES.map((s) => (
-                <button key={s} className={f.status === s ? "on" : ""}
-                  onClick={() => set("status", f.status === s ? "" : s)}>{s}</button>
-              ))}
-            </div>
-          </div>
-          <div className="fgroup">
-            <span className="fgroup__label">City</span>
-            <div className="frow">
-              <div className="qsel" style={{ width: "100%" }}>
-                <select value={f.city} style={{ width: "100%" }} onChange={(e) => set("city", e.target.value)}>
-                  <option value="">Any City</option>
-                  {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-            </div>
-          </div>
-          {neighborhoods.length > 0 && (
-            <div className="fgroup">
-              <span className="fgroup__label">Neighborhood</span>
-              <div className="qsel" style={{ width: "100%" }}>
-                <select value={f.neighborhood} style={{ width: "100%" }} onChange={(e) => set("neighborhood", e.target.value)}>
-                  <option value="">Any Neighborhood</option>
-                  {neighborhoods.map((n) => <option key={n.slug} value={n.slug}>{n.name}</option>)}
-                </select>
-              </div>
-            </div>
-          )}
-          {zips.length > 0 && (
-            <div className="fgroup">
-              <span className="fgroup__label">ZIP Code</span>
-              <div className="qsel" style={{ width: "100%" }}>
-                <select value={f.zip} style={{ width: "100%" }} onChange={(e) => set("zip", e.target.value)}>
-                  <option value="">Any ZIP</option>
-                  {zips.map((z) => <option key={z.slug} value={z.slug}>{z.name}</option>)}
-                </select>
-              </div>
-            </div>
-          )}
-          <div className="fgroup">
-            <span className="fgroup__label">Year Built (min)</span>
+            <span className="fgroup__label">Neighborhood</span>
             <div className="qsel" style={{ width: "100%" }}>
-              <select value={f.year} style={{ width: "100%" }} onChange={(e) => set("year", Number(e.target.value))}>
-                <option value={0}>Any Year</option>
-                {[1980, 2000, 2010, 2020].map((y) => <option key={y} value={y}>{y}+</option>)}
+              <select value={f.neighborhood} style={{ width: "100%" }} onChange={(e) => setApply("neighborhood", e.target.value)}>
+                <option value="">Any Neighborhood</option>
+                {neighborhoods.map((n) => <option key={n.slug} value={n.slug}>{n.name}</option>)}
               </select>
             </div>
           </div>
+        )}
+
+        {zips.length > 0 && (
           <div className="fgroup">
-            <span className="fgroup__label">Must-Have Features</span>
-            <div className="checks">
-              {FEATURES.map((ft) => (
-                <label key={ft.key}>
-                  <input type="checkbox" checked={f.features.includes(ft.key)} onChange={() => toggleFeature(ft.key)} />
-                  {ft.label}
-                </label>
-              ))}
+            <span className="fgroup__label">ZIP Code</span>
+            <div className="qsel" style={{ width: "100%" }}>
+              <select value={f.zip} style={{ width: "100%" }} onChange={(e) => setApply("zip", e.target.value)}>
+                <option value="">Any ZIP</option>
+                {zips.map((z) => <option key={z.slug} value={z.slug}>{z.name}</option>)}
+              </select>
             </div>
           </div>
+        )}
+
+        <div className="fgroup">
+          <span className="fgroup__label">Year Built (min)</span>
+          <div className="qsel" style={{ width: "100%" }}>
+            <select value={f.year} style={{ width: "100%" }} onChange={(e) => setApply("year", Number(e.target.value))}>
+              <option value={0}>Any Year</option>
+              {[1980, 2000, 2010, 2020].map((y) => <option key={y} value={y}>{y}+</option>)}
+            </select>
+          </div>
         </div>
-        <div className="panel__foot">
-          <button className="panel__reset" onClick={resetAll}>Reset all</button>
-          <button className="panel__apply" onClick={() => { apply(f); setPanelOpen(false); }}>
-            Show {total} homes
-          </button>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Must-Have Features</span>
+          <div className="checks">
+            {FEATURES.map((ft) => (
+              <label key={ft.key}>
+                <input type="checkbox" checked={f.features.includes(ft.key)} onChange={() => toggleFeature(ft.key)} />
+                {ft.label}
+              </label>
+            ))}
+          </div>
         </div>
+
+        <button className="btn btn--primary filters__apply" onClick={() => { apply(f); setOpen(false); }}>
+          Show {total.toLocaleString()} homes
+        </button>
       </aside>
     </>
   );
