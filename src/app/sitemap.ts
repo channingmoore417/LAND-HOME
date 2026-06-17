@@ -15,6 +15,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/listings`, changeFrequency: "hourly", priority: 0.9 },
   ];
 
+  // Programmatic SEO landing pages (/[city]/[topic]).
+  let seoPages: MetadataRoute.Sitemap = [];
+  try {
+    const supabase = getPublicClient();
+    const { data } = await supabase
+      .from("seo_pages")
+      .select("slug")
+      .eq("active", true);
+    seoPages = ((data as { slug: string }[]) ?? []).map((r) => ({
+      url: `${SITE}/${r.slug}`,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    }));
+  } catch (e) {
+    console.error("[sitemap] seo_pages fetch failed:", (e as Error).message);
+  }
+
   let listings: MetadataRoute.Sitemap = [];
   try {
     const supabase = getPublicClient();
@@ -36,5 +53,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] listing fetch failed:", (e as Error).message);
   }
 
-  return [...staticRoutes, ...listings];
+  return [...staticRoutes, ...seoPages, ...listings];
 }

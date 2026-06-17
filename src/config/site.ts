@@ -27,12 +27,12 @@ export const site = {
       "Modern coastal real estate, brokered by EXIT Realty Southern. Serving Sulphur, Lake Charles and Southwest Louisiana with a personal, no-pressure approach.",
     columns: [
       {
-        title: "Explore",
+        title: "Popular Searches",
         links: [
-          { label: "Buy a Home", href: "/buy" },
-          { label: "Sell Your Home", href: "/sell" },
-          { label: "All Listings", href: "/listings" },
-          { label: "Neighborhoods", href: "/neighborhoods" },
+          { label: "Lake Charles Homes for Sale", href: "/lake-charles/homes-for-sale" },
+          { label: "Land for Sale in Lake Charles", href: "/lake-charles/land-for-sale" },
+          { label: "Waterfront Homes in Lake Charles", href: "/lake-charles/waterfront-homes" },
+          { label: "All SWLA Listings", href: "/listings" },
         ],
       },
       {
@@ -60,5 +60,17 @@ export const site = {
     ctaHref: "https://bayou-mortgage.com",
     disclosure:
       "Estimates only and not a commitment to lend. Channing Moore | NMLS #1235512 | Bayou Mortgage LLC | NMLS #1845349 | Licensed in Louisiana | Equal Housing Lender. Rates shown are example estimates — contact for current rates and APR.",
+  },
+
+  // Local SEO — the client's Google Business Profile (used for the map embed
+  // + RealEstateAgent/LocalBusiness geo coordinates in structured data).
+  localSeo: {
+    gbpName: "Lauren Bane Huffman | Lake Charles Realtor",
+    mapEmbedUrl:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4300.206904046305!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sLauren%20Bane%20Huffman%20%7C%20Lake%20Charles%20Realtor!5e1!3m2!1sen!2sus!4v1781719708228!5m2!1sen!2sus",
+    latitude: 30.2271655,
+    longitude: -93.3336138,
+    city: "Lake Charles",
+    region: "LA",
   },
 } as const;

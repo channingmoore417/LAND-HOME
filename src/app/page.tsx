@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getPublicClient } from "@/lib/supabase";
 import { usd, int, titleCase } from "@/lib/format";
 import { photo } from "@/lib/images";
+import { getCitySiblings, pageTopicLabel } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -34,7 +35,10 @@ export default async function Home() {
     if (!firstPhoto.has(m.listing_key)) firstPhoto.set(m.listing_key, m.media_url);
   }
 
+  const lcPages = await getCitySiblings("Lake Charles");
+
   return (
+    <>
     <section className="similar" style={{ borderTop: 0, marginTop: 0 }}>
       <div className="wrap">
         <span className="script" style={{ fontSize: "1.7rem" }}>
@@ -63,5 +67,25 @@ export default async function Home() {
         </div>
       </div>
     </section>
+
+    {lcPages.length > 0 && (
+      <section className="cluster">
+        <div className="wrap">
+          <span className="script" style={{ fontSize: "1.7rem" }}>explore</span>
+          <h2 className="section__title" style={{ marginTop: 0 }}>
+            Popular searches in Lake Charles
+          </h2>
+          <div className="cluster__grid">
+            {lcPages.map((p) => (
+              <Link key={p.id} className="cluster__link" href={`/${p.slug}`}>
+                <span className="cluster__t">{pageTopicLabel(p)}</span>
+                <span className="cluster__c">in {p.city}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+    </>
   );
 }

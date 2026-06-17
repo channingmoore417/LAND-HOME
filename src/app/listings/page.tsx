@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPublicClient } from "@/lib/supabase";
-import { usd, int, titleCase } from "@/lib/format";
-import { photo } from "@/lib/images";
 import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
 import SortSelect from "@/components/SortSelect";
-import FavButton from "@/components/FavButton";
 import NotifyBand from "@/components/NotifyBand";
+import ListingCard from "@/components/ListingCard";
+import {
+  fetchCards, fetchFirstPhotos, PRICE_MAX, SQFT_MAX,
+  type ListingCriteria, type SortKey,
+} from "@/lib/listings";
 
 // IDX search page. ALL filtering/sorting/pagination happens server-side
 // against Supabase so it scales to the full feed (3,000+ listings) — the
@@ -14,25 +15,11 @@ import NotifyBand from "@/components/NotifyBand";
 export const dynamic = "force-dynamic";
 
 const PER = 9;
-const PRICE_MAX = 1_000_000;
-const SQFT_MAX = 5_000;
 
 export const metadata: Metadata = {
   title: "Homes for Sale in Southwest Louisiana",
   description:
     "Browse homes for sale in Lake Charles, Sulphur and Southwest Louisiana with The Land & Home Group. Filter by price, beds, baths, type and more.",
-};
-
-// Feature filter key → Supabase boolean column.
-const FEATURE_COLUMN: Record<string, string> = {
-  pool: "has_pool",
-  garage: "has_garage",
-  waterfront: "is_waterfront",
-  fireplace: "has_fireplace",
-  new_construction: "is_new_construction",
-  updated: "is_updated_remodeled",
-  single_story: "is_single_story",
-  acre_plus: "has_acre_plus",
 };
 
 type SP = Record<string, string | string[] | undefined>;
@@ -57,142 +44,34 @@ function parseFilters(sp: SP): ListingFilters {
   };
 }
 
-const SELECT =
-  "listing_key, listing_id, list_price, bedrooms_total, bathrooms_total, living_area, lot_size_sqft, property_type, property_sub_type, standard_status, unparsed_address, city, state_or_province, postal_code, photos_count, is_new_construction, is_lhg_listing, list_office_name, internet_address_yn, days_on_market";
-
-interface Card {
-  listing_key: string;
-  listing_id: string | null;
-  list_price: number | null;
-  bedrooms_total: number | null;
-  bathrooms_total: number | null;
-  living_area: number | null;
-  lot_size_sqft: number | null;
-  property_type: string | null;
-  property_sub_type: string | null;
-  standard_status: string | null;
-  unparsed_address: string | null;
-  city: string | null;
-  state_or_province: string | null;
-  postal_code: string | null;
-  photos_count: number | null;
-  is_new_construction: boolean;
-  is_lhg_listing: boolean;
-  list_office_name: string | null;
-  internet_address_yn: boolean;
-  days_on_market: number | null;
-}
-
-async function queryListings(f: ListingFilters, page: number) {
-  const supabase = getPublicClient();
-  let q = supabase.from("listings").select(SELECT, { count: "exact" });
-
-  // IDX compliance: never list a record flagged off the internet.
-  q = q.neq("internet_display_yn", false);
-  // Default browse = Active inventory; honor an explicit status filter.
-  q = q.eq("standard_status", f.status || "Active");
-  // This is a "for sale" site — exclude rental/lease records.
-  q = q.not("property_type", "in", "(ResidentialLease,CommercialLease)");
-
-  if (f.city) q = q.ilike("city", f.city);
-  if (f.beds) q = q.gte("bedrooms_total", f.beds);
-  if (f.baths) q = q.gte("bathrooms_total", f.baths);
-  if (f.minPrice > 0) q = q.gte("list_price", f.minPrice);
-  if (f.maxPrice < PRICE_MAX) q = q.lte("list_price", f.maxPrice);
-  if (f.minSqft > 0) q = q.gte("living_area", f.minSqft);
-  if (f.maxSqft < SQFT_MAX) q = q.lte("living_area", f.maxSqft);
-  if (f.year) q = q.gte("year_built", f.year);
-
-  // Map UI type → real RESO column values (see Supabase: property_type =
-  // Land/Residential/CommercialSale/ResidentialIncome; sub_type is
-  // camel-case e.g. SingleFamilyResidence, Duplex, Triplex).
-  if (f.type === "Single Family") q = q.eq("property_sub_type", "SingleFamilyResidence");
-  else if (f.type === "Multi-Family")
-    q = q.or("property_type.eq.ResidentialIncome,property_sub_type.eq.Duplex,property_sub_type.eq.Triplex");
-  else if (f.type === "New Construction") q = q.eq("is_new_construction", true);
-  else if (f.type === "Land") q = q.eq("property_type", "Land");
-
-  for (const key of f.features) {
-    const col = FEATURE_COLUMN[key];
-    if (col) q = q.eq(col, true);
-  }
-
-  if (f.q) {
-    // Strip characters that would break the PostgREST or() grammar.
-    const term = f.q.replace(/[(),]/g, " ").trim();
-    if (term) {
-      q = q.or(
-        `unparsed_address.ilike.%${term}%,city.ilike.%${term}%,postal_code.ilike.%${term}%,subdivision_name.ilike.%${term}%`,
-      );
-    }
-  }
-
-  switch (f.sort) {
-    case "plow": q = q.order("list_price", { ascending: true, nullsFirst: false }); break;
-    case "phigh": q = q.order("list_price", { ascending: false, nullsFirst: false }); break;
-    case "beds": q = q.order("bedrooms_total", { ascending: false, nullsFirst: false }); break;
-    case "sqft": q = q.order("living_area", { ascending: false, nullsFirst: false }); break;
-    default: q = q.order("modification_timestamp", { ascending: false, nullsFirst: false });
-  }
-
-  const from = (page - 1) * PER;
-  q = q.range(from, from + PER - 1);
-
-  const { data, count, error } = await q;
-  if (error) {
-    console.error("[listings] query failed:", error.message);
-    return { rows: [] as Card[], total: 0 };
-  }
-  return { rows: (data as Card[]) ?? [], total: count ?? 0 };
-}
-
-async function firstPhotos(keys: string[]) {
-  if (keys.length === 0) return new Map<string, string>();
-  const supabase = getPublicClient();
-  const { data } = await supabase
-    .from("listing_media")
-    .select("listing_key, media_url, order")
-    .in("listing_key", keys)
-    .order("order", { ascending: true });
-  const map = new Map<string, string>();
-  for (const m of (data as { listing_key: string; media_url: string }[]) ?? []) {
-    if (!map.has(m.listing_key)) map.set(m.listing_key, m.media_url);
-  }
-  return map;
-}
-
-function specs(c: Card) {
-  if ((c.property_type ?? "").toLowerCase().includes("land")) {
-    return (
-      <span>
-        <b>{c.lot_size_sqft ? int(c.lot_size_sqft) : "—"}</b>
-        <i>lot sqft</i>
-      </span>
-    );
-  }
-  return (
-    <>
-      <span><b>{c.bedrooms_total ?? "—"}</b><i>bd</i></span>
-      <span className="dot">&bull;</span>
-      <span><b>{c.bathrooms_total ?? "—"}</b><i>ba</i></span>
-      <span className="dot">&bull;</span>
-      <span><b>{int(c.living_area)}</b><i>sqft</i></span>
-    </>
-  );
-}
-
-function statusBadge(c: Card) {
-  const isNew = c.days_on_market != null && c.days_on_market <= 14;
-  if (isNew) return { label: "New", cls: " is-new" };
-  return { label: titleCase(c.standard_status) || "For Sale", cls: "" };
+function toCriteria(f: ListingFilters): ListingCriteria {
+  return {
+    status: f.status || undefined,
+    city: f.city || undefined,
+    bedsMin: f.beds || undefined,
+    bathsMin: f.baths || undefined,
+    priceMin: f.minPrice || undefined,
+    priceMax: f.maxPrice,
+    sqftMin: f.minSqft || undefined,
+    sqftMax: f.maxSqft,
+    yearMin: f.year || undefined,
+    type: f.type || undefined,
+    features: f.features,
+    q: f.q || undefined,
+  };
 }
 
 export default async function ListingsPage({ searchParams }: { searchParams: SP }) {
   const f = parseFilters(searchParams);
   const page = Math.max(1, Number(one(searchParams.page)) || 1);
 
-  const { rows, total } = await queryListings(f, page);
-  const photos = await firstPhotos(rows.map((r) => r.listing_key));
+  const { rows, total } = await fetchCards(toCriteria(f), {
+    limit: PER,
+    offset: (page - 1) * PER,
+    sort: f.sort as SortKey,
+  });
+  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
+  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
 
   const pages = Math.max(1, Math.ceil(total / PER));
   const startIdx = (page - 1) * PER;
@@ -276,45 +155,11 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
                 <Link href="/listings">Reset all filters</Link>
               </div>
             ) : (
-              rows.map((c, i) => {
-                const badge = statusBadge(c);
-                const showAddr = c.internet_address_yn !== false;
-                const raw = photos.get(c.listing_key);
-                const photoSrc = raw ? photo(raw, 800) : "";
-                const cityState = `${titleCase(c.city)}, ${c.state_or_province ?? "LA"} ${c.postal_code ?? ""}`.trim();
-                return (
-                  <Box key={c.listing_key} index={i} page={page} criteria={f}>
-                    <Link className="pcard" href={`/listings/${c.listing_key}`}>
-                      <div className="pcard__media">
-                        {photoSrc ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={photoSrc} alt={showAddr ? c.unparsed_address ?? "Listing" : "Listing"} loading="lazy" />
-                        ) : (
-                          <div style={{ width: "100%", height: "100%", background: "#cfe0e4" }} />
-                        )}
-                        <span className={`pcard__status${badge.cls}`}>{badge.label}</span>
-                        <FavButton />
-                        {c.photos_count ? <span className="pcard__photos">&#9634; {c.photos_count}</span> : null}
-                      </div>
-                      <div className="pcard__body">
-                        <div className="pcard__price">{usd(c.list_price)}</div>
-                        <div className="pcard__specs">{specs(c)}</div>
-                        <div className="pcard__addr">
-                          {showAddr ? c.unparsed_address ?? `${titleCase(c.city)} Area` : `${titleCase(c.city)} Area`}
-                        </div>
-                        <div className="pcard__sub">{cityState}</div>
-                        <div className="pcard__foot">
-                          <span className="pcard__mls">{c.listing_id ? `MLS# ${c.listing_id}` : ""}</span>
-                          <span className="pcard__cta">View Home <span className="arr">&rarr;</span></span>
-                        </div>
-                        {!c.is_lhg_listing && c.list_office_name && (
-                          <div className="pcard__courtesy">Listing provided courtesy of {c.list_office_name}</div>
-                        )}
-                      </div>
-                    </Link>
-                  </Box>
-                );
-              })
+              rows.map((c, i) => (
+                <Box key={c.listing_key} index={i} page={page} criteria={f}>
+                  <ListingCard c={c} />
+                </Box>
+              ))
             )}
           </div>
 
