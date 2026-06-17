@@ -144,11 +144,14 @@ export default function ContactPage() {
         <div className="wrap preapproval__inner">
           <div className="preapproval__txt">
             <span className="script">first step</span>
-            <h2>{site.bayou.headline}</h2>
-            <p>{site.bayou.sub}</p>
+            <h2>Know what you can afford</h2>
+            <p>
+              Get pre-approved and shop with confidence. It&apos;s fast, free, and there&apos;s no
+              obligation — you&apos;ll know your true budget before you ever tour a home.
+            </p>
           </div>
           <a className="btn btn--aqua preapproval__btn" href={site.bayou.ctaHref} target="_blank" rel="noopener">
-            {site.bayou.ctaLabel}
+            Get Pre-Approved
           </a>
         </div>
       </section>
