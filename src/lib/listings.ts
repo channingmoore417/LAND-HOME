@@ -5,7 +5,7 @@
 // SingleFamilyResidence, Land) can never drift between the two.
 // ============================================================
 
-import { getPublicClient } from "@/lib/supabase";
+import { getLiveClient } from "@/lib/supabase";
 
 export const PRICE_MAX = 1_000_000;
 export const SQFT_MAX = 5_000;
@@ -128,7 +128,7 @@ export function applySort(query: any, sort: SortKey) {
 export async function fetchFirstPhotos(keys: string[]): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   if (keys.length === 0) return map;
-  const supabase = getPublicClient();
+  const supabase = getLiveClient();
   const { data } = await supabase
     .from("listing_media")
     .select("listing_key, media_url, order")
@@ -149,7 +149,7 @@ export interface ListingStats {
 // Live count + price range for a criteria set — powers SEO intros, FAQs and
 // JSON-LD. Three light, indexed queries.
 export async function listingStats(c: ListingCriteria): Promise<ListingStats> {
-  const supabase = getPublicClient();
+  const supabase = getLiveClient();
 
   const countQ = applyListingFilters(
     supabase.from("listings").select("listing_key", { count: "exact", head: true }),
@@ -181,7 +181,7 @@ export async function fetchCards(
   c: ListingCriteria,
   opts: { limit?: number; offset?: number; sort?: SortKey } = {},
 ): Promise<{ rows: Card[]; total: number }> {
-  const supabase = getPublicClient();
+  const supabase = getLiveClient();
   let q = applyListingFilters(
     supabase.from("listings").select(CARD_SELECT, { count: "exact" }),
     c,

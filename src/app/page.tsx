@@ -1,15 +1,15 @@
 import Link from "next/link";
-import { getPublicClient } from "@/lib/supabase";
+import { getLiveClient } from "@/lib/supabase";
 import { usd, int, titleCase } from "@/lib/format";
 import { photo } from "@/lib/images";
 import { getCitySiblings, pageTopicLabel } from "@/lib/seo";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 // Minimal landing for now — featured grid linking to listing pages.
 // (Full IDX search + programmatic SEO pages come next.)
 export default async function Home() {
-  const supabase = getPublicClient();
+  const supabase = getLiveClient();
   const { data } = await supabase
     .from("listings")
     .select(

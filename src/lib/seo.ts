@@ -4,7 +4,7 @@
 // filter criteria and fetch its siblings for internal linking.
 // ============================================================
 
-import { getPublicClient } from "@/lib/supabase";
+import { getLiveClient } from "@/lib/supabase";
 import type { ListingCriteria } from "@/lib/listings";
 
 export interface SeoPage {
@@ -39,7 +39,7 @@ export function slugifyCity(city: string): string {
 }
 
 export async function getSeoPage(slug: string): Promise<SeoPage | null> {
-  const supabase = getPublicClient();
+  const supabase = getLiveClient();
   const { data } = await supabase
     .from("seo_pages")
     .select("*")
@@ -51,7 +51,7 @@ export async function getSeoPage(slug: string): Promise<SeoPage | null> {
 
 // All active pages for a city — used to render the internal-linking cluster.
 export async function getCitySiblings(city: string): Promise<SeoPage[]> {
-  const supabase = getPublicClient();
+  const supabase = getLiveClient();
   const { data } = await supabase
     .from("seo_pages")
     .select("*")

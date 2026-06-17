@@ -15,6 +15,22 @@ export function getPublicClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+// Live read client — identical to the public client but forces `no-store` on
+// every fetch so Next.js never serves a stale response from its Data Cache.
+// Use this on dynamic, freshness-sensitive routes (IDX search, SEO landing
+// pages) where MLS data and editable copy must always be current.
+export function getLiveClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+  return createClient(url, key, {
+    auth: { persistSession: false },
+    global: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: "no-store" }),
+    },
+  });
+}
+
 // Service-role client. SERVER ONLY — used by /api/forms to write into the
 // PII/state tables (leads, showing_requests, saved_searches) which are
 // locked to service_role. Never import this into client components.
