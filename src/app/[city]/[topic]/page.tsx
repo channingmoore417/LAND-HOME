@@ -10,8 +10,10 @@ import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
 
-export const revalidate = 3600; // ISR — landing pages are stable; refresh hourly
-export const dynamicParams = true;
+// Render fresh per request: SEO copy lives in seo_pages and is edited often,
+// and listing counts change constantly — caching risks serving stale content.
+// These pages do only a few light, indexed queries, so dynamic is fine.
+export const dynamic = "force-dynamic";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").replace(/\/$/, "");
 
