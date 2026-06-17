@@ -10,6 +10,7 @@ import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import PropertyInteractive from "@/components/PropertyInteractive";
 import PropertyMap from "@/components/PropertyMap";
+import LocalMap from "@/components/LocalMap";
 
 export const revalidate = 300; // ISR: refresh each page ~every 5 min
 
@@ -358,6 +359,13 @@ export default async function ListingPage({
           </div>
         </section>
       )}
+
+      {/* FIND US — local team + Google map embed */}
+      <LocalMap
+        cityLabel={titleCase(listing.city)}
+        href={`/listings?city=${encodeURIComponent(listing.city ?? "")}`}
+        ctaLabel={`More homes in ${titleCase(listing.city)}`}
+      />
     </>
   );
 }
