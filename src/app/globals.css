@@ -532,6 +532,27 @@ textarea.input{resize:vertical;min-height:84px;}
 .hv-cta-row .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:14px 26px;}
 .btn--hollow-teal{background:transparent;border:1.5px solid #fff;color:#fff;}
 .btn--hollow-teal:hover{background:#fff;color:var(--teal-deep);}
+
+/* ---- valuation wizard (multi-step) ---- */
+.wiz__head{margin-bottom:22px;}
+.wiz__bar{height:7px;border-radius:99px;background:var(--aqua-soft);overflow:hidden;}
+.wiz__fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--aqua),var(--teal));transition:width .45s cubic-bezier(.4,0,.2,1);}
+.wiz__label{margin-top:9px;font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--teal-mid);}
+.wiz__step{animation:wizIn .35s ease;}
+.wiz__q{font-family:"Outfit";font-weight:700;font-size:1.35rem;color:var(--teal-deep);margin:0 0 16px;letter-spacing:-.01em;}
+.wiz__nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px;}
+.wiz__nav .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:13px 28px;}
+@keyframes wizIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ---- comparable sales on the result ---- */
+.hv-comps{text-align:left;margin:6px 0 4px;}
+.hv-comps__h{color:rgba(255,255,255,.78);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;text-align:center;}
+.hv-comp{display:grid;grid-template-columns:1fr auto;gap:2px 14px;padding:11px 0;border-top:1px solid rgba(255,255,255,.14);}
+.hv-comp:first-of-type{border-top:0;}
+.hv-comp__addr{font-weight:700;font-size:.92rem;color:#fff;}
+.hv-comp__meta{grid-column:1;color:rgba(255,255,255,.68);font-size:.78rem;}
+.hv-comp__price{grid-column:2;grid-row:1 / span 2;align-self:center;font-family:"Outfit";font-weight:800;font-size:1.05rem;color:var(--aqua);white-space:nowrap;}
+
 @media(max-width:680px){.hv-grid{grid-template-columns:1fr 1fr;}.hv-grid--2{grid-template-columns:1fr;}}
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;}}

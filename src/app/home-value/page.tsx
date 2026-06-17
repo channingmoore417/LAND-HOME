@@ -5,14 +5,24 @@ import Link from "next/link";
 import { site } from "@/config/site";
 
 interface GeoResult { address: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
+interface Comp {
+  address: string; beds: number | null; baths: number | null; sqft: number | null;
+  close_price: number | null; close_date: string | null; ppsf: number | null;
+}
 interface Estimate {
   comp_count: number; basis?: string; ppsf_median?: number;
   est_low?: number; est_median?: number; est_high?: number; median_sold_price?: number;
+  comps?: Comp[];
 }
 
+const fmtDate = (d?: string | null) =>
+  d ? new Date(d + "T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "";
+
 const usd = (n?: number) => (n || n === 0 ? "$" + Math.round(n).toLocaleString("en-US") : "—");
+const STEP_LABELS = ["Your address", "About your home", "A few details", "Where to send it"];
 
 export default function HomeValuePage() {
+  const [step, setStep] = useState(1);
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState<GeoResult[]>([]);
   const [picked, setPicked] = useState<GeoResult | null>(null);
@@ -33,23 +43,36 @@ export default function HomeValuePage() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function onAddressChange(v: string) {
-    setQuery(v); setPicked(null);
+    setQuery(v); setPicked(null); setErr("");
     if (timer.current) clearTimeout(timer.current);
-    if (v.trim().length < 5) { setCandidates([]); return; }
+    if (v.trim().length < 3) { setCandidates([]); return; }
     timer.current = setTimeout(async () => {
       try {
         const res = await fetch(`/api/geocode?q=${encodeURIComponent(v)}`);
         const data = await res.json();
         setCandidates(data.results ?? []);
       } catch { setCandidates([]); }
-    }, 450);
+    }, 400);
   }
-  function pick(c: GeoResult) { setPicked(c); setQuery(c.address); setCandidates([]); }
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function pick(c: GeoResult) {
+    // Preserve the house number the user typed if the match is street-level.
+    const m = query.trim().match(/^\s*(\d+[A-Za-z]?)\b/);
+    const addr = m && !/^\d/.test(c.address) ? `${m[1]} ${c.address}` : c.address;
+    setPicked({ ...c, address: addr });
+    setQuery(addr);
+    setCandidates([]);
+  }
+
+  function next() {
     setErr("");
-    if (!picked?.city) { setErr("Please choose your address from the suggestions so we know the city."); return; }
+    if (step === 1 && !picked?.city) { setErr("Pick your address from the suggestions so we know the city."); return; }
+    if (step === 4) { submit(); return; }
+    setStep((s) => s + 1);
+  }
+  function back() { setErr(""); setStep((s) => Math.max(1, s - 1)); }
+
+  async function submit() {
     if (!name || !email || !phone) { setErr("Please add your name, email, and phone to get your report."); return; }
     setLoading(true);
     let est: Estimate | null = null;
@@ -57,36 +80,30 @@ export default function HomeValuePage() {
       const res = await fetch("/api/valuation", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          city: picked.city, zip: picked.zip || undefined,
+          city: picked!.city, zip: picked!.zip || undefined,
           livingArea: sqft ? Number(sqft.replace(/[^0-9.]/g, "")) : undefined,
           beds: beds ? Number(beds) : undefined,
         }),
       });
       if (res.ok) est = await res.json();
-    } catch { /* keep going — we still capture the lead */ }
-
-    // Capture the lead regardless of whether an automated estimate was produced.
+    } catch { /* still capture the lead */ }
     try {
       await fetch("/api/forms", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           form_id: "home_valuation", name, email, phone,
-          message: `Home valuation request for ${picked.address}`,
+          message: `Home valuation request for ${picked!.address}`,
           criteria: {
-            address: picked.address, city: picked.city, zip: picked.zip,
+            address: picked!.address, city: picked!.city, zip: picked!.zip,
             beds, baths, sqft, year, condition, timeframe, notes,
             estimate: est && est.comp_count > 0
-              ? { low: est.est_low, median: est.est_median, high: est.est_high, comps: est.comp_count }
-              : null,
+              ? { low: est.est_low, median: est.est_median, high: est.est_high, comps: est.comp_count } : null,
           },
           source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });
     } catch { /* non-fatal */ }
-
-    setResult(est);
-    setDone(true);
-    setLoading(false);
+    setResult(est); setDone(true); setLoading(false);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -97,8 +114,6 @@ export default function HomeValuePage() {
     const teal: [number, number, number] = [32, 72, 96];
     const aqua: [number, number, number] = [97, 193, 204];
     const ink: [number, number, number] = [50, 60, 67];
-
-    // Header band
     doc.setFillColor(...teal); doc.rect(0, 0, W, 92, "F");
     doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(20);
     doc.text(site.name, 40, 44);
@@ -106,12 +121,9 @@ export default function HomeValuePage() {
     doc.text("Home Value Estimate", 40, 66);
     doc.setTextColor(210, 230, 235); doc.setFontSize(9);
     doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), 40, 82);
-
     let y = 130;
     doc.setTextColor(...ink); doc.setFont("helvetica", "bold"); doc.setFontSize(13);
-    doc.text(picked?.address ?? query, 40, y);
-    y += 30;
-
+    doc.text(picked?.address ?? query, 40, y); y += 30;
     if (result && result.comp_count > 0) {
       doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(110, 120, 127);
       doc.text("Estimated value range", 40, y); y += 26;
@@ -123,40 +135,42 @@ export default function HomeValuePage() {
       doc.text(
         `Based on the ${result.comp_count} most comparable sales in ${picked?.city} over the last 6 months` +
         (result.ppsf_median ? ` (median ${usd(result.ppsf_median)}/sq ft).` : "."),
-        40, y, { maxWidth: W - 80 },
-      );
-      y += 34;
+        40, y, { maxWidth: W - 80 }); y += 30;
+      if (result.comps && result.comps.length) {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...teal);
+        doc.text("Most comparable recent sales", 40, y); y += 17;
+        for (const c of result.comps) {
+          doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(...ink);
+          doc.text(c.address, 40, y);
+          doc.text(usd(c.close_price ?? undefined), W - 40, y, { align: "right" }); y += 13;
+          doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(110, 120, 127);
+          doc.text(
+            `${c.beds ?? "—"} bd · ${c.baths ?? "—"} ba · ${c.sqft ? c.sqft.toLocaleString() : "—"} sqft · sold ${fmtDate(c.close_date)}`,
+            40, y); y += 17;
+        }
+        y += 6;
+      }
     }
-
-    // Home details
     doc.setDrawColor(225, 233, 237); doc.line(40, y, W - 40, y); y += 22;
     doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...teal);
     doc.text("Home details you provided", 40, y); y += 18;
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(...ink);
-    const details = [
+    for (const [k, v] of [
       ["Bedrooms", beds || "—"], ["Bathrooms", baths || "—"],
       ["Living area", sqft ? `${sqft} sq ft` : "—"], ["Year built", year || "—"],
       ["Condition", condition || "—"], ["Timeframe to sell", timeframe || "—"],
-    ];
-    for (const [k, v] of details) { doc.text(`${k}: ${v}`, 40, y); y += 16; }
-
-    // Disclaimer
+    ]) { doc.text(`${k}: ${v}`, 40, y); y += 16; }
     y += 12; doc.setFillColor(244, 247, 250); doc.rect(40, y, W - 80, 72, "F");
     doc.setFontSize(8.5); doc.setTextColor(110, 120, 127);
     doc.text(
-      "This is an automated estimate based on recent comparable sales and is NOT an appraisal or a " +
-      "formal opinion of value. Your home's condition, upgrades, location, and current demand can move " +
-      "the figure meaningfully. For your home's exact value, schedule a free, no-obligation consultation " +
-      "with The Land & Home Group.",
-      48, y + 18, { maxWidth: W - 96 },
-    );
-    y += 92;
-
+      "This is an automated estimate based on recent comparable sales and is NOT an appraisal or a formal " +
+      "opinion of value. Your home's condition, upgrades, location, and current demand can move the figure " +
+      "meaningfully. For your home's exact value, schedule a free, no-obligation consultation with " +
+      "The Land & Home Group.", 48, y + 18, { maxWidth: W - 96 }); y += 92;
     doc.setTextColor(...teal); doc.setFont("helvetica", "bold"); doc.setFontSize(11);
     doc.text(`Schedule your free consultation:  ${site.phone}`, 40, y);
     doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(110, 120, 127);
     doc.text(`${site.name} · ${site.brokerage} · ${site.serviceArea}`, 40, y + 16);
-
     const safe = (picked?.address ?? "home").replace(/[^a-z0-9]+/gi, "-").slice(0, 40);
     doc.save(`Home-Value-Estimate-${safe}.pdf`);
   }
@@ -174,8 +188,8 @@ export default function HomeValuePage() {
           <span className="hero__script">what&apos;s my home worth?</span>
           <h1>Free Home Value Report</h1>
           <p className="hero__sub">
-            Tell us about your home and we&apos;ll build a custom value range from recent comparable sales —
-            plus a downloadable report. It only takes a minute.
+            Answer a few quick questions and we&apos;ll build a custom value range from recent comparable
+            sales — plus a downloadable report.
           </p>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -184,67 +198,75 @@ export default function HomeValuePage() {
       </header>
 
       <main className="results">
-        <div className="wrap" style={{ maxWidth: 760 }}>
+        <div className="wrap" style={{ maxWidth: 720 }}>
           {!done && (
             <div className="hv-card">
-              <form onSubmit={onSubmit}>
-                <div className="field" style={{ position: "relative" }}>
-                  <label>Property Address</label>
-                  <input className="input" type="text" autoComplete="off" placeholder="Start typing your address…"
-                    value={query} onChange={(e) => onAddressChange(e.target.value)} />
-                  {candidates.length > 0 && (
-                    <div className="hv-suggest">
-                      {candidates.map((c, i) => (
-                        <button type="button" key={i} onClick={() => pick(c)}>{c.address}</button>
-                      ))}
-                    </div>
-                  )}
-                  {picked && <div className="hv-picked">✓ {picked.city}, {picked.state} {picked.zip}</div>}
-                </div>
+              {/* progress */}
+              <div className="wiz__head">
+                <div className="wiz__bar"><div className="wiz__fill" style={{ width: `${(step / 4) * 100}%` }} /></div>
+                <div className="wiz__label">Step {step} of 4 · {STEP_LABELS[step - 1]}</div>
+              </div>
 
-                <div className="hv-grid">
-                  <div className="field"><label>Bedrooms</label>
-                    <input className="input" type="number" min={0} value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="3" /></div>
-                  <div className="field"><label>Bathrooms</label>
-                    <input className="input" type="number" min={0} value={baths} onChange={(e) => setBaths(e.target.value)} placeholder="2" /></div>
-                  <div className="field"><label>Living Area (sq ft)</label>
-                    <input className="input" type="number" min={0} value={sqft} onChange={(e) => setSqft(e.target.value)} placeholder="2,000" /></div>
-                  <div className="field"><label>Year Built</label>
-                    <input className="input" type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="2005" /></div>
-                </div>
-
-                <div className="hv-grid hv-grid--2">
-                  <div className="field"><label>Condition</label>
-                    <div className="qsel" style={{ width: "100%" }}>
-                      <select value={condition} style={{ width: "100%" }} onChange={(e) => setCondition(e.target.value)}>
-                        <option value="">Select…</option>
-                        <option>Excellent / updated</option>
-                        <option>Good</option>
-                        <option>Average</option>
-                        <option>Needs work</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="field"><label>When are you thinking of selling?</label>
-                    <div className="qsel" style={{ width: "100%" }}>
-                      <select value={timeframe} style={{ width: "100%" }} onChange={(e) => setTimeframe(e.target.value)}>
-                        <option value="">Select…</option>
-                        <option>Just curious</option>
-                        <option>0–3 months</option>
-                        <option>3–6 months</option>
-                        <option>6–12 months</option>
-                        <option>Already listed</option>
-                      </select>
-                    </div>
+              {step === 1 && (
+                <div className="wiz__step">
+                  <h2 className="wiz__q">Where&apos;s your home?</h2>
+                  <div className="field" style={{ position: "relative" }}>
+                    <input className="input" type="text" autoComplete="off" placeholder="Start typing your address…"
+                      value={query} onChange={(e) => onAddressChange(e.target.value)} autoFocus />
+                    {candidates.length > 0 && (
+                      <div className="hv-suggest">
+                        {candidates.map((c, i) => (<button type="button" key={i} onClick={() => pick(c)}>{c.address}</button>))}
+                      </div>
+                    )}
+                    {picked && <div className="hv-picked">✓ {picked.address}</div>}
                   </div>
                 </div>
+              )}
 
-                <div className="field"><label>Anything we should know? (optional)</label>
-                  <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Recent renovations, lot size, condition notes…" /></div>
+              {step === 2 && (
+                <div className="wiz__step">
+                  <h2 className="wiz__q">Tell us about your home</h2>
+                  <div className="hv-grid">
+                    <div className="field"><label>Bedrooms</label>
+                      <input className="input" type="number" min={0} value={beds} onChange={(e) => setBeds(e.target.value)} placeholder="3" /></div>
+                    <div className="field"><label>Bathrooms</label>
+                      <input className="input" type="number" min={0} value={baths} onChange={(e) => setBaths(e.target.value)} placeholder="2" /></div>
+                    <div className="field"><label>Living Area (sq ft)</label>
+                      <input className="input" type="number" min={0} value={sqft} onChange={(e) => setSqft(e.target.value)} placeholder="2,000" /></div>
+                    <div className="field"><label>Year Built</label>
+                      <input className="input" type="number" value={year} onChange={(e) => setYear(e.target.value)} placeholder="2005" /></div>
+                  </div>
+                  <p className="hv-fine">Square footage gives the most accurate estimate, but you can skip what you don&apos;t know.</p>
+                </div>
+              )}
 
-                <div className="hv-contact">
-                  <span className="script" style={{ fontSize: "1.3rem" }}>where to send it</span>
+              {step === 3 && (
+                <div className="wiz__step">
+                  <h2 className="wiz__q">A few more details</h2>
+                  <div className="hv-grid hv-grid--2">
+                    <div className="field"><label>Condition</label>
+                      <div className="qsel" style={{ width: "100%" }}>
+                        <select value={condition} style={{ width: "100%" }} onChange={(e) => setCondition(e.target.value)}>
+                          <option value="">Select…</option>
+                          <option>Excellent / updated</option><option>Good</option><option>Average</option><option>Needs work</option>
+                        </select></div></div>
+                    <div className="field"><label>When are you thinking of selling?</label>
+                      <div className="qsel" style={{ width: "100%" }}>
+                        <select value={timeframe} style={{ width: "100%" }} onChange={(e) => setTimeframe(e.target.value)}>
+                          <option value="">Select…</option>
+                          <option>Just curious</option><option>0–3 months</option><option>3–6 months</option>
+                          <option>6–12 months</option><option>Already listed</option>
+                        </select></div></div>
+                  </div>
+                  <div className="field"><label>Anything we should know? (optional)</label>
+                    <textarea className="input" value={notes} onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Recent renovations, lot size, condition notes…" /></div>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div className="wiz__step">
+                  <h2 className="wiz__q">Where should we send your report?</h2>
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>Full Name</label>
                       <input className="input" type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
@@ -253,14 +275,17 @@ export default function HomeValuePage() {
                   </div>
                   <div className="field"><label>Email</label>
                     <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+                  <p className="hv-fine">By submitting you agree to be contacted by The Land &amp; Home Group about your home. Consent is not a condition of any purchase or sale.</p>
                 </div>
+              )}
 
-                {err && <p className="hv-err">{err}</p>}
-                <button className="btn btn--primary" disabled={loading}>
-                  {loading ? "Building your report…" : "Get My Home Value Report"}
+              {err && <p className="hv-err">{err}</p>}
+              <div className="wiz__nav">
+                {step > 1 ? <button type="button" className="btn btn--ghost" onClick={back}>Back</button> : <span />}
+                <button type="button" className="btn btn--primary" onClick={next} disabled={loading}>
+                  {step === 4 ? (loading ? "Building your report…" : "Get My Home Value Report") : "Next"}
                 </button>
-                <p className="hv-fine">By submitting you agree to be contacted by The Land &amp; Home Group about your home. Consent is not a condition of any purchase or sale.</p>
-              </form>
+              </div>
             </div>
           )}
 
@@ -278,6 +303,20 @@ export default function HomeValuePage() {
                       {result!.ppsf_median ? <div><b>{usd(result!.ppsf_median)}</b><span>median $/sq ft</span></div> : null}
                       <div><b>6 mo</b><span>recent sales</span></div>
                     </div>
+                    {result!.comps && result!.comps.length > 0 && (
+                      <div className="hv-comps">
+                        <div className="hv-comps__h">Most comparable recent sales</div>
+                        {result!.comps.map((c, i) => (
+                          <div className="hv-comp" key={i}>
+                            <div className="hv-comp__addr">{c.address}</div>
+                            <div className="hv-comp__meta">
+                              {c.beds ?? "—"} bd · {c.baths ?? "—"} ba · {c.sqft ? c.sqft.toLocaleString() : "—"} sqft · sold {fmtDate(c.close_date)}
+                            </div>
+                            <div className="hv-comp__price">{usd(c.close_price ?? undefined)}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </>
                 ) : (
                   <p className="prose" style={{ marginTop: 10 }}>
@@ -293,9 +332,7 @@ export default function HomeValuePage() {
                 </p>
                 <div className="hv-cta-row">
                   <a className="btn btn--aqua" href={site.phoneHref}>Schedule an Appointment · {site.phone}</a>
-                  {hasEstimate && (
-                    <button className="btn btn--hollow-teal" onClick={downloadPdf}>Download PDF Report</button>
-                  )}
+                  {hasEstimate && <button className="btn btn--hollow-teal" onClick={downloadPdf}>Download PDF Report</button>}
                 </div>
               </div>
               {picked?.city && (
