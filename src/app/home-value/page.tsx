@@ -25,7 +25,8 @@ export default function HomeValuePage() {
   const [condition, setCondition] = useState("");
   const [timeframe, setTimeframe] = useState("");
   const [notes, setNotes] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -71,7 +72,8 @@ export default function HomeValuePage() {
   function back() { setErr(""); setStep((s) => Math.max(1, s - 1)); }
 
   async function submit() {
-    if (!name || !email || !phone) { setErr("Please add your name, email, and phone to get your report."); return; }
+    if (!firstName || !lastName || !email || !phone) { setErr("Please add your name, email, and phone to get your report."); return; }
+    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
     setLoading(true);
     let est: Estimate | null = null;
     try {
@@ -89,9 +91,10 @@ export default function HomeValuePage() {
       await fetch("/api/forms", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          form_id: "home_valuation", name, email, phone,
+          form_id: "home_valuation", name, first_name: firstName, last_name: lastName, email, phone,
           message: `Home valuation request for ${picked!.address}`,
           criteria: {
+            first_name: firstName, last_name: lastName,
             address: picked!.address, city: picked!.city, zip: picked!.zip,
             beds, baths, sqft, year, condition, timeframe, notes,
             estimate: est && est.comp_count > 0
@@ -160,7 +163,7 @@ export default function HomeValuePage() {
   }
 
   const hasEstimate = result && result.comp_count > 0;
-  const firstName = name.trim().split(" ")[0];
+  const greetName = firstName.trim();
 
   return (
     <>
@@ -268,13 +271,17 @@ export default function HomeValuePage() {
                 <div className="wiz__step">
                   <h2 className="wiz__q">Where should we send your report?</h2>
                   <div className="hv-grid hv-grid--2">
-                    <div className="field"><label>Full Name</label>
-                      <input className="input" type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-                    <div className="field"><label>Phone</label>
-                      <input className="input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
+                    <div className="field"><label>First Name</label>
+                      <input className="input" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
+                    <div className="field"><label>Last Name</label>
+                      <input className="input" type="text" autoComplete="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
                   </div>
-                  <div className="field"><label>Email</label>
-                    <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+                  <div className="hv-grid hv-grid--2">
+                    <div className="field"><label>Email</label>
+                      <input className="input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+                    <div className="field"><label>Phone</label>
+                      <input className="input" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
+                  </div>
                   <p className="hv-fine">By submitting you agree to be contacted by The Land &amp; Home Group about your home. Consent is not a condition of any purchase or sale.</p>
                 </div>
               )}
@@ -297,7 +304,7 @@ export default function HomeValuePage() {
           {done && (
             <div className="hv-thanks">
               <div className="hv-result">
-                <span className="script" style={{ fontSize: "1.6rem" }}>thank you{firstName ? `, ${firstName}` : ""}!</span>
+                <span className="script" style={{ fontSize: "1.6rem" }}>thank you{greetName ? `, ${greetName}` : ""}!</span>
                 {hasEstimate ? (
                   <>
                     <div className="hv-mid" style={{ marginTop: 8 }}>Your estimated value range</div>
