@@ -9,6 +9,7 @@ import type { Listing, ListingMedia } from "@/lib/types";
 import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import PropertyInteractive from "@/components/PropertyInteractive";
+import PropertyMap from "@/components/PropertyMap";
 
 export const revalidate = 300; // ISR: refresh each page ~every 5 min
 
@@ -285,9 +286,14 @@ export default async function ListingPage({
               <section className="section">
                 <span className="script section__script">the neighborhood</span>
                 <h2 className="section__title">Location</h2>
-                <div className="map">
-                  <span className="map__pin">&#9679; {fullLabel}</span>
-                </div>
+                <PropertyMap
+                  latitude={listing.latitude}
+                  longitude={listing.longitude}
+                  label={fullLabel}
+                  city={titleCase(listing.city)}
+                  state={listing.state_or_province ?? "LA"}
+                  precise={showAddress}
+                />
               </section>
 
               {!listing.is_lhg_listing && listing.list_office_name && (
