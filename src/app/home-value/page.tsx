@@ -4,18 +4,17 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
 
-interface GeoResult { address: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
+interface GeoResult { address: string; street?: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
 interface Estimate {
   comp_count: number; basis?: string; ppsf_median?: number;
   est_low?: number; est_median?: number; est_high?: number; median_sold_price?: number;
 }
 
 const usd = (n?: number) => (n || n === 0 ? "$" + Math.round(n).toLocaleString("en-US") : "—");
-const STEP_LABELS = ["About your home", "A few details", "Where to send it"];
+const STEP_LABELS = ["Your address", "About your home", "A few details", "Where to send it"];
 
 export default function HomeValuePage() {
-  // step 0 = address (in the hero). 1–3 = wizard. done = result.
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(1);
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState<GeoResult[]>([]);
   const [picked, setPicked] = useState<GeoResult | null>(null);
@@ -49,27 +48,24 @@ export default function HomeValuePage() {
   }
 
   function pick(c: GeoResult) {
-    // Preserve the house number the user typed if the match is street-level.
-    const m = query.trim().match(/^\s*(\d+[A-Za-z]?)\b/);
+    // Always keep the house number the user typed; the geocoder label has none.
+    const m = query.trim().match(/^\s*(\d+[A-Za-z-]*)\b/);
     const addr = m && !/^\d/.test(c.address) ? `${m[1]} ${c.address}` : c.address;
     setPicked({ ...c, address: addr });
     setQuery(addr);
     setCandidates([]);
-  }
-
-  function start() {
     setErr("");
-    if (!picked?.city) { setErr("Pick your address from the suggestions so we know the city."); return; }
-    setStep(1);
-    if (typeof window !== "undefined") {
-      requestAnimationFrame(() => document.getElementById("wizard")?.scrollIntoView({ behavior: "smooth", block: "start" }));
-    }
+    // Selecting an address moves them straight into the next step.
+    setStep(2);
   }
-  function changeAddress() { setErr(""); setStep(0); setResult(null); setDone(false); }
 
   function next() {
     setErr("");
-    if (step === 3) { submit(); return; }
+    if (step === 1) {
+      if (!picked?.city) { setErr("Pick your address from the suggestions so we know the city."); return; }
+      setStep(2); return;
+    }
+    if (step === 4) { submit(); return; }
     setStep((s) => s + 1);
   }
   function back() { setErr(""); setStep((s) => Math.max(1, s - 1)); }
@@ -165,7 +161,6 @@ export default function HomeValuePage() {
 
   const hasEstimate = result && result.comp_count > 0;
   const firstName = name.trim().split(" ")[0];
-  const wizardActive = !done && step >= 1;
 
   return (
     <>
@@ -174,60 +169,17 @@ export default function HomeValuePage() {
           <nav className="hero__crumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link> &nbsp;/&nbsp; Home Value
           </nav>
-
-          {!done && (
+          {!done ? (
             <>
               <span className="hero__script">what&apos;s my home worth?</span>
               <h1>Find Out What Your Home Is Worth — Free</h1>
               <p className="hero__sub">
-                Get a data-driven value range for your home in seconds, built from the most comparable
-                homes that have actually sold near you in the last six months. No pressure, no obligation —
-                just real numbers from real Southwest Louisiana sales.
+                Get a data-driven value range in seconds, built from the most comparable homes that have
+                actually sold near you in the last six months. No pressure, no obligation — just real numbers
+                from real Southwest Louisiana sales.
               </p>
-
-              {/* Address search — the entry point, right in the hero */}
-              <div className="hvhero__search">
-                <div className="hvhero__field">
-                  <svg className="hvhero__pin" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                    <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
-                  </svg>
-                  <input
-                    className="hvhero__input" type="text" autoComplete="off" inputMode="text"
-                    placeholder="Enter your home address…"
-                    value={query} onChange={(e) => onAddressChange(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter" && picked) start(); }}
-                    disabled={wizardActive}
-                  />
-                  {!wizardActive && (
-                    <button type="button" className="hvhero__go" onClick={start}>
-                      {picked ? "Get My Estimate" : "Start"}
-                    </button>
-                  )}
-                  {candidates.length > 0 && !wizardActive && (
-                    <div className="hv-suggest">
-                      {candidates.map((c, i) => (
-                        <button type="button" key={i} onClick={() => pick(c)}>{c.address}</button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {picked && (
-                  <div className="hvhero__picked">
-                    <span>✓ {picked.address}</span>
-                    {wizardActive && (
-                      <button type="button" className="hvhero__change" onClick={changeAddress}>Change</button>
-                    )}
-                  </div>
-                )}
-                {err && step === 0 && <p className="hvhero__err">{err}</p>}
-                <div className="hvhero__trust">
-                  <span>✓ 100% free</span><span>✓ No obligation</span><span>✓ Takes about a minute</span>
-                </div>
-              </div>
             </>
-          )}
-
-          {done && (
+          ) : (
             <>
               <span className="hero__script">your report is ready</span>
               <h1>Home Value Estimate</h1>
@@ -241,67 +193,37 @@ export default function HomeValuePage() {
       </header>
 
       <main className="results">
-        {/* --- Step 0: marketing copy while they decide --- */}
-        {!done && step === 0 && (
-          <div className="wrap">
-            <section className="hv-how">
-              <span className="section__script script">how it works</span>
-              <h2 className="section__title">Your home value in three quick steps</h2>
-              <div className="hv-steps">
-                <div className="hv-step">
-                  <div className="hv-step__n">1</div>
-                  <h3>Enter your address</h3>
-                  <p>Start typing above and choose your home from the suggestions. That tells us exactly which neighborhood and market to analyze.</p>
-                </div>
-                <div className="hv-step">
-                  <div className="hv-step__n">2</div>
-                  <h3>Tell us about your home</h3>
-                  <p>A few quick details — beds, baths, square footage, and condition — sharpen the estimate so it reflects <em>your</em> home, not just the street.</p>
-                </div>
-                <div className="hv-step">
-                  <div className="hv-step__n">3</div>
-                  <h3>Get your value range</h3>
-                  <p>We instantly compare the most similar recent sales near you and hand you a value range plus a downloadable report.</p>
-                </div>
-              </div>
-            </section>
-
-            <section className="hv-why">
-              <div className="hv-why__copy">
-                <span className="section__script script">why it matters</span>
-                <h2 className="section__title">Real local sales — not a national guess</h2>
-                <p className="prose">
-                  Most online estimators run your address through a one-size-fits-all national model. Ours is
-                  different. We pull from homes that have <strong>actually closed in Southwest Louisiana over
-                  the last six months</strong> and weight the ones most like yours — similar size, bedroom
-                  count, and ZIP code — so the range reflects what buyers here are truly paying right now.
-                </p>
-                <p className="prose">
-                  Whether you&apos;re thinking about selling this year, refinancing, or just curious how much
-                  equity you&apos;ve built, it&apos;s a smart, no-pressure first step. And when you&apos;re
-                  ready for an exact figure, we&apos;ll walk your home in person — free.
-                </p>
-              </div>
-              <ul className="hv-why__list">
-                <li><b>Built on recent SWLA sales</b><span>The last 6 months, filtered to homes like yours.</span></li>
-                <li><b>Instant &amp; private</b><span>Your range in seconds, your details kept confidential.</span></li>
-                <li><b>Downloadable report</b><span>A clean PDF you can save, print, or share.</span></li>
-                <li><b>A real human follow-up</b><span>Want exact numbers? We&apos;ll do a free in-home valuation.</span></li>
-              </ul>
-            </section>
-          </div>
-        )}
-
-        {/* --- Steps 1–3: the wizard --- */}
-        {wizardActive && (
-          <div className="wrap" id="wizard" style={{ maxWidth: 720 }}>
+        <div className="wrap" style={{ maxWidth: 760 }}>
+          {/* ---- one unified wizard card ---- */}
+          {!done && (
             <div className="hv-card">
               <div className="wiz__head">
-                <div className="wiz__bar"><div className="wiz__fill" style={{ width: `${(step / 3) * 100}%` }} /></div>
-                <div className="wiz__label">Step {step} of 3 · {STEP_LABELS[step - 1]}</div>
+                <div className="wiz__bar"><div className="wiz__fill" style={{ width: `${(step / 4) * 100}%` }} /></div>
+                <div className="wiz__label">Step {step} of 4 · {STEP_LABELS[step - 1]}</div>
               </div>
 
               {step === 1 && (
+                <div className="wiz__step">
+                  <h2 className="wiz__q">Let&apos;s start with your address</h2>
+                  <div className="field" style={{ position: "relative", marginBottom: 8 }}>
+                    <div className="hv-addr">
+                      <svg className="hv-addr__pin" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                        <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+                      </svg>
+                      <input className="hv-addr__input" type="text" autoComplete="off" placeholder="Start typing your home address…"
+                        value={query} onChange={(e) => onAddressChange(e.target.value)} autoFocus />
+                    </div>
+                    {candidates.length > 0 && (
+                      <div className="hv-suggest">
+                        {candidates.map((c, i) => (<button type="button" key={i} onClick={() => pick(c)}>{c.address}</button>))}
+                      </div>
+                    )}
+                  </div>
+                  <p className="hv-fine">Choose your home from the list and we&apos;ll jump to the next step. 100% free · no obligation · about a minute.</p>
+                </div>
+              )}
+
+              {step === 2 && (
                 <div className="wiz__step">
                   <h2 className="wiz__q">Tell us about your home</h2>
                   <div className="hv-grid">
@@ -318,7 +240,7 @@ export default function HomeValuePage() {
                 </div>
               )}
 
-              {step === 2 && (
+              {step === 3 && (
                 <div className="wiz__step">
                   <h2 className="wiz__q">A few more details</h2>
                   <div className="hv-grid hv-grid--2">
@@ -342,7 +264,7 @@ export default function HomeValuePage() {
                 </div>
               )}
 
-              {step === 3 && (
+              {step === 4 && (
                 <div className="wiz__step">
                   <h2 className="wiz__q">Where should we send your report?</h2>
                   <div className="hv-grid hv-grid--2">
@@ -357,20 +279,22 @@ export default function HomeValuePage() {
                 </div>
               )}
 
-              {err && step >= 1 && <p className="hv-err">{err}</p>}
+              {err && <p className="hv-err">{err}</p>}
               <div className="wiz__nav">
                 {step > 1 ? <button type="button" className="btn btn--ghost" onClick={back}>Back</button> : <span />}
-                <button type="button" className="btn btn--primary" onClick={next} disabled={loading}>
-                  {step === 3 ? (loading ? "Building your report…" : "Get My Home Value Report") : "Next"}
-                </button>
+                {step === 1 ? (
+                  <button type="button" className="btn btn--primary" onClick={next} disabled={!picked}>Continue</button>
+                ) : (
+                  <button type="button" className="btn btn--primary" onClick={next} disabled={loading}>
+                    {step === 4 ? (loading ? "Building your report…" : "Get My Home Value Report") : "Next"}
+                  </button>
+                )}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* --- Result --- */}
-        {done && (
-          <div className="wrap" style={{ maxWidth: 720 }}>
+          {/* ---- result ---- */}
+          {done && (
             <div className="hv-thanks">
               <div className="hv-result">
                 <span className="script" style={{ fontSize: "1.6rem" }}>thank you{firstName ? `, ${firstName}` : ""}!</span>
@@ -410,8 +334,59 @@ export default function HomeValuePage() {
                 </p>
               )}
             </div>
-          </div>
-        )}
+          )}
+
+          {/* ---- marketing copy (always under the card until they finish) ---- */}
+          {!done && (
+            <>
+              <section className="hv-how">
+                <span className="section__script script">how it works</span>
+                <h2 className="section__title">Your home value in three quick steps</h2>
+                <div className="hv-steps">
+                  <div className="hv-step">
+                    <div className="hv-step__n">1</div>
+                    <h3>Enter your address</h3>
+                    <p>Type it in above and pick your home from the list. That tells us exactly which neighborhood and market to analyze.</p>
+                  </div>
+                  <div className="hv-step">
+                    <div className="hv-step__n">2</div>
+                    <h3>Tell us about your home</h3>
+                    <p>A few quick details — beds, baths, square footage, and condition — sharpen the estimate so it reflects <em>your</em> home.</p>
+                  </div>
+                  <div className="hv-step">
+                    <div className="hv-step__n">3</div>
+                    <h3>Get your value range</h3>
+                    <p>We instantly compare the most similar recent sales near you and hand you a value range plus a downloadable report.</p>
+                  </div>
+                </div>
+              </section>
+
+              <section className="hv-why">
+                <div className="hv-why__copy">
+                  <span className="section__script script">why it matters</span>
+                  <h2 className="section__title">Real local sales — not a national guess</h2>
+                  <p className="prose">
+                    Most online estimators run your address through a one-size-fits-all national model. Ours is
+                    different. We pull from homes that have <strong>actually closed in Southwest Louisiana over
+                    the last six months</strong> and weight the ones most like yours — similar size, bedroom
+                    count, and ZIP code — so the range reflects what buyers here are truly paying right now.
+                  </p>
+                  <p className="prose">
+                    Whether you&apos;re thinking about selling this year, refinancing, or just curious how much
+                    equity you&apos;ve built, it&apos;s a smart, no-pressure first step. And when you&apos;re
+                    ready for an exact figure, we&apos;ll walk your home in person — free.
+                  </p>
+                </div>
+                <ul className="hv-why__list">
+                  <li><b>Built on recent SWLA sales</b><span>The last 6 months, filtered to homes like yours.</span></li>
+                  <li><b>Instant &amp; private</b><span>Your range in seconds, your details kept confidential.</span></li>
+                  <li><b>Downloadable report</b><span>A clean PDF you can save, print, or share.</span></li>
+                  <li><b>A real human follow-up</b><span>Want exact numbers? We&apos;ll do a free in-home valuation.</span></li>
+                </ul>
+              </section>
+            </>
+          )}
+        </div>
       </main>
     </>
   );
