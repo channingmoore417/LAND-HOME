@@ -85,7 +85,6 @@ export default async function Home() {
                 <button className="hsearch__btn" type="submit">Search</button>
               </form>
               <div className="hero__cta">
-                <Link className="btn btn--aqua" href="/listings">Browse Homes for Sale</Link>
                 <Link className="btn btn--hollow" href="/home-value">What&apos;s My Home Worth?</Link>
               </div>
               <a className="gbadge" href={GBP_URL} target="_blank" rel="noopener" aria-label="Rated 5 stars on Google — read our reviews">

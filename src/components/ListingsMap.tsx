@@ -34,7 +34,7 @@ function FitOnce({ pins }: { pins: MapPin[] }) {
     if (done.current || pins.length === 0) return;
     done.current = true;
     const bounds = L.latLngBounds(pins.map((p) => [p.latitude, p.longitude] as [number, number]));
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
   }, [pins, map]);
   return null;
 }

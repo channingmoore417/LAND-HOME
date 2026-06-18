@@ -84,7 +84,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
 
     return (
       <>
-        <Hero areaName={areaName} city={f.city} total={total} />
+        <Hero areaName={areaName} city={f.city} total={total} query={f.q} view={view} />
         <TrackSearch criteria={searchMeta} />
         <main className="results">
           <div className="wrapwide">
@@ -133,7 +133,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
 
   return (
     <>
-      <Hero areaName={areaName} city={f.city} total={total} />
+      <Hero areaName={areaName} city={f.city} total={total} query={f.q} view={view} />
       <TrackSearch criteria={searchMeta} />
       <main className="results">
         <div className="wrap">
@@ -208,9 +208,9 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
   );
 }
 
-function Hero({ areaName, city, total }: { areaName: string; city: string; total: number }) {
+function Hero({ areaName, city, total, query, view }: { areaName: string; city: string; total: number; query: string; view: "split" | "list" }) {
   return (
-    <header className="hero hero--index">
+    <header className="hero hero--index hero--listings">
       <div className="wrap">
         <div className="hero__crumb">
           <Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/listings">Listings</Link>
@@ -218,20 +218,12 @@ function Hero({ areaName, city, total }: { areaName: string; city: string; total
         </div>
         <span className="hero__script">homes for sale in</span>
         <h1>{areaName}</h1>
-        <p className="hero__sub">
-          Browse active listings across Lake Charles, Sulphur, and Southwest Louisiana —
-          search right on the map or filter by price, beds and more.
-        </p>
-        <div className="hero__meta">
-          <div>
-            <div className="n"><b>{total.toLocaleString()}</b></div>
-            <div className="k">Matching Listings</div>
-          </div>
-          <div>
-            <div className="n">13</div>
-            <div className="k">SWLA Communities</div>
-          </div>
-        </div>
+        <form className="hsearch" action="/listings" method="get">
+          <input type="hidden" name="view" value={view} />
+          <input className="hsearch__input" type="text" name="q" defaultValue={query}
+            placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
+          <button className="hsearch__btn" type="submit">Search</button>
+        </form>
       </div>
       <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M0,40 C240,90 480,90 720,55 C960,20 1200,20 1440,55 L1440,90 L0,90 Z" fill="#F8FAFB" />
