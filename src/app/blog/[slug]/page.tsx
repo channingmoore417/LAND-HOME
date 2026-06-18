@@ -6,6 +6,7 @@ import { photo } from "@/lib/images";
 import { site } from "@/config/site";
 import BlogBody from "@/components/BlogBody";
 import BlogCover from "@/components/BlogCover";
+import AuthorCard from "@/components/AuthorCard";
 import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,14 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       headline: post.title,
       description: post.meta_description || post.excerpt || undefined,
       datePublished: post.published_at,
-      author: { "@type": "Organization", name: post.author },
+      author: {
+        "@type": "Person",
+        name: site.blogAuthor.name,
+        jobTitle: "Team Leader, " + site.name,
+        worksFor: { "@type": "RealEstateAgent", name: site.name },
+        url: `${SITE}/about`,
+        sameAs: [site.blogAuthor.gbpUrl],
+      },
       publisher: { "@type": "RealEstateAgent", name: site.name },
       mainEntityOfPage: pageUrl,
       ...(post.cover_image ? { image: post.cover_image } : {}),
@@ -66,7 +74,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           </nav>
           <h1 className="article__title">{post.title}</h1>
           <div className="article__byline">
-            {post.author} · {fmtDate(post.published_at)}{post.read_minutes ? ` · ${post.read_minutes} min read` : ""}
+            By {site.blogAuthor.name} · {fmtDate(post.published_at)}{post.read_minutes ? ` · ${post.read_minutes} min read` : ""}
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -82,6 +90,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           )}
 
           <BlogBody markdown={post.body} />
+
+          <AuthorCard />
 
           {/* CTA */}
           <section className="article__cta">
