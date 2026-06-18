@@ -19,6 +19,7 @@ const FORM_IDS = [
   "home_valuation",
   "mortgage_preapproval",
   "buyer_guide",
+  "buyer_quiz",
 ] as const;
 type FormId = (typeof FORM_IDS)[number];
 
