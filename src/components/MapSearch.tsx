@@ -18,11 +18,15 @@ export default function MapSearch({
   initialPins,
   initialTotal,
   query,
+  qText,
+  listHref,
 }: {
   initialCards: Card[];
   initialPins: MapPin[];
   initialTotal: number;
   query: string; // active filter query string (no view/page)
+  qText: string; // current search text (for the input)
+  listHref: string; // link to the List view (preserves filters)
 }) {
   const [cards, setCards] = useState<Card[]>(initialCards);
   const [pins, setPins] = useState<MapPin[]>(initialPins);
@@ -63,13 +67,20 @@ export default function MapSearch({
   return (
     <div className={`mapsearch mapsearch--${mobilePane}`}>
       <div className="mapsearch__bar">
-        <div className="mapsearch__count">
-          {loading ? "Searching…" : <><b>{total.toLocaleString()}</b> home{total === 1 ? "" : "s"}{searchOnMove ? " in this area" : ""}</>}
-        </div>
+        <form className="hsearch hsearch--bar" action="/listings" method="get">
+          <input type="hidden" name="view" value="split" />
+          <input className="hsearch__input" type="text" name="q" defaultValue={qText}
+            placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
+          <button className="hsearch__btn" type="submit">Search</button>
+        </form>
         <label className="mapsearch__toggle">
           <input type="checkbox" checked={searchOnMove} onChange={(e) => toggleSearchOnMove(e.target.checked)} />
-          <span>Search as I move the map</span>
+          <span>{loading ? "Searching…" : <><b>{total.toLocaleString()}</b> homes · search as I move</>}</span>
         </label>
+        <div className="viewtoggle mapsearch__view">
+          <span className="is-on">Map</span>
+          <a href={listHref}>List</a>
+        </div>
         <div className="mapsearch__panes">
           <button type="button" className={mobilePane === "list" ? "is-on" : ""} onClick={() => setMobilePane("list")}>List</button>
           <button type="button" className={mobilePane === "map" ? "is-on" : ""} onClick={() => setMobilePane("map")}>Map</button>

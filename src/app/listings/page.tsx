@@ -85,20 +85,16 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
     return (
       <>
         <Hero areaName={areaName} city={f.city} />
-        <ListBar view={view} query={f.q} viewHref={viewHref} wide />
         <TrackSearch criteria={searchMeta} />
         <main className="results">
           <div className="wrapwide">
-            <div className="results__head">
-              <div className="meta">
-                {f.city || f.q ? <><b>{total.toLocaleString()}</b> {total === 1 ? "home" : "homes"}{f.city ? ` in ${f.city}` : ""}</> : "Drag or zoom the map to search an area"}
-              </div>
-            </div>
             <MapSearch
               initialCards={rows}
               initialPins={pins}
               initialTotal={total}
               query={apiQuery.toString()}
+              qText={f.q}
+              listHref={viewHref("list")}
             />
           </div>
         </main>
@@ -202,7 +198,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
 
 function Hero({ areaName, city }: { areaName: string; city: string }) {
   return (
-    <header className="hero hero--index hero--listings" style={{ paddingBottom: 52 }}>
+    <header className="hero hero--index hero--listings">
       <div className="wrap">
         <div className="hero__crumb">
           <Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/listings">Listings</Link>
@@ -210,6 +206,10 @@ function Hero({ areaName, city }: { areaName: string; city: string }) {
         </div>
         <span className="hero__script">homes for sale in</span>
         <h1>{areaName}</h1>
+        <p className="hero__sub">
+          Browse active listings across Lake Charles, Sulphur, and Southwest Louisiana — search on the
+          map or filter by price, beds and more.
+        </p>
       </div>
       <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M0,40 C240,90 480,90 720,55 C960,20 1200,20 1440,55 L1440,90 L0,90 Z" fill="#F8FAFB" />
