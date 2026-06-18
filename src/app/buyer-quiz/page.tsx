@@ -34,7 +34,7 @@ const PRICE_BANDS: { label: string; min?: number; max?: number }[] = [
 
 const BEDS = ["1+", "2+", "3+", "4+", "5+"];
 const BATHS = ["1+", "2+", "3+", "4+"];
-const STEPS = ["intro", "communities", "price", "features", "details", "timeline", "contact", "done"] as const;
+const STEPS = ["intro", "communities", "price", "features", "beds", "baths", "timeline", "contact", "done"] as const;
 
 interface Answers {
   communities: string[]; price: string; features: string[]; timeline: string;
@@ -138,7 +138,7 @@ export default function BuyerQuizPage() {
 
           {name === "communities" && (
             <>
-              <div className="quiz-eyebrow">Question 1 of 6</div>
+              <div className="quiz-eyebrow">Question 1 of 7</div>
               <h2 className="wiz__q">Where are you looking?</h2>
               <p className="prose" style={{ color: "var(--ink-muted)" }}>Pick every community you&apos;d consider — choose as many as you like.</p>
               <div className="quiz-grid">
@@ -152,7 +152,7 @@ export default function BuyerQuizPage() {
 
           {name === "price" && (
             <>
-              <div className="quiz-eyebrow">Question 2 of 6</div>
+              <div className="quiz-eyebrow">Question 2 of 7</div>
               <h2 className="wiz__q">What&apos;s your price range?</h2>
               <p className="prose" style={{ color: "var(--ink-muted)" }}>A rough band is fine — it just helps us match the right listings.</p>
               <div className="quiz-grid">
@@ -166,7 +166,7 @@ export default function BuyerQuizPage() {
 
           {name === "features" && (
             <>
-              <div className="quiz-eyebrow">Question 3 of 6</div>
+              <div className="quiz-eyebrow">Question 3 of 7</div>
               <h2 className="wiz__q">What matters most?</h2>
               <p className="prose" style={{ color: "var(--ink-muted)" }}>Select any must-haves, or skip if you&apos;re flexible.</p>
               <div className="quiz-rows">
@@ -178,29 +178,37 @@ export default function BuyerQuizPage() {
             </>
           )}
 
-          {name === "details" && (
+          {name === "beds" && (
             <>
-              <div className="quiz-eyebrow">Question 4 of 6</div>
-              <h2 className="wiz__q">Size of home</h2>
-              <div className="quiz-label">Bedrooms</div>
+              <div className="quiz-eyebrow">Question 4 of 7</div>
+              <h2 className="wiz__q">How many bedrooms?</h2>
+              <p className="prose" style={{ color: "var(--ink-muted)" }}>Pick the minimum you need.</p>
               <div className="quiz-grid quiz-grid--compact">
                 {BEDS.map((b) => (
-                  <button key={b} className={`quiz-chip${a.beds === b ? " is-on" : ""}`} onClick={() => set({ beds: b })}>{b}</button>
+                  <button key={b} className={`quiz-chip${a.beds === b ? " is-on" : ""}`} onClick={() => pick({ beds: b })}>{b}</button>
                 ))}
               </div>
-              <div className="quiz-label">Bathrooms</div>
+              <Nav onBack={back} hideNext />
+            </>
+          )}
+
+          {name === "baths" && (
+            <>
+              <div className="quiz-eyebrow">Question 5 of 7</div>
+              <h2 className="wiz__q">How many bathrooms?</h2>
+              <p className="prose" style={{ color: "var(--ink-muted)" }}>Pick the minimum you need.</p>
               <div className="quiz-grid quiz-grid--compact">
                 {BATHS.map((b) => (
-                  <button key={b} className={`quiz-chip${a.baths === b ? " is-on" : ""}`} onClick={() => set({ baths: b })}>{b}</button>
+                  <button key={b} className={`quiz-chip${a.baths === b ? " is-on" : ""}`} onClick={() => pick({ baths: b })}>{b}</button>
                 ))}
               </div>
-              <Nav onBack={back} onNext={next} canNext />
+              <Nav onBack={back} hideNext />
             </>
           )}
 
           {name === "timeline" && (
             <>
-              <div className="quiz-eyebrow">Question 5 of 6</div>
+              <div className="quiz-eyebrow">Question 6 of 7</div>
               <h2 className="wiz__q">When do you hope to move?</h2>
               <p className="prose" style={{ color: "var(--ink-muted)" }}>No wrong answer — it just tells us how to help.</p>
               <div className="quiz-rows">
@@ -214,7 +222,7 @@ export default function BuyerQuizPage() {
 
           {name === "contact" && (
             <>
-              <div className="quiz-eyebrow">Question 6 of 6</div>
+              <div className="quiz-eyebrow">Question 7 of 7</div>
               <h2 className="wiz__q">Where should we send your matches?</h2>
               <p className="prose" style={{ color: "var(--ink-muted)" }}>We&apos;ll put together a personalized list and reach out — no spam, no pressure.</p>
               <div className="hv-grid hv-grid--2" style={{ marginTop: 18 }}>
