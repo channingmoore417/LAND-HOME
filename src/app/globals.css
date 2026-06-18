@@ -684,7 +684,7 @@ textarea.input{resize:vertical;min-height:84px;}
 }
 
 /* ---- Google review badge ---- */
-.gbadge{display:inline-flex;align-items:center;gap:9px;background:#fff;border-radius:30px;padding:8px 16px;margin-bottom:16px;box-shadow:0 8px 22px rgba(11,32,44,.22);transition:.2s;}
+.gbadge{display:inline-flex;align-items:center;gap:9px;background:#fff;border-radius:30px;padding:9px 18px;margin-top:22px;box-shadow:0 8px 22px rgba(11,32,44,.22);transition:.2s;}
 .gbadge:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(11,32,44,.3);}
 .gbadge__g{font-family:"Outfit";font-weight:800;font-size:1.05rem;color:#4285F4;}
 .gbadge__stars{color:#F2B01E;letter-spacing:1px;font-size:.92rem;}

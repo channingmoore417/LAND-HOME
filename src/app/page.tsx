@@ -5,7 +5,7 @@ import AreaShowcase from "@/components/AreaShowcase";
 import LocalMap from "@/components/LocalMap";
 import JsonLd from "@/components/JsonLd";
 import Testimonials from "@/components/Testimonials";
-import { fetchCards, fetchFirstPhotos, listingStats } from "@/lib/listings";
+import { fetchCards, fetchFirstPhotos } from "@/lib/listings";
 import { cityCards } from "@/lib/neighborhoods";
 import { REVIEWS } from "@/lib/reviews";
 import { site } from "@/config/site";
@@ -24,8 +24,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [stats, { rows: team }, cities] = await Promise.all([
-    listingStats({}),
+  const [{ rows: team }, cities] = await Promise.all([
     fetchCards({ lhgOnly: true }, { limit: 6, sort: "new" }),
     cityCards(),
   ]);
@@ -76,11 +75,6 @@ export default async function Home() {
         <div className="wrap">
           <div className="herohome">
             <div className="herohome__copy">
-              <a className="gbadge" href={GBP_URL} target="_blank" rel="noopener" aria-label="Rated 5 stars on Google — read our reviews">
-                <span className="gbadge__g">G</span>
-                <span className="gbadge__stars">★★★★★</span>
-                <span className="gbadge__txt">5.0 on Google</span>
-              </a>
               <span className="hero__script">your local real estate guide</span>
               <h1>Lake Charles Realtor</h1>
               <p className="hero__sub">
@@ -92,16 +86,11 @@ export default async function Home() {
                 <Link className="btn btn--aqua" href="/listings">Browse Homes for Sale</Link>
                 <Link className="btn btn--hollow" href="/home-value">What&apos;s My Home Worth?</Link>
               </div>
-              <div className="hero__meta">
-                <div>
-                  <div className="n"><b>{stats.count.toLocaleString()}</b></div>
-                  <div className="k">Active Listings</div>
-                </div>
-                <div>
-                  <div className="n">13</div>
-                  <div className="k">SWLA Communities</div>
-                </div>
-              </div>
+              <a className="gbadge" href={GBP_URL} target="_blank" rel="noopener" aria-label="Rated 5 stars on Google — read our reviews">
+                <span className="gbadge__g">G</span>
+                <span className="gbadge__stars">★★★★★</span>
+                <span className="gbadge__txt">5.0 on Google · read our reviews</span>
+              </a>
             </div>
             <div className="herohome__photo">
               {/* eslint-disable-next-line @next/next/no-img-element */}
