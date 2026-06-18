@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default async function ListingsPage({ searchParams }: { searchParams: SP }) {
   const f = parseFilters(searchParams);
   const page = Math.max(1, Number(one(searchParams.page)) || 1);
-  const view = one(searchParams.view) === "list" ? "list" : "split";
+  const view = one(searchParams.view) === "split" ? "split" : "list";
   const criteria = toCriteria(f);
 
   const areaName = f.city ? `${f.city}, Louisiana` : "Southwest Louisiana";
@@ -39,7 +39,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
   const keepStr = keep.toString();
   const viewHref = (v: "split" | "list") => {
     const p = new URLSearchParams(keepStr);
-    if (v === "list") p.set("view", "list");
+    if (v === "split") p.set("view", "split"); // list is the default
     return `/listings${p.toString() ? `?${p}` : ""}`;
   };
 
@@ -114,10 +114,9 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
   const baseStr = keepStr; // includes view=... ? no; keep excludes page only when... keep excludes view+page
   const pageHref = (n: number) => {
     const p = new URLSearchParams(keepStr);
-    p.set("view", "list");
     if (f.sort !== "new") p.set("sort", f.sort);
     if (n > 1) p.set("page", String(n));
-    return `/listings?${p.toString()}`;
+    return `/listings${p.toString() ? `?${p}` : ""}`;
   };
 
   return (
@@ -144,7 +143,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
                     <Link href={viewHref("split")}>Map</Link>
                     <Link className="is-on" href={viewHref("list")}>List</Link>
                   </div>
-                  <SortSelect sort={f.sort} baseQuery={`${baseStr}${baseStr ? "&" : ""}view=list`} />
+                  <SortSelect sort={f.sort} baseQuery={baseStr} />
                 </div>
               </div>
 
