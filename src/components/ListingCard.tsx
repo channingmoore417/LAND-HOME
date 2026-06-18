@@ -43,7 +43,7 @@ export default function ListingCard({ c }: { c: Card }) {
           <div style={{ width: "100%", height: "100%", background: "#cfe0e4" }} />
         )}
         <span className={`pcard__status${badge.cls}`}>{badge.label}</span>
-        <FavButton />
+        <FavButton listingKey={c.listing_key} />
         {c.photos_count ? <span className="pcard__photos">&#9634; {c.photos_count}</span> : null}
       </div>
       <div className="pcard__body">

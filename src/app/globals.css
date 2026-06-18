@@ -707,6 +707,24 @@ textarea.input{resize:vertical;min-height:84px;}
 .home-cta .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:15px 30px;}
 .home-cta--tight{margin:0 auto 8px;padding-top:8px;}
 
+/* ---- auth (account) ---- */
+.nav__account{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:#fff;font-size:.84rem;font-weight:700;padding:9px 16px;border-radius:30px;transition:.2s;cursor:pointer;font-family:inherit;}
+.nav__account:hover{background:rgba(255,255,255,.12);border-color:#fff;}
+.nav__mobile-signin{background:none;border:0;color:var(--aqua);font-weight:700;text-align:left;padding:14px 0;font-family:inherit;font-size:1rem;cursor:pointer;}
+.authm{position:fixed;inset:0;z-index:200;background:rgba(11,32,44,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease;}
+.authm__card{position:relative;background:var(--paper);border-radius:20px;max-width:440px;width:100%;padding:30px 28px;box-shadow:0 30px 70px rgba(11,32,44,.4);max-height:92vh;overflow-y:auto;animation:wizIn .3s ease;}
+.authm__close{position:absolute;top:12px;right:14px;background:none;border:0;font-size:1.6rem;line-height:1;color:var(--ink-muted);cursor:pointer;}
+.authm__close:hover{color:var(--teal);}
+.authm__title{font-family:"Outfit",sans-serif;font-weight:700;font-size:1.5rem;color:var(--teal-deep);margin:2px 0 6px;letter-spacing:-.01em;}
+.authm__sub{color:var(--ink-muted);font-size:.92rem;margin:0 0 18px;line-height:1.5;}
+.authm__card .field{margin-bottom:14px;}
+.authm__card .btn{margin-top:6px;}
+.authm__toggle{text-align:center;color:var(--ink-muted);font-size:.86rem;margin:14px 0 0;}
+.authm__toggle button{background:none;border:0;color:var(--teal);font-weight:700;cursor:pointer;font-family:inherit;font-size:.86rem;}
+.acct-ss{list-style:none;margin:0;padding:0;display:grid;gap:10px;}
+.acct-ss li{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-weight:600;color:var(--teal-deep);}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
 /* ---- buyer match quiz ---- */
 .quiz{padding-top:36px;}
 .quiz__card{margin-top:0;}

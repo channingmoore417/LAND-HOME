@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { useAuth } from "@/components/AuthProvider";
 
 interface NavChild { label: string; href: string }
 interface NavItem { label: string; href: string; children?: readonly NavChild[] }
@@ -13,6 +14,7 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   const nav = site.nav as readonly NavItem[];
+  const { user, ready, openAuth } = useAuth();
 
   return (
     <nav className="nav">
@@ -41,6 +43,11 @@ export default function SiteHeader() {
           )}
         </div>
 
+        {ready && (user ? (
+          <Link className="nav__account" href="/account" aria-label="My account">♥ Saved</Link>
+        ) : (
+          <button className="nav__account" onClick={() => openAuth()}>Sign in</button>
+        ))}
         <a className="nav__cta" href={site.phoneHref}>{site.phone}</a>
         <button
           className="nav__toggle"
@@ -65,6 +72,11 @@ export default function SiteHeader() {
               </div>
             )}
           </div>
+        ))}
+        {ready && (user ? (
+          <Link href="/account" onClick={close}>♥ My Saved Homes</Link>
+        ) : (
+          <button className="nav__mobile-signin" onClick={() => { close(); openAuth(); }}>Sign in / Create account</button>
         ))}
         <a className="nav__mobile-cta" href={site.phoneHref} onClick={close}>{site.phone}</a>
       </div>
