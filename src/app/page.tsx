@@ -133,9 +133,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SOCIAL PROOF — client reviews */}
-      <Testimonials reviewsUrl={GBP_URL} />
-
       {/* FEATURED — the team's own listings */}
       {team.length > 0 && (
         <section className="results" style={{ paddingTop: 8 }}>
@@ -157,6 +154,9 @@ export default async function Home() {
         </section>
       )}
 
+      {/* SOCIAL PROOF — client reviews */}
+      <Testimonials reviewsUrl={GBP_URL} />
+
       {/* BROWSE BY CITY — homes for sale in each community */}
       <AreaShowcase
         eyebrow="by community"
@@ -169,33 +169,44 @@ export default async function Home() {
         <Link className="btn btn--ghost" href="/buy">Explore Buying in SWLA</Link>
       </div>
 
-      {/* SELL — the CMA tool */}
+      {/* BUY / SELL TOOLS — dual boxes */}
       <section className="seo-body">
-        <div className="wrap home-sell">
-          <div className="home-sell__copy">
-            <span className="script">thinking of selling?</span>
-            <h2 className="section__title">Know what your home is really worth</h2>
-            <p className="prose">
-              Guessing at your home&apos;s value — or trusting a national estimate that&apos;s never set
-              foot in Louisiana — costs you money. Our free report builds a custom value range from the
-              most comparable homes that have actually sold near you in the last six months.
-            </p>
-            <p className="prose">
-              It takes about a minute, there&apos;s no obligation, and you&apos;ll get a downloadable report
-              plus a real human ready to help when you&apos;re ready to sell.
-            </p>
-            <Link className="btn btn--primary" href="/home-value" style={{ maxWidth: 280 }}>
-              Get My Free Home Value
-            </Link>
+        <div className="wrap">
+          <div style={{ textAlign: "center" }}>
+            <span className="script">buying or selling?</span>
+            <h2 className="section__title">Start with the right tool</h2>
           </div>
-          <div className="home-sell__card">
-            <span className="home-sell__big">What&apos;s my home worth?</span>
-            <ul>
-              <li>✓ Built on recent SWLA sales</li>
-              <li>✓ A custom value range in seconds</li>
-              <li>✓ Free, downloadable report</li>
-              <li>✓ No pressure, ever</li>
-            </ul>
+          <div className="home-tools">
+            <div className="home-tool">
+              <span className="home-tool__eyebrow">for sellers</span>
+              <h3>What&apos;s my home worth?</h3>
+              <p>
+                Get a custom value range built from the most comparable homes that have actually sold
+                near you in the last six months — not a national guess.
+              </p>
+              <ul>
+                <li>✓ Built on recent local sales</li>
+                <li>✓ A custom value range in seconds</li>
+                <li>✓ Free, downloadable report</li>
+                <li>✓ No pressure, ever</li>
+              </ul>
+              <Link className="btn btn--aqua" href="/home-value">Get My Free Home Value</Link>
+            </div>
+            <div className="home-tool">
+              <span className="home-tool__eyebrow">for buyers</span>
+              <h3>Your home buying guide</h3>
+              <p>
+                New to the area or buying your first home? See how buying works in Southwest Louisiana,
+                explore every community, and find the right fit with a local team in your corner.
+              </p>
+              <ul>
+                <li>✓ Browse homes by city &amp; price</li>
+                <li>✓ How the buying process works here</li>
+                <li>✓ Get pre-approved with confidence</li>
+                <li>✓ A local guide every step</li>
+              </ul>
+              <Link className="btn btn--aqua" href="/buy">Explore Buying in SWLA</Link>
+            </div>
           </div>
         </div>
       </section>

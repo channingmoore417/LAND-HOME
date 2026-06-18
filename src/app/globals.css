@@ -707,6 +707,17 @@ textarea.input{resize:vertical;min-height:84px;}
 .home-cta .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:15px 30px;}
 .home-cta--tight{margin:0 auto 8px;padding-top:8px;}
 
+/* ---- home: dual buy/sell tool boxes ---- */
+.home-tools{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:30px;}
+.home-tool{background:linear-gradient(155deg,var(--teal),var(--teal-deep));color:#fff;border-radius:20px;padding:32px 30px;display:flex;flex-direction:column;box-shadow:0 16px 40px rgba(32,72,96,.18);}
+.home-tool__eyebrow{font-family:"Outfit",sans-serif;font-weight:700;font-size:.74rem;text-transform:uppercase;letter-spacing:.16em;color:var(--aqua);}
+.home-tool h3{font-family:"Outfit",sans-serif;font-weight:700;font-size:1.55rem;margin:8px 0 10px;color:#fff;}
+.home-tool p{color:rgba(255,255,255,.85);margin:0 0 16px;line-height:1.6;}
+.home-tool ul{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:9px;}
+.home-tool li{color:rgba(255,255,255,.9);font-size:.96rem;}
+.home-tool .btn{margin-top:auto;width:100%;}
+@media(max-width:820px){.home-tools{grid-template-columns:1fr;}}
+
 /* ---- home: sell / CMA section ---- */
 .home-sell{display:grid;grid-template-columns:1.3fr .9fr;gap:40px;align-items:center;}
 .home-sell__copy .section__title{margin:4px 0 14px;}
