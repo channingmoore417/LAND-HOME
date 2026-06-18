@@ -89,9 +89,6 @@ export default function AuthModal({
           <button className="oauthbtn oauthbtn--google" onClick={() => oauth("google")}>
             <span className="oauthbtn__g">G</span> Sign in with Google
           </button>
-          <button className="oauthbtn oauthbtn--apple" onClick={() => oauth("apple")}>
-             Sign in with Apple
-          </button>
         </div>
 
         <div className="authm__or"><span>or</span></div>
