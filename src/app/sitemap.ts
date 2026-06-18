@@ -13,7 +13,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE}/`, changeFrequency: "daily", priority: 1 },
     { url: `${SITE}/listings`, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${SITE}/blog`, changeFrequency: "weekly", priority: 0.7 },
   ];
+
+  // Blog posts.
+  let blog: MetadataRoute.Sitemap = [];
+  try {
+    const supabase = getPublicClient();
+    const { data } = await supabase
+      .from("blog_posts")
+      .select("slug, updated_at")
+      .eq("published", true);
+    blog = ((data as { slug: string; updated_at: string | null }[]) ?? []).map((r) => ({
+      url: `${SITE}/blog/${r.slug}`,
+      lastModified: r.updated_at ? new Date(r.updated_at) : undefined,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+  } catch (e) {
+    console.error("[sitemap] blog fetch failed:", (e as Error).message);
+  }
 
   // Programmatic SEO landing pages (/[city]/[topic]).
   let seoPages: MetadataRoute.Sitemap = [];
@@ -53,5 +72,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] listing fetch failed:", (e as Error).message);
   }
 
-  return [...staticRoutes, ...seoPages, ...listings];
+  return [...staticRoutes, ...blog, ...seoPages, ...listings];
 }
