@@ -14,8 +14,6 @@ export const dynamic = "force-dynamic";
 
 const SITE = "https://landhomegroup.com";
 const GBP_URL = "https://share.google/P0z9MIBZPEnlqMUMh";
-const HERO_PHOTO =
-  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f58bc828629fa81bf19.webp";
 
 export const metadata: Metadata = {
   title: "Lake Charles Realtor | The Land & Home Group",
@@ -94,11 +92,6 @@ export default async function Home() {
                 <span className="gbadge__stars">★★★★★</span>
                 <span className="gbadge__txt">5.0 on Google · read our reviews</span>
               </a>
-            </div>
-            <div className="herohome__photo">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={HERO_PHOTO} alt="Happy homeowners on closing day with The Land & Home Group" />
-              <span className="herohome__tag">Another happy closing 🎉</span>
             </div>
           </div>
         </div>
