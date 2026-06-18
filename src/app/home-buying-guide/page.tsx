@@ -4,9 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
 
-// TODO: point this at the real guide file (PDF). Drop the URL here and the
-// page captures the lead, then downloads/opens this guide.
-const GUIDE_URL = "/home-buyers-guide.pdf";
+// The downloadable buyer's guide (PDF). Page captures the lead, then opens it.
+const GUIDE_URL =
+  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a33dc641c5d711b355d17f6.pdf";
 
 const TIMELINES = ["Just exploring", "0–3 months", "3–6 months", "6–12 months", "12+ months"];
 
