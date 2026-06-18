@@ -78,12 +78,13 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const signOut = useCallback(async () => { await supabase.auth.signOut(); setUser(null); }, [supabase]);
 
   const addFav = useCallback(async (key: string) => {
-    const uid = user?.id ?? (await supabase.auth.getUser()).data.user?.id;
+    const { data: { user: u } } = await supabase.auth.getUser();
+    const uid = u?.id;
     if (!uid) return;
     setFavs((s) => new Set(s).add(key));
-    await supabase.from("favorites").insert({ user_id: uid, listing_key: key });
+    await supabase.from("favorites").insert({ user_id: uid, listing_key: key, email: u.email ?? null });
     logActivity("save", { listingKey: key });
-  }, [user, supabase]);
+  }, [supabase]);
 
   const removeFav = useCallback(async (key: string) => {
     const uid = user?.id ?? (await supabase.auth.getUser()).data.user?.id;

@@ -5,8 +5,10 @@ import AreaShowcase from "@/components/AreaShowcase";
 import LocalMap from "@/components/LocalMap";
 import JsonLd from "@/components/JsonLd";
 import Testimonials from "@/components/Testimonials";
+import BlogCover from "@/components/BlogCover";
 import { fetchCards, fetchFirstPhotos } from "@/lib/listings";
 import { cityCards } from "@/lib/neighborhoods";
+import { getPosts } from "@/lib/blog";
 import { REVIEWS } from "@/lib/reviews";
 import { site } from "@/config/site";
 
@@ -22,9 +24,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [{ rows: team }, cities] = await Promise.all([
+  const [{ rows: team }, cities, posts] = await Promise.all([
     fetchCards({ lhgOnly: true }, { limit: 6, sort: "new" }),
     cityCards(),
+    getPosts({ limit: 3 }),
   ]);
   const photos = await fetchFirstPhotos(team.map((r) => r.listing_key));
   for (const r of team) r.photo_url = photos.get(r.listing_key) ?? null;
@@ -223,6 +226,33 @@ export default async function Home() {
           </a>
         </div>
       </section>
+
+      {/* FROM THE BLOG — local guides */}
+      {posts.length > 0 && (
+        <section className="results" style={{ paddingTop: 8 }}>
+          <div className="wrap">
+            <div className="results__head">
+              <div>
+                <span className="script" style={{ fontSize: "1.6rem" }}>local know-how</span>
+                <h2 className="section__title" style={{ margin: "2px 0 0" }}>From our blog</h2>
+              </div>
+              <Link className="seo-seeall" href="/blog">Read the blog &rarr;</Link>
+            </div>
+            <div className="bgrid">
+              {posts.map((p) => (
+                <Link key={p.id} className="bcard" href={`/blog/${p.slug}`}>
+                  <BlogCover slug={p.slug} title={p.title} category={p.category} cover={p.cover_image} />
+                  <div className="bcard__body">
+                    <h3 className="bcard__title">{p.title}</h3>
+                    {p.excerpt && <p className="bcard__ex">{p.excerpt}</p>}
+                    <span className="bcard__meta">{p.read_minutes ? `${p.read_minutes} min read` : "Read more"} &rarr;</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ABOUT / GUIDE — authority + empathy, team photo beside the copy */}
       <section className="seo-body" style={{ paddingBottom: 8 }}>

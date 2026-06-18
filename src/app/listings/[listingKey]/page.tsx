@@ -50,18 +50,58 @@ interface SimilarCard {
 
 async function getSimilar(listing: Listing): Promise<SimilarCard[]> {
   const supabase = getPublicClient();
-  const { data } = await supabase
+  const sel =
+    "listing_key, list_price, bedrooms_total, bathrooms_total, living_area, unparsed_address, city, photos_count, property_sub_type, property_type";
+  const price = listing.list_price ?? 0;
+  const beds = listing.bedrooms_total ?? null;
+  const sqft = listing.living_area ?? null;
+
+  // Pass 1: same city + property type, within a price band and ±1 bed.
+  let q = supabase
     .from("listings")
-    .select(
-      "listing_key, list_price, bedrooms_total, bathrooms_total, living_area, unparsed_address, city, photos_count",
-    )
-    .eq("city", listing.city)
+    .select(sel)
     .eq("standard_status", "Active")
+    .neq("internet_display_yn", false)
     .neq("listing_key", listing.listing_key)
     .gt("photos_count", 0)
-    .limit(3);
+    .ilike("city", listing.city ?? "");
+  if (listing.property_sub_type) q = q.eq("property_sub_type", listing.property_sub_type);
+  else if (listing.property_type) q = q.eq("property_type", listing.property_type);
+  if (price > 0) q = q.gte("list_price", Math.round(price * 0.7)).lte("list_price", Math.round(price * 1.3));
+  if (beds) q = q.gte("bedrooms_total", beds - 1).lte("bedrooms_total", beds + 1);
 
-  const rows = (data as Omit<SimilarCard, "photo">[]) ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let pool = ((await q.limit(40)).data as any[]) ?? [];
+
+  // Fallback: widen to same city + property type only, then same city.
+  if (pool.length < 3) {
+    let q2 = supabase.from("listings").select(sel)
+      .eq("standard_status", "Active").neq("internet_display_yn", false)
+      .neq("listing_key", listing.listing_key).gt("photos_count", 0)
+      .ilike("city", listing.city ?? "");
+    if (listing.property_sub_type) q2 = q2.eq("property_sub_type", listing.property_sub_type);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pool = ((await q2.limit(40)).data as any[]) ?? [];
+  }
+  if (pool.length < 3) {
+    const q3 = supabase.from("listings").select(sel)
+      .eq("standard_status", "Active").neq("internet_display_yn", false)
+      .neq("listing_key", listing.listing_key).gt("photos_count", 0)
+      .ilike("city", listing.city ?? "").limit(12);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pool = ((await q3).data as any[]) ?? [];
+  }
+
+  // Rank by closeness (price, then beds, then size) and take the 3 nearest.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dist = (r: any) => {
+    let d = 0;
+    if (price > 0) d += Math.abs((r.list_price ?? price) - price) / price;
+    if (beds) d += Math.abs((r.bedrooms_total ?? beds) - beds) * 0.2;
+    if (sqft) d += Math.abs((r.living_area ?? sqft) - sqft) / sqft * 0.5;
+    return d;
+  };
+  const rows = pool.sort((a, b) => dist(a) - dist(b)).slice(0, 3) as Omit<SimilarCard, "photo">[];
   if (rows.length === 0) return [];
 
   const { data: media } = await supabase
@@ -338,10 +378,10 @@ export default async function ListingPage({
         <section className="similar">
           <div className="wrap">
             <span className="script" style={{ fontSize: "1.7rem" }}>
-              more nearby
+              you might also like
             </span>
             <h2 className="section__title" style={{ marginTop: 0 }}>
-              More homes in {titleCase(listing.city)}
+              Similar homes in {titleCase(listing.city)}
             </h2>
             <div className="sim__grid">
               {similar.map((s) => (
