@@ -3,12 +3,31 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import AuthProvider from "@/components/AuthProvider";
 import { site } from "@/config/site";
+import { SITE_URL } from "@/lib/seoConfig";
 import "./globals.css";
 
+const DESC =
+  "The Land & Home Group — your Lake Charles realtor and Southwest Louisiana real estate team. Browse homes for sale, get a free home value, and work with trusted local agents.";
+
 export const metadata: Metadata = {
-  title: { default: site.name, template: `%s | ${site.name}` },
-  description:
-    "Modern coastal real estate across Lake Charles, Sulphur and Southwest Louisiana.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: `${site.name} | Lake Charles Real Estate`, template: `%s | ${site.name}` },
+  description: DESC,
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    url: SITE_URL,
+    title: `${site.name} | Lake Charles Real Estate`,
+    description: DESC,
+    locale: "en_US",
+    images: [{ url: site.teamPhotoUrl, width: 1200, height: 630, alt: `${site.name} — Lake Charles real estate team` }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name} | Lake Charles Real Estate`,
+    description: DESC,
+    images: [site.teamPhotoUrl],
+  },
 };
 
 export default function RootLayout({

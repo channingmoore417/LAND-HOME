@@ -45,7 +45,7 @@ function pageToFilters(page: SeoPage): ListingFilters {
 // These pages do only a few light, indexed queries, so dynamic is fine.
 export const dynamic = "force-dynamic";
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").replace(/\/$/, "");
+import { SITE_URL as SITE } from "@/lib/seoConfig";
 
 // Build the /listings search URL that matches this page's criteria, so "view
 // all" hands off to the full filterable search pre-filtered.

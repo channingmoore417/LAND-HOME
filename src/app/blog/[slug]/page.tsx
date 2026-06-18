@@ -11,7 +11,7 @@ import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
 
-const SITE = "https://landhomegroup.com";
+import { SITE_URL as SITE } from "@/lib/seoConfig";
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await getPost(params.slug);

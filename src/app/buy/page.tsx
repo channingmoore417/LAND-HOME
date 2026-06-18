@@ -10,7 +10,7 @@ import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").replace(/\/$/, "");
+import { SITE_URL as SITE } from "@/lib/seoConfig";
 
 export const metadata: Metadata = {
   title: "Buy a Home in Southwest Louisiana",

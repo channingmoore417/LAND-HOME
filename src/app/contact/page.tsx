@@ -4,7 +4,7 @@ import { site } from "@/config/site";
 import ContactForm from "@/components/ContactForm";
 import JsonLd from "@/components/JsonLd";
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").replace(/\/$/, "");
+import { SITE_URL as SITE } from "@/lib/seoConfig";
 
 export const metadata: Metadata = {
   title: "Contact Us",
