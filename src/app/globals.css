@@ -840,6 +840,13 @@ textarea.input{resize:vertical;min-height:84px;}
 .elig__name{font-family:"Outfit",sans-serif;font-weight:700;color:var(--teal-deep);}
 .elig__name em{font-style:normal;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--teal-mid);margin-left:8px;}
 .elig__desc{color:var(--ink-muted);font-size:.9rem;line-height:1.5;margin-top:3px;}
+.quiz-money{display:flex;align-items:center;gap:8px;}
+.quiz-money span{font-family:"Outfit",sans-serif;font-weight:800;font-size:1.3rem;color:var(--teal-mid);}
+.quiz-money .input{font-size:1.2rem;font-weight:600;}
+.elig-stats{display:flex;justify-content:center;gap:30px;flex-wrap:wrap;margin:22px 0 16px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+.elig-stats div{display:flex;flex-direction:column;text-align:center;}
+.elig-stats b{font-family:"Outfit",sans-serif;font-weight:800;font-size:1.5rem;color:var(--teal-deep);}
+.elig-stats span{color:var(--ink-muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
 
 /* ---- buyer guide landing ---- */
 .guidehero{display:grid;grid-template-columns:1.02fr .98fr;gap:42px;align-items:start;margin-top:6px;}
