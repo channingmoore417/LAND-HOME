@@ -188,6 +188,42 @@ export async function listingStats(c: ListingCriteria): Promise<ListingStats> {
   };
 }
 
+// Lightweight pins for the map view: coordinates + minimal card fields for the
+// popup. Capped so a wide-open search can't pull the whole feed at once.
+export interface MapPin {
+  listing_key: string;
+  list_price: number | null;
+  bedrooms_total: number | null;
+  bathrooms_total: number | null;
+  living_area: number | null;
+  unparsed_address: string | null;
+  city: string | null;
+  latitude: number;
+  longitude: number;
+  internet_address_yn: boolean;
+}
+
+export async function fetchMapPins(c: ListingCriteria, cap = 1500): Promise<MapPin[]> {
+  const supabase = getLiveClient();
+  const q = applyListingFilters(
+    supabase
+      .from("listings")
+      .select(
+        "listing_key, list_price, bedrooms_total, bathrooms_total, living_area, unparsed_address, city, latitude, longitude, internet_address_yn",
+      ),
+    c,
+  )
+    .not("latitude", "is", null)
+    .not("longitude", "is", null)
+    .limit(cap);
+  const { data, error } = await q;
+  if (error) {
+    console.error("[listings] map pins query failed:", error.message);
+    return [];
+  }
+  return (data as MapPin[]) ?? [];
+}
+
 // Fetch a page of cards for a criteria set.
 export async function fetchCards(
   c: ListingCriteria,

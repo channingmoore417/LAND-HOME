@@ -4,9 +4,10 @@ import ListingsControls, { type ListingFilters } from "@/components/ListingsCont
 import SortSelect from "@/components/SortSelect";
 import NotifyBand from "@/components/NotifyBand";
 import ListingCard from "@/components/ListingCard";
+import ListingsMapClient from "@/components/ListingsMapClient";
 import {
-  fetchCards, fetchFirstPhotos, PRICE_MAX, SQFT_MAX,
-  type ListingCriteria, type SortKey,
+  fetchCards, fetchFirstPhotos, fetchMapPins, PRICE_MAX, SQFT_MAX,
+  type ListingCriteria, type SortKey, type MapPin,
 } from "@/lib/listings";
 import { neighborhoodsFor, zipAreasFor, findNeighborhood } from "@/lib/neighborhoods";
 
@@ -74,17 +75,41 @@ function toCriteria(f: ListingFilters): ListingCriteria {
 export default async function ListingsPage({ searchParams }: { searchParams: SP }) {
   const f = parseFilters(searchParams);
   const page = Math.max(1, Number(one(searchParams.page)) || 1);
+  const view = one(searchParams.view) === "map" ? "map" : "grid";
+  const criteria = toCriteria(f);
 
-  const { rows, total } = await fetchCards(toCriteria(f), {
-    limit: PER,
-    offset: (page - 1) * PER,
-    sort: f.sort as SortKey,
-  });
-  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  let rows: Awaited<ReturnType<typeof fetchCards>>["rows"] = [];
+  let total = 0;
+  let pins: MapPin[] = [];
+  if (view === "map") {
+    pins = await fetchMapPins(criteria);
+    total = pins.length;
+  } else {
+    const res = await fetchCards(criteria, {
+      limit: PER,
+      offset: (page - 1) * PER,
+      sort: f.sort as SortKey,
+    });
+    rows = res.rows;
+    total = res.total;
+    const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
+    for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  }
 
   const pages = Math.max(1, Math.ceil(total / PER));
   const startIdx = (page - 1) * PER;
+
+  // List/Map toggle links (preserve filters + sort, drop page).
+  const toggle = new URLSearchParams();
+  for (const [k, v] of Object.entries(searchParams)) {
+    if (k === "view" || k === "page") continue;
+    for (const item of arr(v)) toggle.append(k, item);
+  }
+  const viewHref = (v: "grid" | "map") => {
+    const p = new URLSearchParams(toggle.toString());
+    if (v === "map") p.set("view", "map");
+    return `/listings${p.toString() ? `?${p}` : ""}`;
+  };
 
   // Base query (everything except sort/page) for the sort dropdown + pager.
   const base = new URLSearchParams();
@@ -144,7 +169,13 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
             <div className="searchgrid__main">
           <div className="results__head">
             <div className="meta">
-              {total > 0 ? (
+              {view === "map" ? (
+                total > 0 ? (
+                  <>Showing <b>{total.toLocaleString()}</b> homes on the map</>
+                ) : (
+                  <>No homes match your filters</>
+                )
+              ) : total > 0 ? (
                 <>
                   Showing <b>{startIdx + 1}–{Math.min(startIdx + rows.length, total)}</b> of{" "}
                   <b>{total.toLocaleString()}</b> homes
@@ -153,9 +184,24 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
                 <>No homes match your filters</>
               )}
             </div>
-            <SortSelect sort={f.sort} baseQuery={baseStr} />
+            <div className="results__tools">
+              <div className="viewtoggle">
+                <Link className={view === "grid" ? "is-on" : ""} href={viewHref("grid")}>List</Link>
+                <Link className={view === "map" ? "is-on" : ""} href={viewHref("map")}>Map</Link>
+              </div>
+              {view === "grid" && <SortSelect sort={f.sort} baseQuery={baseStr} />}
+            </div>
           </div>
 
+          {view === "map" ? (
+            <div className="lmap">
+              <ListingsMapClient pins={pins} />
+              {total >= 1500 && (
+                <p className="lmap__cap">Showing the first 1,500 matches — narrow your filters to see fewer.</p>
+              )}
+            </div>
+          ) : (
+          <>
           <div className="listings__grid">
             {rows.length === 0 ? (
               <div className="empty">
@@ -194,6 +240,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
                 )}
               {page < pages ? <Link href={pageHref(page + 1)}>&rsaquo;</Link> : <span className="disabled">&rsaquo;</span>}
             </nav>
+          )}
+          </>
           )}
             </div>
           </div>
