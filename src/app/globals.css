@@ -634,6 +634,11 @@ textarea.input{resize:vertical;min-height:84px;}
 
 /* split list + map */
 .wrapwide{max-width:1600px;margin:0 auto;padding:0 24px;}
+/* sticky search/toggle bar above results */
+.listbar{position:sticky;top:78px;z-index:50;background:var(--paper);border-bottom:1px solid var(--line);box-shadow:0 4px 14px rgba(22,56,72,.06);}
+.listbar__inner{max-width:1600px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.hsearch--bar{margin:0;flex:1;min-width:240px;max-width:620px;box-shadow:0 4px 14px rgba(11,32,44,.1);}
+@media(max-width:600px){.listbar{top:64px;}.hsearch--bar{max-width:none;}}
 .mapsearch{margin-top:4px;}
 .mapsearch__bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:14px;}
 .mapsearch__count{font-size:.92rem;color:var(--ink);}

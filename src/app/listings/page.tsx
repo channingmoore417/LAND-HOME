@@ -84,19 +84,14 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
 
     return (
       <>
-        <Hero areaName={areaName} city={f.city} total={total} query={f.q} view={view} />
+        <Hero areaName={areaName} city={f.city} />
+        <ListBar view={view} query={f.q} viewHref={viewHref} />
         <TrackSearch criteria={searchMeta} />
         <main className="results">
           <div className="wrapwide">
             <div className="results__head">
               <div className="meta">
                 {f.city || f.q ? <><b>{total.toLocaleString()}</b> {total === 1 ? "home" : "homes"}{f.city ? ` in ${f.city}` : ""}</> : "Drag or zoom the map to search an area"}
-              </div>
-              <div className="results__tools">
-                <div className="viewtoggle">
-                  <Link className="is-on" href={viewHref("split")}>Map</Link>
-                  <Link href={viewHref("list")}>List</Link>
-                </div>
               </div>
             </div>
             <MapSearch
@@ -133,7 +128,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
 
   return (
     <>
-      <Hero areaName={areaName} city={f.city} total={total} query={f.q} view={view} />
+      <Hero areaName={areaName} city={f.city} />
+      <ListBar view={view} query={f.q} viewHref={viewHref} />
       <TrackSearch criteria={searchMeta} />
       <main className="results">
         <div className="wrap">
@@ -152,10 +148,6 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
                   )}
                 </div>
                 <div className="results__tools">
-                  <div className="viewtoggle">
-                    <Link href={viewHref("split")}>Map</Link>
-                    <Link className="is-on" href={viewHref("list")}>List</Link>
-                  </div>
                   <SortSelect sort={f.sort} baseQuery={baseStr} />
                 </div>
               </div>
@@ -208,9 +200,9 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
   );
 }
 
-function Hero({ areaName, city, total, query, view }: { areaName: string; city: string; total: number; query: string; view: "split" | "list" }) {
+function Hero({ areaName, city }: { areaName: string; city: string }) {
   return (
-    <header className="hero hero--index hero--listings">
+    <header className="hero hero--index hero--listings" style={{ paddingBottom: 52 }}>
       <div className="wrap">
         <div className="hero__crumb">
           <Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/listings">Listings</Link>
@@ -218,17 +210,31 @@ function Hero({ areaName, city, total, query, view }: { areaName: string; city: 
         </div>
         <span className="hero__script">homes for sale in</span>
         <h1>{areaName}</h1>
-        <form className="hsearch" action="/listings" method="get">
-          <input type="hidden" name="view" value={view} />
-          <input className="hsearch__input" type="text" name="q" defaultValue={query}
-            placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
-          <button className="hsearch__btn" type="submit">Search</button>
-        </form>
       </div>
       <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M0,40 C240,90 480,90 720,55 C960,20 1200,20 1440,55 L1440,90 L0,90 Z" fill="#F8FAFB" />
       </svg>
     </header>
+  );
+}
+
+// Sticky search + view toggle that stays pinned above the results on scroll.
+function ListBar({ view, query, viewHref }: { view: "split" | "list"; query: string; viewHref: (v: "split" | "list") => string }) {
+  return (
+    <div className="listbar">
+      <div className="listbar__inner">
+        <form className="hsearch hsearch--bar" action="/listings" method="get">
+          <input type="hidden" name="view" value={view} />
+          <input className="hsearch__input" type="text" name="q" defaultValue={query}
+            placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
+          <button className="hsearch__btn" type="submit">Search</button>
+        </form>
+        <div className="viewtoggle">
+          <Link className={view === "split" ? "is-on" : ""} href={viewHref("split")}>Map</Link>
+          <Link className={view === "list" ? "is-on" : ""} href={viewHref("list")}>List</Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
