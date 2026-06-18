@@ -18,6 +18,7 @@ const FORM_IDS = [
   "saved_search",
   "home_valuation",
   "mortgage_preapproval",
+  "buyer_guide",
 ] as const;
 type FormId = (typeof FORM_IDS)[number];
 

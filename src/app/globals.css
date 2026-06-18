@@ -707,6 +707,17 @@ textarea.input{resize:vertical;min-height:84px;}
 .home-cta .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:15px 30px;}
 .home-cta--tight{margin:0 auto 8px;padding-top:8px;}
 
+/* ---- buyer guide landing ---- */
+.guide{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+.guide__copy .section__title{margin:4px 0 18px;}
+.guide__list{list-style:none;margin:0;padding:0;display:grid;gap:14px;}
+.guide__list li{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--aqua);border-radius:12px;padding:14px 16px;}
+.guide__list b{display:block;font-family:"Outfit",sans-serif;color:var(--teal-deep);font-weight:700;}
+.guide__list span{display:block;color:var(--ink-muted);font-size:.9rem;margin-top:2px;}
+.guide__form{margin-top:0;}
+.guide__form .btn{width:100%;}
+@media(max-width:860px){.guide{grid-template-columns:1fr;gap:26px;}}
+
 /* ---- home: dual buy/sell tool boxes ---- */
 .home-tools{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:30px;}
 .home-tool{background:linear-gradient(155deg,var(--teal),var(--teal-deep));color:#fff;border-radius:20px;padding:32px 30px;display:flex;flex-direction:column;box-shadow:0 16px 40px rgba(32,72,96,.18);}

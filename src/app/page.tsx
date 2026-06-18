@@ -205,7 +205,7 @@ export default async function Home() {
                 <li>✓ Get pre-approved with confidence</li>
                 <li>✓ A local guide every step</li>
               </ul>
-              <Link className="btn btn--aqua" href="/buy">Explore Buying in SWLA</Link>
+              <Link className="btn btn--aqua" href="/home-buying-guide">Get the Free Buyer&apos;s Guide</Link>
             </div>
           </div>
         </div>
