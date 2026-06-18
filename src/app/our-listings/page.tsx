@@ -64,7 +64,7 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
               <div className="k">Active Listings</div>
             </div>
             <div>
-              <div className="n">{site.phone}</div>
+              <div className="n"><a href={site.phoneHref}>{site.phone}</a></div>
               <div className="k">Call Our Team</div>
             </div>
           </div>
@@ -130,6 +130,22 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
           )}
         </div>
       </main>
+
+      <section className="preapproval">
+        <div className="wrap preapproval__inner">
+          <div className="preapproval__txt">
+            <span className="script">before you make an offer</span>
+            <h2>Get pre-approved &amp; shop with confidence</h2>
+            <p>
+              Knowing your budget up front makes your search easier — and your offer stronger when you
+              find the one. Get pre-approved with our trusted local lending partner in minutes.
+            </p>
+          </div>
+          <a className="btn btn--aqua preapproval__btn" href={site.bayou.ctaHref} target="_blank" rel="noopener">
+            Get Pre-Approved
+          </a>
+        </div>
+      </section>
 
       <LocalMap cityLabel="Southwest Louisiana" href="/listings" ctaLabel="Browse all SWLA listings" />
     </>

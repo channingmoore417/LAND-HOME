@@ -10,6 +10,7 @@ import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
 import LocalMap from "@/components/LocalMap";
+import Testimonials from "@/components/Testimonials";
 import AreaShowcase from "@/components/AreaShowcase";
 import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
 import { neighborhoodCards, zipCards, neighborhoodsFor, zipAreasFor } from "@/lib/neighborhoods";
@@ -261,6 +262,9 @@ export default async function SeoLandingPage({
           </a>
         </div>
       </section>
+
+      {/* Reviews — social proof */}
+      <Testimonials max={6} />
 
       {/* Internal-linking cluster */}
       {siblings.length > 1 && (

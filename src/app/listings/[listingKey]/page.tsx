@@ -11,6 +11,7 @@ import MortgageCalculator from "@/components/MortgageCalculator";
 import PropertyInteractive from "@/components/PropertyInteractive";
 import PropertyMap from "@/components/PropertyMap";
 import LocalMap from "@/components/LocalMap";
+import Testimonials from "@/components/Testimonials";
 
 export const revalidate = 300; // ISR: refresh each page ~every 5 min
 
@@ -359,6 +360,9 @@ export default async function ListingPage({
           </div>
         </section>
       )}
+
+      {/* REVIEWS — social proof */}
+      <Testimonials max={6} />
 
       {/* FIND US — local team + Google map embed */}
       <LocalMap

@@ -13,7 +13,8 @@ function initials(name: string): string {
 }
 
 // Client review wall (social proof). Server component.
-export default function Testimonials({ reviewsUrl }: { reviewsUrl?: string }) {
+export default function Testimonials({ reviewsUrl, max }: { reviewsUrl?: string; max?: number }) {
+  const list = max ? REVIEWS.slice(0, max) : REVIEWS;
   return (
     <section className="reviews">
       <div className="wrap">
@@ -25,7 +26,7 @@ export default function Testimonials({ reviewsUrl }: { reviewsUrl?: string }) {
           </p>
         </div>
         <div className="reviews__grid">
-          {REVIEWS.map((r) => (
+          {list.map((r) => (
             <figure className="review" key={r.name}>
               <Stars />
               <blockquote>{r.text}</blockquote>
