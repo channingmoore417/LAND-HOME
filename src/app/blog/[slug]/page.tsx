@@ -5,6 +5,7 @@ import { getPost, getPosts, categorySlug } from "@/lib/blog";
 import { photo } from "@/lib/images";
 import { site } from "@/config/site";
 import BlogBody from "@/components/BlogBody";
+import BlogCover from "@/components/BlogCover";
 import JsonLd from "@/components/JsonLd";
 
 export const dynamic = "force-dynamic";
@@ -100,13 +101,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <div className="bgrid">
                 {related.map((p) => (
                   <Link key={p.id} className="bcard" href={`/blog/${p.slug}`}>
-                    <div className="bcard__media">
-                      {p.cover_image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={photo(p.cover_image, 700)} alt={p.title} loading="lazy" />
-                      ) : <div className="bcard__ph" />}
-                      <span className="bcard__cat">{p.category}</span>
-                    </div>
+                    <BlogCover slug={p.slug} title={p.title} category={p.category} cover={p.cover_image} />
                     <div className="bcard__body">
                       <h3 className="bcard__title">{p.title}</h3>
                       <span className="bcard__meta">Read more &rarr;</span>

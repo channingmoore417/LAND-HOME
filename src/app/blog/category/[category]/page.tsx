@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPosts, getCategories, categorySlug, type BlogPost } from "@/lib/blog";
-import { photo } from "@/lib/images";
+import BlogCover from "@/components/BlogCover";
 
 export const dynamic = "force-dynamic";
 
@@ -48,13 +48,7 @@ export default async function BlogCategory({ params }: { params: { category: str
           <div className="bgrid">
             {posts.map((p: BlogPost) => (
               <Link key={p.id} className="bcard" href={`/blog/${p.slug}`}>
-                <div className="bcard__media">
-                  {p.cover_image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo(p.cover_image, 700)} alt={p.title} loading="lazy" />
-                  ) : <div className="bcard__ph" />}
-                  <span className="bcard__cat">{p.category}</span>
-                </div>
+                <BlogCover slug={p.slug} title={p.title} category={p.category} cover={p.cover_image} />
                 <div className="bcard__body">
                   <h3 className="bcard__title">{p.title}</h3>
                   {p.excerpt && <p className="bcard__ex">{p.excerpt}</p>}
