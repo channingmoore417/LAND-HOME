@@ -149,7 +149,7 @@ export default async function SeoLandingPage({
             {stats.priceMax ? <div><div className="n">{usd(stats.priceMax)}</div><div className="k">Up To</div></div> : null}
           </div>
           <div className="hero__cta">
-            <Link className="btn btn--aqua" href={seeAll}>Browse {cityLabel} {noun}</Link>
+            <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
             <a className="btn btn--hollow" href={site.bayou.ctaHref} target="_blank" rel="noopener">
               Get Pre-Approved
             </a>

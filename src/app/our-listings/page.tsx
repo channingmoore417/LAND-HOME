@@ -58,6 +58,10 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
             listings across Lake Charles, Sulphur and Southwest Louisiana — updated live
             throughout the day.
           </p>
+          <div className="hero__cta">
+            <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
+            <a className="btn btn--hollow" href={site.bayou.ctaHref} target="_blank" rel="noopener">Get Pre-Approved</a>
+          </div>
           <div className="hero__meta">
             <div>
               <div className="n"><b>{total.toLocaleString()}</b></div>

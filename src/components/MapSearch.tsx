@@ -20,6 +20,7 @@ export default function MapSearch({
   query,
   qText,
   listHref,
+  filtersSlot,
 }: {
   initialCards: Card[];
   initialPins: MapPin[];
@@ -27,6 +28,7 @@ export default function MapSearch({
   query: string; // active filter query string (no view/page)
   qText: string; // current search text (for the input)
   listHref: string; // link to the List view (preserves filters)
+  filtersSlot?: React.ReactNode; // Filters button + drawer
 }) {
   const [cards, setCards] = useState<Card[]>(initialCards);
   const [pins, setPins] = useState<MapPin[]>(initialPins);
@@ -73,6 +75,7 @@ export default function MapSearch({
             placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
           <button className="hsearch__btn" type="submit">Search</button>
         </form>
+        {filtersSlot}
         <label className="mapsearch__toggle">
           <input type="checkbox" checked={searchOnMove} onChange={(e) => toggleSearchOnMove(e.target.checked)} />
           <span>{loading ? "Searching…" : <><b>{total.toLocaleString()}</b> homes · search as I move</>}</span>

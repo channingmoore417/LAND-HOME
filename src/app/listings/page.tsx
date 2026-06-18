@@ -5,6 +5,7 @@ import SortSelect from "@/components/SortSelect";
 import NotifyBand from "@/components/NotifyBand";
 import ListingCard from "@/components/ListingCard";
 import MapSearch from "@/components/MapSearch";
+import FilterDrawer from "@/components/FilterDrawer";
 import TrackSearch from "@/components/TrackSearch";
 import { fetchCards, fetchFirstPhotos, fetchMapPins, PRICE_MAX, type SortKey } from "@/lib/listings";
 import { parseFilters, toCriteria, one, arr, type SP } from "@/lib/listingQuery";
@@ -95,6 +96,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
               query={apiQuery.toString()}
               qText={f.q}
               listHref={viewHref("list")}
+              filtersSlot={<FilterDrawer>{controls}</FilterDrawer>}
             />
           </div>
         </main>
