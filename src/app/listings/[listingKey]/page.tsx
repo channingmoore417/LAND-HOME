@@ -13,6 +13,7 @@ import PropertyMap from "@/components/PropertyMap";
 import LocalMap from "@/components/LocalMap";
 import Testimonials from "@/components/Testimonials";
 import TrackView from "@/components/TrackView";
+import SaveListingButton from "@/components/SaveListingButton";
 
 export const revalidate = 300; // ISR: refresh each page ~every 5 min
 
@@ -196,6 +197,7 @@ export default async function ListingPage({
               <div className="lbl">Offered At</div>
               <div className="val">{priceLabel}</div>
               <div className="hero__status">{statusLabel}</div>
+              <SaveListingButton listingKey={listing.listing_key} />
             </div>
           </div>
 

@@ -707,6 +707,12 @@ textarea.input{resize:vertical;min-height:84px;}
 .home-cta .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:15px 30px;}
 .home-cta--tight{margin:0 auto 8px;padding-top:8px;}
 
+/* ---- save listing button (detail page) ---- */
+.savebtn{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-family:"Outfit",sans-serif;font-weight:700;font-size:.9rem;padding:11px 20px;border-radius:30px;cursor:pointer;transition:.2s;}
+.savebtn:hover{background:rgba(255,255,255,.2);border-color:#fff;}
+.savebtn.on{background:var(--aqua);border-color:var(--aqua);color:var(--teal-deep);}
+.savebtn span{font-size:1.05rem;line-height:1;}
+
 /* ---- auth (account) ---- */
 .nav__account{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:#fff;font-size:.84rem;font-weight:700;padding:9px 16px;border-radius:30px;transition:.2s;cursor:pointer;font-family:inherit;}
 .nav__account:hover{background:rgba(255,255,255,.12);border-color:#fff;}
