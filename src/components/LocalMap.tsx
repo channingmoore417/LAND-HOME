@@ -7,11 +7,29 @@ export default function LocalMap({
   cityLabel = "Southwest Louisiana",
   href = "/listings",
   ctaLabel = "Browse listings",
+  mapOnly = false,
 }: {
   cityLabel?: string;
   href?: string;
   ctaLabel?: string;
+  mapOnly?: boolean;
 }) {
+  if (mapOnly) {
+    return (
+      <section className="localmap localmap--maponly">
+        <div className="wrap">
+          <iframe
+            title={`${cityLabel} map — ${site.localSeo.gbpName}`}
+            src={site.localSeo.mapEmbedUrl}
+            className="localmap__frame"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="localmap">
       <div className="wrap">

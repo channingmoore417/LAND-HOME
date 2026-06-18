@@ -75,8 +75,8 @@ export default async function Home() {
         <div className="wrap">
           <div className="herohome">
             <div className="herohome__copy">
-              <span className="hero__script">your local real estate guide</span>
-              <h1>Lake Charles Realtor</h1>
+              <h1 className="hero__kicker">Lake Charles Realtor</h1>
+              <h2 className="hero__headline">Find the place you&apos;ll love coming home to.</h2>
               <p className="hero__sub">
                 Find the place you&apos;ll love coming home to. The Land &amp; Home Group helps you buy and
                 sell across Lake Charles and Southwest Louisiana — local expertise, modern tools, and
@@ -217,31 +217,41 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ABOUT / GUIDE — authority + empathy, with the find-us map */}
+      {/* ABOUT / GUIDE — authority + empathy, team photo beside the copy */}
       <section className="seo-body" style={{ paddingBottom: 8 }}>
-        <div className="wrap">
-          <span className="script">your local guide</span>
-          <h2 className="section__title">A Southwest Louisiana team you can trust</h2>
-          <div className="prose" style={{ maxWidth: "68ch" }}>
-            <p>
-              The Land &amp; Home Group, brokered by {site.brokerage}, was built on one idea: that buying
-              or selling a home should feel personal, not transactional. We live here, we work here, and we
-              treat every client like a neighbor — because most of you are.
-            </p>
-            <p>
-              From Lake Charles and Sulphur to Moss Bluff, Westlake, and beyond, we pair real local
-              knowledge with modern, live MLS data so you always have the full picture. No pressure, no
-              jargon — just honest guidance toward the right move for you.
-            </p>
+        <div className="wrap home-about">
+          <div className="home-about__copy">
+            <span className="script">your local guide</span>
+            <h2 className="section__title">A Southwest Louisiana team you can trust</h2>
+            <div className="prose">
+              <p>
+                The Land &amp; Home Group, brokered by {site.brokerage}, was built on one idea: that buying
+                or selling a home should feel personal, not transactional. We live here, we work here, and we
+                treat every client like a neighbor — because most of you are.
+              </p>
+              <p>
+                From Lake Charles and Sulphur to Moss Bluff, Westlake, and beyond, we pair real local
+                knowledge with modern, live MLS data so you always have the full picture. No pressure, no
+                jargon — just honest guidance toward the right move for you.
+              </p>
+            </div>
+            <div className="home-cta" style={{ justifyContent: "flex-start" }}>
+              <Link className="btn btn--primary" href="/about">Meet the Team</Link>
+              <Link className="btn btn--ghost" href="/contact">Get in Touch</Link>
+            </div>
           </div>
-          <div className="home-cta" style={{ justifyContent: "flex-start" }}>
-            <Link className="btn btn--primary" href="/about">Meet the Team</Link>
-            <Link className="btn btn--ghost" href="/contact">Get in Touch</Link>
+          <div className="home-about__photo">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={site.teamPhotoUrl} alt={`${site.name} — Lake Charles real estate team`} />
           </div>
         </div>
       </section>
 
-      <LocalMap cityLabel="Southwest Louisiana" href="/listings" ctaLabel="Start your home search" />
+      <LocalMap cityLabel="Southwest Louisiana" mapOnly />
+      <div className="wrap home-cta home-cta--tight" style={{ paddingBottom: 8 }}>
+        <Link className="btn btn--primary" href="/listings">Start Your Home Search</Link>
+        <a className="btn btn--ghost" href={site.phoneHref}>Call {site.phone}</a>
+      </div>
     </div>
   );
 }
