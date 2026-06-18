@@ -349,6 +349,8 @@ textarea.input{resize:vertical;min-height:84px;}
 .leadband__form input:focus{outline:none;border-color:var(--aqua);background:rgba(255,255,255,.16);}
 .leadband__form button{background:var(--aqua);color:var(--teal-deep);border:0;border-radius:12px;padding:15px 28px;font-weight:700;font-size:.9rem;transition:.2s;}
 .leadband__form button:hover{background:#fff;}
+.leadband__btn{background:var(--aqua);color:var(--teal-deep);border:0;border-radius:30px;padding:16px 32px;font-family:"Outfit",sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:.2s;white-space:nowrap;}
+.leadband__btn:hover{background:#fff;}
 .leadband__ok{color:#fff;font-weight:600;}
 
 .pager{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:54px;flex-wrap:wrap;}
