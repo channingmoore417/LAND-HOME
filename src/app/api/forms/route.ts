@@ -36,7 +36,26 @@ interface FormPayload {
   working_with_agent?: boolean;
   criteria?: Record<string, unknown>;
   alert_frequency?: string;
+  // Spam-protection signals (optional; sent by public-facing forms):
+  company?: string; // honeypot — must be empty
+  form_loaded_at?: number; // epoch ms when the form was rendered
   [k: string]: unknown;
+}
+
+// Minimum time (ms) a real person needs to fill out a form. Anything faster
+// is almost certainly an automated submission.
+const MIN_SUBMIT_MS = 2500;
+
+// Returns a reason string if the payload looks like spam, else null.
+// Checks are only applied when the relevant signal is present, so forms that
+// don't send these fields are unaffected.
+function spamReason(p: FormPayload): string | null {
+  if (typeof p.company === "string" && p.company.trim() !== "") return "honeypot";
+  if (typeof p.form_loaded_at === "number" && Number.isFinite(p.form_loaded_at)) {
+    const elapsed = Date.now() - p.form_loaded_at;
+    if (elapsed >= 0 && elapsed < MIN_SUBMIT_MS) return "too-fast";
+  }
+  return null;
 }
 
 async function writeToSupabase(p: FormPayload) {
@@ -102,6 +121,18 @@ export async function POST(req: Request) {
     submission_id: body.submission_id || crypto.randomUUID(),
     submitted_at: new Date().toISOString(),
   };
+
+  // Spam gate: silently accept (so bots get no signal) but drop the
+  // submission — never write it or forward it downstream.
+  const reason = spamReason(payload);
+  if (reason) {
+    console.warn(`[forms] dropped spam (${reason}) for form_id=${payload.form_id}`);
+    return NextResponse.json({ ok: true, submission_id: payload.submission_id });
+  }
+
+  // Strip the spam-protection signals so they're never stored or forwarded.
+  delete payload.company;
+  delete payload.form_loaded_at;
 
   // 1) Persist to Supabase first so a webhook outage never loses a lead.
   let dbOk = true;
