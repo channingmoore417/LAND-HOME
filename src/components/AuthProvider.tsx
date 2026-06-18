@@ -47,12 +47,22 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     return () => { mounted = false; sub.subscription.unsubscribe(); };
   }, [supabase]);
 
-  // Load the user's saved listing keys whenever they sign in/out.
+  // Load the user's saved listing keys whenever they sign in/out, and replay a
+  // pending favorite (e.g. saved across the Google/Apple OAuth redirect).
   useEffect(() => {
     if (!user) { setFavs(new Set()); return; }
     let mounted = true;
-    supabase.from("favorites").select("listing_key").eq("user_id", user.id).then(({ data }) => {
-      if (mounted) setFavs(new Set(((data as { listing_key: string }[]) ?? []).map((r) => r.listing_key)));
+    supabase.from("favorites").select("listing_key").eq("user_id", user.id).then(async ({ data }) => {
+      if (!mounted) return;
+      const set = new Set(((data as { listing_key: string }[]) ?? []).map((r) => r.listing_key));
+      const pending = typeof window !== "undefined" ? window.localStorage.getItem("lhg_pending_fav") : null;
+      if (pending && !set.has(pending)) {
+        set.add(pending);
+        await supabase.from("favorites").insert({ user_id: user.id, listing_key: pending });
+        logActivity("save", { listingKey: pending });
+      }
+      if (typeof window !== "undefined") window.localStorage.removeItem("lhg_pending_fav");
+      setFavs(set);
     });
     return () => { mounted = false; };
   }, [user, supabase]);
@@ -84,7 +94,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [user, supabase]);
 
   const toggleFav = useCallback((key: string) => {
-    if (!user) { openAuth({ intent: "save", onAuthed: () => addFav(key) }); return; }
+    if (!user) {
+      // Remember the intent so it saves after sign-up/login (incl. OAuth redirect).
+      if (typeof window !== "undefined") window.localStorage.setItem("lhg_pending_fav", key);
+      openAuth({ intent: "save", onAuthed: () => addFav(key) });
+      return;
+    }
     if (favs.has(key)) removeFav(key); else addFav(key);
   }, [user, favs, openAuth, addFav, removeFav]);
 
