@@ -150,9 +150,7 @@ export default async function SeoLandingPage({
           </div>
           <div className="hero__cta">
             <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
-            <a className="btn btn--hollow" href={site.bayou.ctaHref} target="_blank" rel="noopener">
-              Get Pre-Approved
-            </a>
+            <a className="btn btn--hollow" href={site.phoneHref}>Call Us Now</a>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">

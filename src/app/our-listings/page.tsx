@@ -60,7 +60,7 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
           </p>
           <div className="hero__cta">
             <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
-            <a className="btn btn--hollow" href={site.bayou.ctaHref} target="_blank" rel="noopener">Get Pre-Approved</a>
+            <a className="btn btn--hollow" href={site.phoneHref}>Call Us Now</a>
           </div>
           <div className="hero__meta">
             <div>
