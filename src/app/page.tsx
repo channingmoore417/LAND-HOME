@@ -4,8 +4,10 @@ import ListingCard from "@/components/ListingCard";
 import AreaShowcase from "@/components/AreaShowcase";
 import LocalMap from "@/components/LocalMap";
 import JsonLd from "@/components/JsonLd";
+import Testimonials from "@/components/Testimonials";
 import { fetchCards, fetchFirstPhotos, listingStats } from "@/lib/listings";
 import { cityCards } from "@/lib/neighborhoods";
+import { REVIEWS } from "@/lib/reviews";
 import { site } from "@/config/site";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +38,18 @@ export default async function Home() {
       telephone: site.phoneHref.replace("tel:", ""),
       areaServed: cities.map((c) => ({ "@type": "City", name: c.name })),
       parentOrganization: { "@type": "Organization", name: site.brokerage },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "5.0",
+        reviewCount: String(REVIEWS.length),
+        bestRating: "5",
+      },
+      review: REVIEWS.map((r) => ({
+        "@type": "Review",
+        author: { "@type": "Person", name: r.name },
+        reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+        reviewBody: r.text,
+      })),
     },
     {
       "@context": "https://schema.org",
@@ -112,6 +126,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* SOCIAL PROOF — client reviews */}
+      <Testimonials />
 
       {/* FEATURED — the team's own listings */}
       {team.length > 0 && (
