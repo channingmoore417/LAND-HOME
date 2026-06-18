@@ -555,6 +555,19 @@ textarea.input{resize:vertical;min-height:84px;}
   .hero--about .hero__photo img{aspect-ratio:16/10;}
 }
 
+/* Client reviews (About page) */
+.reviews{background:var(--sand);padding:56px 0;}
+.reviews .script{font-size:1.7rem;display:block;margin-bottom:2px;}
+.reviews .prose{margin-bottom:24px;}
+.reviews__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.review{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:24px 24px 22px;margin:0;display:flex;flex-direction:column;box-shadow:0 10px 26px rgba(32,72,96,.06);}
+.review__stars{color:#F4B740;font-size:1.05rem;letter-spacing:2px;margin-bottom:12px;}
+.review__text{margin:0;color:var(--ink);font-weight:300;line-height:1.6;font-size:.96rem;flex:1;}
+.review__by{margin-top:16px;font-weight:700;color:var(--teal);font-size:.95rem;display:flex;flex-direction:column;gap:2px;}
+.review__src{font-weight:500;color:var(--ink-muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;}
+@media(max-width:980px){.reviews__grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:680px){.reviews__grid{grid-template-columns:1fr;}}
+
 /* Recent closings collage (About page) */
 .closings{background:var(--paper);padding:56px 0;border-top:1px solid var(--line);}
 .closings .script{font-size:1.7rem;display:block;margin-bottom:2px;}

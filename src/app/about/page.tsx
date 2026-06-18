@@ -18,6 +18,21 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE}/about` },
 };
 
+const REVIEWS = [
+  { name: "Avery Greninger", text: "Lauren is the best, a true advocate for her clients. She helped ease the stresses of my first home-buying experience. You can always count on her, trusting she prioritizes her clients!" },
+  { name: "Erica Duhon", text: "Lauren was truly the best realtor I could've asked for! She was so patient and determined to help me find the perfect house for me and my daughter! She'll be the first person I recommend to anyone looking for a realtor!" },
+  { name: "Shelbie Winn", text: "My house sat on the market with no movement for months and once I switched to Lauren she got it sold in 2 months!! Very professional and good at her job. Gained a lifetime realtor and friend!" },
+  { name: "Gary Sanders", text: "Mrs Lauren is an excellent agent! She answers quick and helped me sell my house that I thought I wasn't going to sell! She has helped me on two different houses. I really appreciate all of her help!" },
+  { name: "Mandy Kelly", text: "Lauren's exceptional service was invaluable in our first-time home buying experience. With patience and professionalism, she guided us through every stage, ensuring we felt confident and informed." },
+  { name: "Ernest Hillebrandt", text: "As a real estate investor I've had Lauren sell several homes for me over the past 4 years. I deal with multiple realtors across Louisiana — Lauren is at the top of her game, a go-getter who works nonstop to get the best results." },
+  { name: "Darbi Wood", text: "Lauren was the absolute best! Helped us every step of the way and made our lives so easy. She is truly compassionate and very knowledgeable. Having her on your side is having a top-tier realtor in your corner!" },
+  { name: "Brandon Lee", text: "Lauren was excellent! Never pushy and always available. Knew exactly what my wife and I needed. If you need a realtor, Lauren is your gal." },
+  { name: "Vikki Banks", text: "Lauren is the best! She listened to what we were looking for and stayed within our budget. She even worked after hours and weekends with us due to our work schedules. Highly recommend her and her staff." },
+  { name: "Cara Giles", text: "Lauren helped us find our forever home after being gone from our hometown of Sulphur for 13 years. She knew exactly what we were looking for and never gave up until we found it." },
+  { name: "Sarah Rainwater", text: "I can't say enough good things about Lauren and our home-buying experience. She goes above and beyond and has a work ethic like no other — a positive, happy person who made the whole process a joy." },
+  { name: "Mike Glynn", text: "Lauren is the best realtor — she has sold 8 of our homes for us. She worked extra all the time to make it happen, even with COVID slowing things down. She never gave up." },
+];
+
 const CLOSINGS = [
   "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f58bc828629fa81bf19.webp",
   "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f556dd61c546a1271f7.webp",
@@ -171,6 +186,30 @@ export default async function AboutPage() {
           </div>
         </section>
       )}
+
+      {/* Client reviews — social proof */}
+      <section className="reviews">
+        <div className="wrap">
+          <span className="script">in their words</span>
+          <h2 className="section__title" style={{ marginTop: 0 }}>What our clients say</h2>
+          <p className="prose" style={{ maxWidth: "60ch" }}>
+            We&apos;re grateful for every family we get to work with. Here&apos;s what a few of them
+            had to say.
+          </p>
+          <div className="reviews__grid">
+            {REVIEWS.map((r) => (
+              <figure className="review" key={r.name}>
+                <div className="review__stars" aria-label="5 out of 5 stars">★★★★★</div>
+                <blockquote className="review__text">{r.text}</blockquote>
+                <figcaption className="review__by">
+                  {r.name}
+                  <span className="review__src">Google review</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Recent closings — social proof */}
       <section className="closings">
