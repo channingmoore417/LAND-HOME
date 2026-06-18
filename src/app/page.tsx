@@ -80,6 +80,7 @@ export default async function Home() {
                 Louisiana — local expertise, modern tools, and no-pressure guidance every step of the way.
               </p>
               <form className="hsearch" action="/listings" method="get">
+                <input type="hidden" name="view" value="split" />
                 <input className="hsearch__input" type="text" name="q" placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
                 <button className="hsearch__btn" type="submit">Search</button>
               </form>

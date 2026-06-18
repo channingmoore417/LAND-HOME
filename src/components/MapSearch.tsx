@@ -77,6 +77,9 @@ export default function MapSearch({
       </div>
 
       <div className="mapsearch__split">
+        <div className="mapsearch__map">
+          <ListingsMap pins={pins} onBoundsChange={onBoundsChange} />
+        </div>
         <div className="mapsearch__list">
           {cards.length === 0 ? (
             <div className="empty">
@@ -90,9 +93,6 @@ export default function MapSearch({
               {cards.map((c) => <ListingCard key={c.listing_key} c={c} />)}
             </div>
           )}
-        </div>
-        <div className="mapsearch__map">
-          <ListingsMap pins={pins} onBoundsChange={onBoundsChange} />
         </div>
       </div>
     </div>

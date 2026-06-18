@@ -87,27 +87,24 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
         <Hero areaName={areaName} city={f.city} total={total} />
         <TrackSearch criteria={searchMeta} />
         <main className="results">
-          <div className="wrap">
-            <div className="searchgrid">
-              {controls}
-              <div className="searchgrid__main">
-                <div className="results__head">
-                  <div className="meta">Drag or zoom the map to search an area</div>
-                  <div className="results__tools">
-                    <div className="viewtoggle">
-                      <Link className="is-on" href={viewHref("split")}>Map</Link>
-                      <Link href={viewHref("list")}>List</Link>
-                    </div>
-                  </div>
+          <div className="wrapwide">
+            <div className="results__head">
+              <div className="meta">
+                {f.city || f.q ? <><b>{total.toLocaleString()}</b> {total === 1 ? "home" : "homes"}{f.city ? ` in ${f.city}` : ""}</> : "Drag or zoom the map to search an area"}
+              </div>
+              <div className="results__tools">
+                <div className="viewtoggle">
+                  <Link className="is-on" href={viewHref("split")}>Map</Link>
+                  <Link href={viewHref("list")}>List</Link>
                 </div>
-                <MapSearch
-                  initialCards={rows}
-                  initialPins={pins}
-                  initialTotal={total}
-                  query={apiQuery.toString()}
-                />
               </div>
             </div>
+            <MapSearch
+              initialCards={rows}
+              initialPins={pins}
+              initialTotal={total}
+              query={apiQuery.toString()}
+            />
           </div>
         </main>
         <AreaBlurb areaName={areaName} city={f.city} total={total} />
