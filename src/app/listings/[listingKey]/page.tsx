@@ -191,8 +191,6 @@ export default async function ListingPage({
     { k: "Roof", v: listing.roof || null },
     { k: "Subdivision", v: titleCase(listing.subdivision_name) || null },
     { k: "County", v: titleCase(listing.county_or_parish) || null },
-    // Flood Zone — kept per brand direction (Bayou rule does not apply here).
-    { k: "Flood Zone", v: "Contact for details" },
     {
       k: "Annual Taxes",
       v: taxAnnual ? `${usd(taxAnnual)}${taxIsEst ? " (est.)" : ""}` : null,
