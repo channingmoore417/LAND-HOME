@@ -45,7 +45,7 @@ const CITY_FACTS: Record<string, string> = {
 };
 
 const CLOSE_CTA =
-  "Every listing here updates throughout the day. When you're ready to tour or make an offer, The Land & Home Group — brokered by EXIT Realty Southern — is here to help, and a quick pre-approval from Bayou Mortgage puts you in the strongest position to buy.";
+  "Every listing here updates throughout the day. When you're ready to tour or make an offer, The Land & Home Group — brokered by EXIT Realty Southern — is here to help, and a quick pre-approval from our trusted local lending partner puts you in the strongest position to buy.";
 
 // Generates localized body copy (with ## subheadings) for any page that has no
 // hand-written gen_intro/custom copy. Lets us roll out cities without seeding
@@ -67,7 +67,7 @@ export function generatedBody(page: SeoPage): string {
     return [
       `${fact} Land is one of the most active segments of the market here.`,
       `## Land for sale in ${city}\nFrom build-ready lots to wooded and pasture acreage, ${city} offers parcels across a wide range of sizes and price points — ideal for building a custom home, investing, or simply finding room to spread out.`,
-      `## Before you buy land\nConfirm zoning, available utilities, access, and drainage for any parcel before purchasing. The Land & Home Group can help you evaluate options and line up financing through Bayou Mortgage.`,
+      `## Before you buy land\nConfirm zoning, available utilities, access, and drainage for any parcel before purchasing. The Land & Home Group can help you evaluate options and line up financing through a trusted local lender.`,
     ].join("\n\n");
   }
   if (t === "single_family") {
@@ -81,7 +81,7 @@ export function generatedBody(page: SeoPage): string {
     return [
       fact,
       `## Mobile & manufactured homes in ${city}\nMobile and manufactured homes are one of the most affordable paths to ownership in ${city}, and many are sold on their own land — combining a budget-friendly home with the value of the property underneath it.`,
-      `## Financing\nManufactured-home financing differs from a standard mortgage; confirm land ownership and utilities up front. The Land & Home Group and Bayou Mortgage can walk you through it.`,
+      `## Financing\nManufactured-home financing differs from a standard mortgage; confirm land ownership and utilities up front. The Land & Home Group and a trusted local lender can walk you through it.`,
     ].join("\n\n");
   }
   if (t === "beds") {

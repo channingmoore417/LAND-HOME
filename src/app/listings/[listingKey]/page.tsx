@@ -320,7 +320,7 @@ export default async function ListingPage({
                   <div className="agent__name">{site.name}</div>
                   <div className="agent__role">{site.brokerage}</div>
                   <div className="agent__lic">
-                    {site.serviceArea} · {site.phone}
+                    {site.serviceArea} · <a href={site.phoneHref}>{site.phone}</a>
                   </div>
                 </div>
               </div>

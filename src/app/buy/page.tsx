@@ -26,7 +26,7 @@ const FAQS = [
   },
   {
     q: "Should I get pre-approved before I start looking?",
-    a: "Yes. A pre-approval tells you what you can afford, shows sellers you're serious, and lets you move fast when you find the right home. Our preferred local lender, Bayou Mortgage, offers a fast, no-pressure quote.",
+    a: "Yes. A pre-approval tells you what you can afford, shows sellers you're serious, and lets you move fast when you find the right home. Our trusted local lending partner offers a fast, no-pressure quote.",
   },
   {
     q: "How long does it take to buy a home here?",
@@ -148,7 +148,7 @@ export default async function BuyPage() {
             <span className="script">first step</span>
             <h2>Know what you can afford</h2>
             <p>
-              Get pre-approved with Bayou Mortgage — our preferred local Louisiana lender — and shop with
+              Get pre-approved with our trusted local lending partner and shop with
               confidence. It's fast, free, and there's no obligation.
             </p>
           </div>

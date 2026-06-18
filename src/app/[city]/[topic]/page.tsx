@@ -253,7 +253,7 @@ export default async function SeoLandingPage({
             <span className="script">first step</span>
             <h2>Know what you can afford in {cityLabel}</h2>
             <p>
-              Get pre-approved with Bayou Mortgage — our preferred local Louisiana lender — so you can
+              Get pre-approved with our trusted local lending partner so you can
               shop with confidence and move fast when you find the one.
             </p>
           </div>
