@@ -822,6 +822,25 @@ textarea.input{resize:vertical;min-height:84px;}
 .quiz-summary__v{color:var(--ink);font-size:.92rem;font-weight:500;text-align:right;}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
 
+/* ---- pre-approval (powered by Bayou) ---- */
+.quiz-powered{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px;color:var(--ink-muted);font-size:.9rem;}
+.quiz-powered img{height:30px;width:auto;}
+.quiz-powered strong{color:var(--teal-deep);}
+.quiz-disclosure{color:var(--ink-muted);font-size:.72rem;line-height:1.5;margin:18px 0 0;}
+.quiz-disclosure--mini{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);font-size:.68rem;}
+.elig{display:grid;gap:12px;margin-top:22px;}
+.elig__row{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--paper);}
+.elig__row--eligible{border-left-color:#2f9e5e;background:#f2faf5;}
+.elig__row--maybe{border-left-color:var(--aqua);background:var(--aqua-soft);}
+.elig__row--prep{border-left-color:#d9a23b;background:#fdf7ec;}
+.elig__badge{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;color:#fff;background:var(--teal-mid);}
+.elig__row--eligible .elig__badge{background:#2f9e5e;}
+.elig__row--maybe .elig__badge{background:var(--aqua);color:var(--teal-deep);}
+.elig__row--prep .elig__badge{background:#d9a23b;}
+.elig__name{font-family:"Outfit",sans-serif;font-weight:700;color:var(--teal-deep);}
+.elig__name em{font-style:normal;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--teal-mid);margin-left:8px;}
+.elig__desc{color:var(--ink-muted);font-size:.9rem;line-height:1.5;margin-top:3px;}
+
 /* ---- buyer guide landing ---- */
 .guidehero{display:grid;grid-template-columns:1.02fr .98fr;gap:42px;align-items:start;margin-top:6px;}
 .guidehero__form{margin-top:0;}

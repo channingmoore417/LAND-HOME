@@ -76,7 +76,7 @@ export const site = {
     headline: "Get a Real Rate with Bayou Mortgage",
     sub: "Our preferred local Louisiana lender. No-pressure quote — see your true monthly payment in minutes.",
     ctaLabel: "Get My Quote",
-    ctaHref: "https://bayou-mortgage.com",
+    ctaHref: "/get-pre-approved",
     disclosure:
       "Estimates only and not a commitment to lend. Channing Moore | NMLS #1235512 | Bayou Mortgage LLC | NMLS #1845349 | Licensed in Louisiana | Equal Housing Lender. Rates shown are example estimates — contact for current rates and APR.",
   },
