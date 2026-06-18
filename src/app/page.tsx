@@ -78,10 +78,13 @@ export default async function Home() {
               <h1 className="hero__kicker">Lake Charles Realtor</h1>
               <h2 className="hero__headline">Find the place you&apos;ll love coming home to.</h2>
               <p className="hero__sub">
-                Find the place you&apos;ll love coming home to. The Land &amp; Home Group helps you buy and
-                sell across Lake Charles and Southwest Louisiana — local expertise, modern tools, and
-                no-pressure guidance every step of the way.
+                The Land &amp; Home Group helps you buy and sell across Lake Charles and Southwest
+                Louisiana — local expertise, modern tools, and no-pressure guidance every step of the way.
               </p>
+              <form className="hsearch" action="/listings" method="get">
+                <input className="hsearch__input" type="text" name="q" placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
+                <button className="hsearch__btn" type="submit">Search</button>
+              </form>
               <div className="hero__cta">
                 <Link className="btn btn--aqua" href="/listings">Browse Homes for Sale</Link>
                 <Link className="btn btn--hollow" href="/home-value">What&apos;s My Home Worth?</Link>

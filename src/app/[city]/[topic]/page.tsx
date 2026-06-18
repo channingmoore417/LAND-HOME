@@ -174,6 +174,10 @@ export default async function SeoLandingPage({
                 <div className="meta">
                   Showing <b>{Math.min(rows.length, stats.count)}</b> of <b>{stats.count.toLocaleString()}</b> {topicLabel.toLowerCase()}
                 </div>
+                <div className="viewtoggle">
+                  <span className="is-on">List</span>
+                  <Link href={`${seeAll}${seeAll.includes("?") ? "&" : "?"}view=split`}>Map</Link>
+                </div>
               </div>
 
               {rows.length === 0 ? (
