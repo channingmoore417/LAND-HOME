@@ -163,7 +163,7 @@ export default async function Home() {
       </header>
 
       {/* SEO INTRO — keyword-rich, indexable content */}
-      <section className="seo-body" style={{ paddingBottom: 0 }}>
+      <section className="seo-body">
         <div className="wrap" style={{ maxWidth: 880, textAlign: "center" }}>
           <h2 className="section__title">Lake Charles Real Estate, Made Simple</h2>
           <p className="prose">
@@ -211,7 +211,7 @@ export default async function Home() {
 
       {/* FEATURED — the team's own listings */}
       {team.length > 0 && (
-        <section className="results" style={{ paddingTop: 8 }}>
+        <section className="results">
           <div className="wrap">
             <div className="results__head">
               <div>
@@ -306,7 +306,7 @@ export default async function Home() {
 
       {/* FROM THE BLOG — local guides */}
       {posts.length > 0 && (
-        <section className="results" style={{ paddingTop: 8 }}>
+        <section className="results">
           <div className="wrap">
             <div className="results__head">
               <div>
@@ -332,7 +332,7 @@ export default async function Home() {
       )}
 
       {/* ABOUT / GUIDE — authority + empathy, team photo beside the copy */}
-      <section className="seo-body" style={{ paddingBottom: 8 }}>
+      <section className="seo-body">
         <div className="wrap home-about">
           <div className="home-about__copy">
             <span className="script">your local guide</span>
@@ -378,7 +378,7 @@ export default async function Home() {
       </section>
 
       <LocalMap cityLabel="Southwest Louisiana" mapOnly />
-      <div className="wrap home-cta home-cta--tight" style={{ paddingBottom: 8 }}>
+      <div className="wrap home-cta home-cta--tight">
         <Link className="btn btn--primary" href="/listings">Start Your Home Search</Link>
         <a className="btn btn--ghost" href={site.phoneHref}>Call {site.phone}</a>
       </div>

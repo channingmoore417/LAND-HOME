@@ -739,7 +739,20 @@ textarea.input{resize:vertical;min-height:84px;}
 /* ---- home: section CTA rows ---- */
 .home-cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:34px;}
 .home-cta .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:15px 30px;}
-.home-cta--tight{margin:0 auto 8px;padding-top:8px;}
+.home-cta--tight{margin:0 auto;padding:0 30px 8px;}
+
+/* ---- home: uniform section spacing ---- */
+.home > section,
+.home .results,
+.home .seo-body,
+.home .hoods,
+.home .tw,
+.home .hv-how,
+.home .preapproval,
+.home .faq{padding-top:64px;padding-bottom:64px;}
+.home .hv-how{margin-top:0;}
+.home .home-about{padding:0;}
+.home .localmap--maponly{padding-top:0;padding-bottom:8px;}
 
 /* ---- save listing button (detail page) ---- */
 .savebtn{margin-top:14px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-family:"Outfit",sans-serif;font-weight:700;font-size:.9rem;padding:11px 20px;border-radius:30px;cursor:pointer;transition:.2s;}
