@@ -731,6 +731,7 @@ textarea.input{resize:vertical;min-height:84px;}
 .quiz-nav{display:flex;align-items:center;justify-content:space-between;margin-top:28px;}
 .quiz-back{background:none;border:0;color:var(--ink-muted);font-weight:600;font-size:.9rem;cursor:pointer;padding:8px 4px;}
 .quiz-back:hover{color:var(--teal);}
+.quiz-autohint{color:var(--ink-muted);font-size:.82rem;font-style:italic;}
 .quiz-check{width:64px;height:64px;border-radius:50%;background:var(--aqua);color:var(--teal-deep);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px;font-weight:800;}
 .quiz-summary{margin-top:24px;text-align:left;background:var(--off);border:1px solid var(--line);border-radius:14px;padding:4px 18px;}
 .quiz-summary__row{display:flex;justify-content:space-between;gap:18px;padding:12px 0;border-bottom:1px solid var(--line);}

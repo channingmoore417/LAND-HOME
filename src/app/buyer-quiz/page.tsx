@@ -63,6 +63,12 @@ export default function BuyerQuizPage() {
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
+  // Single-choice steps auto-advance (brief delay so the highlight registers).
+  const pick = (patch: Partial<Answers>) => {
+    set(patch);
+    setTimeout(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 240);
+  };
+
   const canAdvance = () => {
     if (name === "communities") return a.communities.length > 0;
     if (name === "price") return !!a.price;
@@ -151,10 +157,10 @@ export default function BuyerQuizPage() {
               <p className="prose" style={{ color: "var(--ink-muted)" }}>A rough band is fine — it just helps us match the right listings.</p>
               <div className="quiz-grid">
                 {PRICE_BANDS.map((p) => (
-                  <button key={p.label} className={`quiz-chip${a.price === p.label ? " is-on" : ""}`} onClick={() => set({ price: p.label })}>{p.label}</button>
+                  <button key={p.label} className={`quiz-chip${a.price === p.label ? " is-on" : ""}`} onClick={() => pick({ price: p.label })}>{p.label}</button>
                 ))}
               </div>
-              <Nav onBack={back} onNext={next} canNext={canAdvance()} />
+              <Nav onBack={back} hideNext />
             </>
           )}
 
@@ -199,10 +205,10 @@ export default function BuyerQuizPage() {
               <p className="prose" style={{ color: "var(--ink-muted)" }}>No wrong answer — it just tells us how to help.</p>
               <div className="quiz-rows">
                 {TIMELINES.map((t) => (
-                  <Row key={t.key} radio active={a.timeline === t.key} onClick={() => set({ timeline: t.key })} label={t.label} note={t.note} />
+                  <Row key={t.key} radio active={a.timeline === t.key} onClick={() => pick({ timeline: t.key })} label={t.label} note={t.note} />
                 ))}
               </div>
-              <Nav onBack={back} onNext={next} canNext={canAdvance()} />
+              <Nav onBack={back} hideNext />
             </>
           )}
 
@@ -253,11 +259,15 @@ export default function BuyerQuizPage() {
   );
 }
 
-function Nav({ onBack, onNext, canNext, nextLabel = "Continue" }: { onBack: () => void; onNext: () => void; canNext: boolean; nextLabel?: string }) {
+function Nav({ onBack, onNext, canNext, nextLabel = "Continue", hideNext }: { onBack: () => void; onNext?: () => void; canNext?: boolean; nextLabel?: string; hideNext?: boolean }) {
   return (
     <div className="quiz-nav">
       <button className="quiz-back" onClick={onBack}>← Back</button>
-      <button className="btn btn--primary" style={{ width: "auto", padding: "13px 26px" }} onClick={canNext ? onNext : undefined} disabled={!canNext}>{nextLabel}</button>
+      {hideNext ? (
+        <span className="quiz-autohint">Tap an option to continue</span>
+      ) : (
+        <button className="btn btn--primary" style={{ width: "auto", padding: "13px 26px" }} onClick={canNext ? onNext : undefined} disabled={!canNext}>{nextLabel}</button>
+      )}
     </div>
   );
 }
