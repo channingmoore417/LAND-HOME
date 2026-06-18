@@ -138,18 +138,6 @@ export default function ListingsControls({
         </div>
 
         <div className="fgroup">
-          <span className="fgroup__label">Search</span>
-          <input
-            className="finput"
-            type="text"
-            placeholder="Address, ZIP, neighborhood…"
-            defaultValue={f.q}
-            onKeyDown={(e) => { if (e.key === "Enter") setApply("q", (e.target as HTMLInputElement).value); }}
-            onBlur={(e) => { if (e.target.value !== f.q) setApply("q", e.target.value); }}
-          />
-        </div>
-
-        <div className="fgroup">
           <span className="fgroup__label">Price Range</span>
           <div className="fnum">
             <input type="number" placeholder="No min" step={10000} defaultValue={f.minPrice || ""}

@@ -85,7 +85,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
     return (
       <>
         <Hero areaName={areaName} city={f.city} />
-        <ListBar view={view} query={f.q} viewHref={viewHref} />
+        <ListBar view={view} query={f.q} viewHref={viewHref} wide />
         <TrackSearch criteria={searchMeta} />
         <main className="results">
           <div className="wrapwide">
@@ -219,10 +219,10 @@ function Hero({ areaName, city }: { areaName: string; city: string }) {
 }
 
 // Sticky search + view toggle that stays pinned above the results on scroll.
-function ListBar({ view, query, viewHref }: { view: "split" | "list"; query: string; viewHref: (v: "split" | "list") => string }) {
+function ListBar({ view, query, viewHref, wide }: { view: "split" | "list"; query: string; viewHref: (v: "split" | "list") => string; wide?: boolean }) {
   return (
     <div className="listbar">
-      <div className="listbar__inner">
+      <div className={`listbar__inner${wide ? " listbar__inner--wide" : ""}`}>
         <form className="hsearch hsearch--bar" action="/listings" method="get">
           <input type="hidden" name="view" value={view} />
           <input className="hsearch__input" type="text" name="q" defaultValue={query}
