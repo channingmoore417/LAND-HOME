@@ -498,4 +498,129 @@ textarea.input{resize:vertical;min-height:84px;}
   .hero--index{padding:46px 0 100px;}.filterwrap{margin-top:-54px;}
   .leadband{flex-direction:column;align-items:stretch;padding:34px 26px;}.leadband__form input{min-width:0;flex:1;}
 }
+/* ===================== HOME VALUE TOOL ===================== */
+.hv-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 34px rgba(32,72,96,.06);padding:28px 28px 24px;margin-top:-50px;position:relative;z-index:20;}
+.hv-card .field{margin-bottom:16px;}
+.hv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.hv-suggest{position:absolute;left:0;right:0;top:100%;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 40px rgba(22,56,72,.18);z-index:30;overflow:hidden;margin-top:4px;}
+.hv-suggest button{display:block;width:100%;text-align:left;background:none;border:0;padding:12px 16px;font-size:.92rem;color:var(--ink);border-bottom:1px solid var(--line);}
+.hv-suggest button:last-child{border-bottom:0;}
+.hv-suggest button:hover{background:var(--aqua-soft);color:var(--teal-deep);}
+.hv-picked{margin-top:8px;color:var(--teal);font-weight:600;font-size:.86rem;}
+.hv-err{color:var(--error-color,#c0392b);font-size:.88rem;margin:4px 0 12px;}
+.hv-fine{color:var(--ink-muted);font-size:.78rem;margin:12px 0 0;}
+.hv-result{background:linear-gradient(155deg,var(--teal),var(--teal-deep));color:#fff;border-radius:20px;padding:34px 30px;margin-top:24px;text-align:center;}
+.hv-result .script{color:var(--aqua);}
+.hv-result .section__title{color:#fff;}
+.hv-result .prose{color:rgba(255,255,255,.85);}
+.hv-range{font-family:"Outfit";font-weight:800;font-size:clamp(2rem,5vw,2.8rem);letter-spacing:-.02em;margin:6px 0 4px;}
+.hv-mid{color:rgba(255,255,255,.82);font-size:1rem;}
+.hv-mid strong{color:#fff;}
+.hv-stats{display:flex;justify-content:center;gap:34px;flex-wrap:wrap;margin:22px 0 18px;padding:18px 0;border-top:1px solid rgba(255,255,255,.15);border-bottom:1px solid rgba(255,255,255,.15);}
+.hv-stats div{display:flex;flex-direction:column;}
+.hv-stats b{font-size:1.4rem;font-weight:800;}
+.hv-stats span{color:rgba(255,255,255,.7);font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;margin-top:3px;}
+.hv-disclaimer{color:rgba(255,255,255,.7);font-size:.8rem;line-height:1.55;max-width:60ch;margin:0 auto 14px;}
+.hv-result .seo-seeall{color:#fff;text-decoration:underline;text-underline-offset:3px;}
+.hv-lead{margin-top:24px;}
+.hv-lead .script{font-size:1.5rem;display:block;}
+.hv-grid--2{grid-template-columns:1fr 1fr;}
+.hv-card textarea.input{min-height:70px;}
+.hv-contact{border-top:1px solid var(--line);margin-top:18px;padding-top:18px;}
+.hv-contact .script{display:block;margin-bottom:10px;}
+.hv-cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+.hv-cta-row .btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:14px 26px;}
+.btn--hollow-teal{background:transparent;border:1.5px solid #fff;color:#fff;}
+.btn--hollow-teal:hover{background:#fff;color:var(--teal-deep);}
+@media(max-width:680px){.hv-grid{grid-template-columns:1fr 1fr;}.hv-grid--2{grid-template-columns:1fr;}}
+
+/* ===================== ABOUT + CONTACT PAGES ===================== */
+/* "What you can expect" value cards */
+.values__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:24px;}
+.value{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:24px 22px;transition:.2s;}
+.value:hover{border-color:var(--aqua-line);box-shadow:0 14px 34px rgba(32,72,96,.10);transform:translateY(-3px);}
+.value__ic{font-size:1.7rem;line-height:1;display:block;margin-bottom:12px;}
+.value__t{font-family:"Outfit";font-weight:700;font-size:1.08rem;color:var(--teal);margin:0 0 8px;}
+.value__b{color:var(--ink-muted);font-size:.92rem;line-height:1.6;font-weight:300;margin:0;}
+
+/* People-focused About hero (text + team photo) */
+.hero--about{padding-bottom:128px;}
+.hero__split{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;}
+.hero__photo{position:relative;}
+.hero__photo img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:20px;box-shadow:0 26px 60px rgba(11,30,40,.42);border:1px solid rgba(255,255,255,.14);}
+.hero__photo::after{content:"";position:absolute;inset:0;border-radius:20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);pointer-events:none;}
+@media(max-width:880px){
+  .hero__split{grid-template-columns:1fr;gap:30px;}
+  .hero--about .hero__photo{order:-1;}
+  .hero--about .hero__photo img{aspect-ratio:16/10;}
+}
+
+/* Client reviews (About page) */
+.reviews{background:var(--sand);padding:56px 0;}
+.reviews .script{font-size:1.7rem;display:block;margin-bottom:2px;}
+.reviews .prose{margin-bottom:24px;}
+.reviews__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.review{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:24px 24px 22px;margin:0;display:flex;flex-direction:column;box-shadow:0 10px 26px rgba(32,72,96,.06);}
+.review__stars{color:#F4B740;font-size:1.05rem;letter-spacing:2px;margin-bottom:12px;}
+.review__text{margin:0;color:var(--ink);font-weight:300;line-height:1.6;font-size:.96rem;flex:1;}
+.review__by{margin-top:16px;font-weight:700;color:var(--teal);font-size:.95rem;display:flex;flex-direction:column;gap:2px;}
+.review__src{font-weight:500;color:var(--ink-muted);font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;}
+@media(max-width:980px){.reviews__grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:680px){.reviews__grid{grid-template-columns:1fr;}}
+
+/* Recent closings collage (About page) */
+.closings{background:var(--paper);padding:56px 0;border-top:1px solid var(--line);}
+.closings .script{font-size:1.7rem;display:block;margin-bottom:2px;}
+.closings .prose{margin-bottom:24px;}
+.closings__grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:14px;}
+.closings__grid img{width:100%;height:100%;object-fit:cover;border-radius:14px;box-shadow:0 12px 30px rgba(32,72,96,.10);aspect-ratio:4/3;display:block;transition:.3s;}
+.closings__grid img:first-child{grid-column:span 2;grid-row:span 2;aspect-ratio:auto;}
+.closings__grid img:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(32,72,96,.16);}
+@media(max-width:880px){
+  .closings__grid{grid-template-columns:repeat(2,1fr);}
+  .closings__grid img:first-child{grid-column:span 2;grid-row:span 1;aspect-ratio:16/10;}
+}
+
+/* Team roster (About page) */
+.team{background:var(--paper);padding:56px 0;border-top:1px solid var(--line);}
+.team .script{font-size:1.7rem;display:block;margin-bottom:2px;}
+.team__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:24px;}
+.teamcard{background:var(--paper);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:.25s;}
+.teamcard:hover{box-shadow:0 18px 44px rgba(32,72,96,.12);transform:translateY(-3px);border-color:var(--aqua-line);}
+.teamcard__media{aspect-ratio:4/5;background:linear-gradient(155deg,var(--teal),var(--teal-deep));display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.teamcard__media img{width:100%;height:100%;object-fit:cover;}
+.teamcard__avatar{font-family:"Outfit";font-weight:800;font-size:2.6rem;color:var(--aqua);letter-spacing:.04em;}
+.teamcard__body{padding:20px 22px 22px;display:flex;flex-direction:column;flex:1;}
+.teamcard__name{font-family:"Outfit";font-weight:700;font-size:1.2rem;color:var(--teal);margin:0;}
+.teamcard__title{color:var(--aqua);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-top:4px;}
+.teamcard__tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.teamcard__tag{background:var(--aqua-soft);border:1px solid var(--aqua-line);color:var(--teal-deep);font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:14px;}
+.teamcard__bio{color:var(--ink-muted);font-size:.92rem;line-height:1.6;font-weight:300;margin:14px 0 0;}
+.teamcard__contact{display:flex;flex-direction:column;gap:6px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
+.teamcard__contact a{color:var(--teal);font-weight:600;font-size:.9rem;transition:.15s;}
+.teamcard__contact a:hover{color:var(--aqua);}
+@media(max-width:980px){.team__grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:680px){.team__grid{grid-template-columns:1fr;}}
+
+/* Honeypot spam-trap field — hidden from humans, present for bots. */
+.hp-field{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
+
+/* Contact page layout */
+.contact-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:42px;align-items:start;}
+.contact-info .prose p{font-size:1rem;}
+.contact-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);margin-bottom:12px;transition:.2s;}
+a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32,72,96,.08);}
+.contact-row__ic{font-size:1.3rem;line-height:1;width:42px;height:42px;display:flex;align-items:center;justify-content:center;background:var(--aqua-soft);border-radius:11px;flex-shrink:0;}
+.contact-row b{display:block;color:var(--teal);font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;}
+.contact-row em{display:block;color:var(--ink);font-style:normal;font-weight:700;font-size:1.02rem;margin-top:2px;}
+.contact-card{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 34px rgba(32,72,96,.06);padding:28px 28px 24px;}
+.contact-form .field{margin-bottom:16px;}
+.contact-sent{text-align:center;padding:24px 8px;}
+.contact-sent h3{font-family:"Outfit";font-weight:700;color:var(--teal);font-size:1.3rem;margin:8px 0 10px;}
+.contact-sent p{color:var(--ink-muted);font-weight:300;max-width:46ch;margin:0 auto;}
+.contact-map{line-height:0;}
+.contact-map__frame{width:100%;height:420px;border:0;display:block;}
+@media(max-width:980px){.values__grid{grid-template-columns:1fr 1fr;}.contact-grid{grid-template-columns:1fr;gap:30px;}}
+@media(max-width:680px){.values__grid{grid-template-columns:1fr;}.contact-map__frame{height:320px;}}
+
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;}}

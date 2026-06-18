@@ -99,3 +99,17 @@ export interface ListingMedia {
   order: number | null;
   short_desc: string | null;
 }
+
+export interface Agent {
+  id: number;
+  slug: string;
+  full_name: string;
+  mls_id: string | null;
+  title: string | null;
+  email: string | null;
+  phone: string | null;
+  photo_url: string | null;
+  bio: string | null;
+  specialties: string[] | null;
+  active: boolean;
+}
