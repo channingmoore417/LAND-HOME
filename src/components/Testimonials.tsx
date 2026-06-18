@@ -13,7 +13,7 @@ function initials(name: string): string {
 }
 
 // Client review wall (social proof). Server component.
-export default function Testimonials() {
+export default function Testimonials({ reviewsUrl }: { reviewsUrl?: string }) {
   return (
     <section className="reviews">
       <div className="wrap">
@@ -39,6 +39,12 @@ export default function Testimonials() {
             </figure>
           ))}
         </div>
+        {reviewsUrl && (
+          <div className="home-cta">
+            <a className="btn btn--primary" href={reviewsUrl} target="_blank" rel="noopener">Read More Reviews on Google</a>
+            <a className="btn btn--ghost" href="/home-value">Get Your Free Home Value</a>
+          </div>
+        )}
       </div>
     </section>
   );

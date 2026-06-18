@@ -13,6 +13,9 @@ import { site } from "@/config/site";
 export const dynamic = "force-dynamic";
 
 const SITE = "https://landhomegroup.com";
+const GBP_URL = "https://share.google/P0z9MIBZPEnlqMUMh";
+const HERO_PHOTO =
+  "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f58bc828629fa81bf19.webp";
 
 export const metadata: Metadata = {
   title: "The Land & Home Group | Southwest Louisiana Real Estate",
@@ -65,35 +68,45 @@ export default async function Home() {
   ];
 
   return (
-    <>
+    <div className="home">
       <JsonLd data={jsonLd} />
 
       {/* HERO — the customer is the hero; we're the guide with a clear path */}
-      <header className="hero hero--index">
+      <header className="hero hero--index hero--home">
         <div className="wrap">
-          <span className="hero__script">welcome home to southwest louisiana</span>
-          <h1>Find the place you&apos;ll love coming home to.</h1>
-          <p className="hero__sub">
-            Buying or selling in Southwest Louisiana shouldn&apos;t feel overwhelming. The Land &amp;
-            Home Group is your local team — we know these neighborhoods, we know this market, and
-            we&apos;ll guide you the whole way, with no pressure.
-          </p>
-          <div className="hero__cta">
-            <Link className="btn btn--aqua" href="/listings">Browse Homes for Sale</Link>
-            <Link className="btn btn--hollow" href="/home-value">What&apos;s My Home Worth?</Link>
-          </div>
-          <div className="hero__meta">
-            <div>
-              <div className="n"><b>{stats.count.toLocaleString()}</b></div>
-              <div className="k">Active Listings</div>
+          <div className="herohome">
+            <div className="herohome__copy">
+              <a className="gbadge" href={GBP_URL} target="_blank" rel="noopener" aria-label="Rated 5 stars on Google — read our reviews">
+                <span className="gbadge__g">G</span>
+                <span className="gbadge__stars">★★★★★</span>
+                <span className="gbadge__txt">5.0 on Google</span>
+              </a>
+              <span className="hero__script">welcome home to southwest louisiana</span>
+              <h1>Find the place you&apos;ll love coming home to.</h1>
+              <p className="hero__sub">
+                Buying or selling in Southwest Louisiana shouldn&apos;t feel overwhelming. The Land &amp;
+                Home Group is your local team — we know these neighborhoods, we know this market, and
+                we&apos;ll guide you the whole way, with no pressure.
+              </p>
+              <div className="hero__cta">
+                <Link className="btn btn--aqua" href="/listings">Browse Homes for Sale</Link>
+                <Link className="btn btn--hollow" href="/home-value">What&apos;s My Home Worth?</Link>
+              </div>
+              <div className="hero__meta">
+                <div>
+                  <div className="n"><b>{stats.count.toLocaleString()}</b></div>
+                  <div className="k">Active Listings</div>
+                </div>
+                <div>
+                  <div className="n">13</div>
+                  <div className="k">SWLA Communities</div>
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="n">13</div>
-              <div className="k">SWLA Communities</div>
-            </div>
-            <div>
-              <div className="n">Local</div>
-              <div className="k">Every Step</div>
+            <div className="herohome__photo">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={HERO_PHOTO} alt="Happy homeowners on closing day with The Land & Home Group" />
+              <span className="herohome__tag">Another happy closing 🎉</span>
             </div>
           </div>
         </div>
@@ -124,11 +137,15 @@ export default async function Home() {
               <p>Close with clarity and move forward — into the right home, or onto your next chapter, without the stress.</p>
             </div>
           </div>
+          <div className="home-cta">
+            <Link className="btn btn--primary" href="/listings">Start Browsing Homes</Link>
+            <Link className="btn btn--ghost" href="/home-value">Get My Home Value</Link>
+          </div>
         </div>
       </section>
 
       {/* SOCIAL PROOF — client reviews */}
-      <Testimonials />
+      <Testimonials reviewsUrl={GBP_URL} />
 
       {/* FEATURED — the team's own listings */}
       {team.length > 0 && (
@@ -144,6 +161,9 @@ export default async function Home() {
             <div className="listings__grid">
               {team.map((c) => <ListingCard key={c.listing_key} c={c} />)}
             </div>
+            <div className="home-cta">
+              <Link className="btn btn--primary" href="/our-listings">View All Our Listings</Link>
+            </div>
           </div>
         </section>
       )}
@@ -155,6 +175,10 @@ export default async function Home() {
         cards={cities}
         hrefFor={(slug) => `/${slug}`}
       />
+      <div className="wrap home-cta home-cta--tight">
+        <Link className="btn btn--primary" href="/listings">Search All Homes for Sale</Link>
+        <Link className="btn btn--ghost" href="/buy">Explore Buying in SWLA</Link>
+      </div>
 
       {/* SELL — the CMA tool */}
       <section className="seo-body">
@@ -221,11 +245,14 @@ export default async function Home() {
               jargon — just honest guidance toward the right move for you.
             </p>
           </div>
-          <Link className="seo-seeall" href="/about">Meet the team &rarr;</Link>
+          <div className="home-cta" style={{ justifyContent: "flex-start" }}>
+            <Link className="btn btn--primary" href="/about">Meet the Team</Link>
+            <Link className="btn btn--ghost" href="/contact">Get in Touch</Link>
+          </div>
         </div>
       </section>
 
       <LocalMap cityLabel="Southwest Louisiana" href="/listings" ctaLabel="Start your home search" />
-    </>
+    </div>
   );
 }
