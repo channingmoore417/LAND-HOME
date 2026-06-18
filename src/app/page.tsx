@@ -18,9 +18,9 @@ const HERO_PHOTO =
   "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a331f58bc828629fa81bf19.webp";
 
 export const metadata: Metadata = {
-  title: "The Land & Home Group | Southwest Louisiana Real Estate",
+  title: "Lake Charles Realtor | The Land & Home Group",
   description:
-    "Buy or sell with a local Southwest Louisiana team. Browse homes for sale in Lake Charles, Sulphur and across SWLA, get a free home value report, and find your place with The Land & Home Group.",
+    "Looking for a Lake Charles Realtor? The Land & Home Group helps you buy and sell across Lake Charles and Southwest Louisiana — browse homes for sale, get a free home value report, and work with a trusted local team.",
 };
 
 export default async function Home() {
@@ -81,12 +81,12 @@ export default async function Home() {
                 <span className="gbadge__stars">★★★★★</span>
                 <span className="gbadge__txt">5.0 on Google</span>
               </a>
-              <span className="hero__script">welcome home to southwest louisiana</span>
-              <h1>Find the place you&apos;ll love coming home to.</h1>
+              <span className="hero__script">your local real estate guide</span>
+              <h1>Lake Charles Realtor</h1>
               <p className="hero__sub">
-                Buying or selling in Southwest Louisiana shouldn&apos;t feel overwhelming. The Land &amp;
-                Home Group is your local team — we know these neighborhoods, we know this market, and
-                we&apos;ll guide you the whole way, with no pressure.
+                Find the place you&apos;ll love coming home to. The Land &amp; Home Group helps you buy and
+                sell across Lake Charles and Southwest Louisiana — local expertise, modern tools, and
+                no-pressure guidance every step of the way.
               </p>
               <div className="hero__cta">
                 <Link className="btn btn--aqua" href="/listings">Browse Homes for Sale</Link>
