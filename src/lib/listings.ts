@@ -39,6 +39,11 @@ export interface ListingCriteria {
   subdivisionAny?: string[]; // neighborhood: subdivision_name ILIKE keywords (OR'd)
   q?: string; // free-text search
   lhgOnly?: boolean; // only The Land & Home Group's own listings
+  // Geographic bounds (map "search this area"): south/north lat, west/east lng.
+  latMin?: number;
+  latMax?: number;
+  lngMin?: number;
+  lngMax?: number;
 }
 
 export const CARD_SELECT =
@@ -103,6 +108,11 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
     const col = FEATURE_COLUMN[key];
     if (col) query = query.eq(col, true);
   }
+
+  if (typeof c.latMin === "number") query = query.gte("latitude", c.latMin);
+  if (typeof c.latMax === "number") query = query.lte("latitude", c.latMax);
+  if (typeof c.lngMin === "number") query = query.gte("longitude", c.lngMin);
+  if (typeof c.lngMax === "number") query = query.lte("longitude", c.lngMax);
 
   if (c.postalCode) query = query.ilike("postal_code", `${c.postalCode}%`);
 
