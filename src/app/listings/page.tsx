@@ -5,7 +5,8 @@ import SortSelect from "@/components/SortSelect";
 import NotifyBand from "@/components/NotifyBand";
 import ListingCard from "@/components/ListingCard";
 import MapSearch from "@/components/MapSearch";
-import { fetchCards, fetchFirstPhotos, fetchMapPins, type SortKey } from "@/lib/listings";
+import TrackSearch from "@/components/TrackSearch";
+import { fetchCards, fetchFirstPhotos, fetchMapPins, PRICE_MAX, type SortKey } from "@/lib/listings";
 import { parseFilters, toCriteria, one, arr, type SP } from "@/lib/listingQuery";
 import { neighborhoodsFor, zipAreasFor } from "@/lib/neighborhoods";
 import type { ListingFilters } from "@/components/ListingsControls";
@@ -27,6 +28,19 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
   const page = Math.max(1, Number(one(searchParams.page)) || 1);
   const view = one(searchParams.view) === "split" ? "split" : "list";
   const criteria = toCriteria(f);
+
+  // Compact set of active filters for the per-user search activity log.
+  const searchMeta: Record<string, unknown> = {};
+  if (f.city) searchMeta.city = f.city;
+  if (f.beds) searchMeta.beds = f.beds;
+  if (f.baths) searchMeta.baths = f.baths;
+  if (f.minPrice) searchMeta.minPrice = f.minPrice;
+  if (f.maxPrice && f.maxPrice < PRICE_MAX) searchMeta.maxPrice = f.maxPrice;
+  if (f.type) searchMeta.type = f.type;
+  if (f.features.length) searchMeta.features = f.features;
+  if (f.zip) searchMeta.zip = f.zip;
+  if (f.neighborhood) searchMeta.neighborhood = f.neighborhood;
+  if (f.q) searchMeta.q = f.q;
 
   const areaName = f.city ? `${f.city}, Louisiana` : "Southwest Louisiana";
 
@@ -71,6 +85,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
     return (
       <>
         <Hero areaName={areaName} city={f.city} total={total} />
+        <TrackSearch criteria={searchMeta} />
         <main className="results">
           <div className="wrap">
             <div className="searchgrid">
@@ -122,6 +137,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
   return (
     <>
       <Hero areaName={areaName} city={f.city} total={total} />
+      <TrackSearch criteria={searchMeta} />
       <main className="results">
         <div className="wrap">
           <div className="searchgrid">

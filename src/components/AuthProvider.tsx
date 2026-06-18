@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
+import { logActivity } from "@/lib/activity";
 import AuthModal from "@/components/AuthModal";
 
 interface OpenOpts { intent?: string; onAuthed?: () => void }
@@ -71,6 +72,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     if (!uid) return;
     setFavs((s) => new Set(s).add(key));
     await supabase.from("favorites").insert({ user_id: uid, listing_key: key });
+    logActivity("save", { listingKey: key });
   }, [user, supabase]);
 
   const removeFav = useCallback(async (key: string) => {
@@ -78,6 +80,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     if (!uid) return;
     setFavs((s) => { const n = new Set(s); n.delete(key); return n; });
     await supabase.from("favorites").delete().eq("user_id", uid).eq("listing_key", key);
+    logActivity("unsave", { listingKey: key });
   }, [user, supabase]);
 
   const toggleFav = useCallback((key: string) => {

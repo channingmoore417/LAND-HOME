@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
+import { logActivity } from "@/lib/activity";
 
-// Records a listing view for signed-in users (powers "recently viewed").
+// Records a listing view for signed-in users (powers "recently viewed" + the
+// activity log).
 export default function TrackView({ listingKey }: { listingKey: string }) {
   const { user } = useAuth();
   useEffect(() => {
@@ -16,6 +18,7 @@ export default function TrackView({ listingKey }: { listingKey: string }) {
         { onConflict: "user_id,listing_key" },
       )
       .then(() => {});
+    logActivity("view_listing", { listingKey });
   }, [user, listingKey]);
   return null;
 }

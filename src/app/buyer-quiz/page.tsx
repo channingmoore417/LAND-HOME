@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { logActivity } from "@/lib/activity";
 
 const COMMUNITIES = [
   "Lake Charles", "Sulphur", "Moss Bluff", "Iowa", "Vinton", "Cameron",
@@ -111,6 +112,7 @@ export default function BuyerQuizPage() {
         }),
       });
     } catch { /* still show matches */ }
+    logActivity("quiz", { meta: { communities: a.communities, price: a.price, features: a.features, beds: a.beds, baths: a.baths, timeline: a.timeline } });
     setSubmitting(false);
     next();
   }

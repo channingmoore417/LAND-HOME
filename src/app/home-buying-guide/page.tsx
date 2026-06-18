@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { logActivity } from "@/lib/activity";
 
 // The downloadable buyer's guide (PDF). Page captures the lead, then opens it.
 const GUIDE_URL =
@@ -48,6 +49,7 @@ export default function BuyingGuidePage() {
         }),
       });
     } catch { /* still let them download */ }
+    logActivity("guide", { meta: { timeline } });
     setDone(true);
     setLoading(false);
     openGuide();

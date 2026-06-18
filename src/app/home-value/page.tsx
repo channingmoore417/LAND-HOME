@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { logActivity } from "@/lib/activity";
 
 interface GeoResult { address: string; street?: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
 interface Estimate {
@@ -112,6 +113,7 @@ export default function HomeValuePage() {
         }),
       });
     } catch { /* non-fatal */ }
+    logActivity("valuation", { meta: { address: picked!.address, city: picked!.city, zip: picked!.zip } });
     setResult(est); setDone(true); setLoading(false);
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
