@@ -8,7 +8,7 @@ import { SITE_URL as SITE } from "@/lib/seoConfig";
 export const metadata: Metadata = {
   title: "Sell My House Fast in Lake Charles, LA | Cash Offer As-Is",
   description:
-    "Sell your house fast in Lake Charles & Southwest Louisiana — as-is, any condition. Fair cash offer in 24 hours, no repairs, no fees. Call (337) 245-0909.",
+    "Sell your house fast in Lake Charles & Southwest Louisiana — as-is, any condition. Fast, fair cash offer, no repairs, no fees. Call (337) 245-0909.",
   alternates: { canonical: `${SITE}/sell-my-house-fast` },
 };
 
@@ -66,7 +66,7 @@ export default function SellFastPage() {
       name: "Sell Your House Fast — As-Is Cash Home Sales",
       serviceType: "Cash home buying and as-is home sales",
       description:
-        "Fast, as-is home sales across Lake Charles and Southwest Louisiana. Fair cash offers in 24 hours with no repairs, no cleaning, and no fees — plus a free comparison of what the home would bring on the open market.",
+        "Fast, as-is home sales across Lake Charles and Southwest Louisiana. Fast, fair cash offers with no repairs, no cleaning, and no fees — plus a free comparison of what the home would bring on the open market.",
       url: `${SITE}/sell-my-house-fast`,
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
       provider: {
@@ -110,7 +110,7 @@ export default function SellFastPage() {
           <span className="hero__script">no repairs. no cleaning. no waiting.</span>
           <h1>Sell My House Fast in Lake Charles, Louisiana</h1>
           <p className="hero__sub">
-            Get a fair cash offer on your house in 24 hours — as-is, any condition. Storm damage,
+            Get a fast, fair cash offer on your house — as-is, any condition. Storm damage,
             inherited homes, houses that need everything: we buy them the way they sit. No repairs,
             no cleaning, no commissions, and you pick the closing date.
           </p>
@@ -137,7 +137,7 @@ export default function SellFastPage() {
                 Yes. You can sell your house as-is in Lake Charles and anywhere in Southwest
                 Louisiana — no repairs, no inspections to pass, no cleaning out the garage. The
                 Land &amp; Home Group, a Lake Charles real estate team brokered by EXIT Realty
-                Southern, gets you a fair cash offer within 24 hours and can close in as little as
+                Southern, gets you a fast, fair cash offer and can close in as little as
                 7 days.
               </p>
               <p className="prose">
@@ -148,7 +148,7 @@ export default function SellFastPage() {
                 the right answer depends on your situation, not ours.
               </p>
               <ul className="hv-why__list" style={{ marginTop: 18 }}>
-                <li><b>Offer in 24 hours</b><span>One quick walk-through (or photos), then a written, no-obligation offer.</span></li>
+                <li><b>Fast offers</b><span>One quick walk-through (or photos), then a written, no-obligation offer.</span></li>
                 <li><b>Truly as-is</b><span>Storm damage, flooded, fire, foundation, full of furniture — we&apos;ve seen it all.</span></li>
                 <li><b>Zero fees on a cash sale</b><span>No commission, no repair credits, no junk fees at closing.</span></li>
                 <li><b>You pick the closing date</b><span>7 days or 70 — and if you need time to move after closing, just ask.</span></li>
@@ -177,7 +177,7 @@ export default function SellFastPage() {
               </div>
               <div className="hv-step">
                 <div className="hv-step__n">2</div>
-                <h3>Get two numbers in 24 hours</h3>
+                <h3>Get two numbers, fast</h3>
                 <p>A written cash offer for an as-is sale, plus an honest estimate of what your home would bring listed on the market. Compare them side by side.</p>
               </div>
               <div className="hv-step">
@@ -300,7 +300,7 @@ export default function SellFastPage() {
             <span className="script">no pressure, ever</span>
             <h2>Get both numbers. Then decide.</h2>
             <p>
-              A written cash offer and an honest market estimate, free, within 24 hours. If listing
+              A written cash offer and an honest market estimate, free and fast. If listing
               nets you more and you have the time, we&apos;ll tell you so — and help you do that
               instead.
             </p>

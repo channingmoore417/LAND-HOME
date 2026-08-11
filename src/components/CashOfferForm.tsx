@@ -60,7 +60,7 @@ export default function CashOfferForm() {
     return (
       <div className="contact-sent">
         <span className="script" style={{ fontSize: "1.7rem" }}>request received!</span>
-        <h3>We&apos;re on it — expect your offer within 24 hours.</h3>
+        <h3>We&apos;re on it — expect a fast offer.</h3>
         <p>
           We&apos;ll review your property and reach out with a no-obligation cash offer, plus what it
           could sell for on the open market. Need us sooner? Call or text{" "}
