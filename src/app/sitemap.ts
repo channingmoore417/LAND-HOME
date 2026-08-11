@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/`, changeFrequency: "daily", priority: 1 },
     { url: `${SITE}/listings`, changeFrequency: "hourly", priority: 0.9 },
     { url: `${SITE}/blog`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE}/sell-my-house-fast`, changeFrequency: "monthly", priority: 0.8 },
   ];
 
   // Blog posts.
