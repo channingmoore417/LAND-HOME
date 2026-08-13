@@ -117,8 +117,6 @@ export default function MortgageCalculator({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="bayou__avatar" src={site.bayou.headshotUrl} alt={site.bayou.repName} />
           <div className="bayou__copy">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="bayou__logo" src={site.bayou.logoUrl} alt={site.bayou.name} />
             <div className="t">{site.bayou.headline}</div>
             <div className="s">{site.bayou.sub}</div>
           </div>

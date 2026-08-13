@@ -79,24 +79,22 @@ export const site = {
   // Mortgage partner module (the referral flywheel). Bayou Mortgage LLC has
   // closed; this is now Channing Moore operating as The Moore Mortgage Team,
   // licensed through Umortgage.
-  // NOTE: companyNmls is blank — waiting on Umortgage's company NMLS number.
-  // Fill it in before treating the /get-pre-approved disclosure as final.
   bayou: {
     name: "The Moore Mortgage Team",
     repName: "Channing Moore",
     personalNmls: "1235512",
     companyName: "Umortgage",
-    companyNmls: "",
+    companyNmls: "1457759",
     logoUrl:
       "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a7dc297c00ec1b226d3cc85.png",
     headshotUrl:
       "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a7dc26679dbc24f68bac7d9.png",
-    headline: "Get a Real Rate with The Moore Mortgage Team",
+    headline: "Get Your Real Numbers. Payment, Rate and Cost",
     sub: "Our preferred local Louisiana lender. No-pressure quote — see your true monthly payment in minutes.",
     ctaLabel: "Get My Quote",
     ctaHref: "/get-pre-approved",
     disclosure:
-      "Estimates only and not a commitment to lend. Channing Moore | NMLS #1235512 | Umortgage | Licensed in Louisiana | Equal Housing Lender. Rates shown are example estimates — contact for current rates and APR.",
+      "Estimates only and not a commitment to lend. Channing Moore | NMLS #1235512 | Umortgage | NMLS #1457759 | Licensed in Louisiana | Equal Housing Lender. Rates shown are example estimates — contact for current rates and APR.",
   },
 
   // Local SEO — the client's Google Business Profile (used for the map embed
