@@ -7,17 +7,18 @@ import { cityCards } from "@/lib/neighborhoods";
 import AreaShowcase from "@/components/AreaShowcase";
 import LocalMap from "@/components/LocalMap";
 import JsonLd from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Buy a Home in Southwest Louisiana",
   description:
     "Buy a home in Southwest Louisiana with The Land & Home Group. Browse homes by city — Lake Charles, Sulphur, Westlake and more — with live MLS listings, local guidance, and easy pre-approval.",
-  alternates: { canonical: `${SITE}/buy` },
-};
+  path: "/buy",
+});
 
 const FAQS = [
   {

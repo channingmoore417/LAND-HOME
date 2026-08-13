@@ -5,17 +5,19 @@ import ListingCard from "@/components/ListingCard";
 import LocalMap from "@/components/LocalMap";
 import { fetchCards, fetchFirstPhotos, type ListingCriteria, type SortKey } from "@/lib/listings";
 import { site } from "@/config/site";
+import { pageMetadata } from "@/lib/seoMeta";
 
 // The team's OWN listings (is_lhg_listing = true). Live, server-rendered.
 export const dynamic = "force-dynamic";
 
 const PER = 12;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: `Our Listings | ${site.name}`,
   description:
     "Homes for sale listed by The Land & Home Group across Lake Charles, Sulphur and Southwest Louisiana. Browse our current listings.",
-};
+  path: "/our-listings",
+});
 
 type SP = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";

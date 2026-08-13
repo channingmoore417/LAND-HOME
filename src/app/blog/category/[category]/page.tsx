@@ -3,16 +3,19 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getPosts, getCategories, categorySlug, type BlogPost } from "@/lib/blog";
 import BlogCover from "@/components/BlogCover";
+import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { category: string } }): Promise<Metadata> {
   const cats = await getCategories();
   const cat = cats.find((c) => categorySlug(c) === params.category);
-  return {
-    title: cat ? `${cat} — SWLA Real Estate Blog` : "Blog Category",
-    description: cat ? `${cat} guides for buying and selling in Lake Charles and Southwest Louisiana.` : undefined,
-  };
+  if (!cat) return { title: "Blog Category" };
+  return pageMetadata({
+    title: `${cat} — SWLA Real Estate Blog`,
+    description: `${cat} guides for buying and selling in Lake Charles and Southwest Louisiana.`,
+    path: `/blog/category/${params.category}`,
+  });
 }
 
 export default async function BlogCategory({ params }: { params: { category: string } }) {

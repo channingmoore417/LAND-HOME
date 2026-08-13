@@ -6,17 +6,19 @@ import { getTeam } from "@/lib/team";
 import LocalMap from "@/components/LocalMap";
 import TeamGrid from "@/components/TeamGrid";
 import JsonLd from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "About Us",
   description:
     "Meet the agents behind The Land & Home Group, brokered by EXIT Realty Southern — a local, no-pressure real estate team helping families buy and sell across Lake Charles, Sulphur and all of Southwest Louisiana.",
-  alternates: { canonical: `${SITE}/about` },
-};
+  path: "/about",
+  image: site.teamPhotoUrl,
+});
 
 const REVIEWS = [
   { name: "Avery Greninger", text: "Lauren is the best, a true advocate for her clients. She helped ease the stresses of my first home-buying experience. You can always count on her, trusting she prioritizes her clients!" },

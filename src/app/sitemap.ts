@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPublicClient } from "@/lib/supabase";
+import { getCategories, categorySlug } from "@/lib/blog";
 
 // Dynamic sitemap so EVERY active property is discoverable/indexable by
 // search engines — not just the ones a visitor happens to click. Regenerated
@@ -13,8 +14,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE}/`, changeFrequency: "daily", priority: 1 },
     { url: `${SITE}/listings`, changeFrequency: "hourly", priority: 0.9 },
-    { url: `${SITE}/blog`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE}/our-listings`, changeFrequency: "hourly", priority: 0.8 },
+    { url: `${SITE}/buy`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE}/sell-my-house-fast`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE}/home-value`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE}/get-pre-approved`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE}/buyer-quiz`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/home-buying-guide`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/about`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/contact`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/blog`, changeFrequency: "weekly", priority: 0.7 },
   ];
 
   // Blog posts.
@@ -33,6 +42,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch (e) {
     console.error("[sitemap] blog fetch failed:", (e as Error).message);
+  }
+
+  // Blog categories.
+  let blogCategories: MetadataRoute.Sitemap = [];
+  try {
+    const cats = await getCategories();
+    blogCategories = cats.map((c) => ({
+      url: `${SITE}/blog/category/${categorySlug(c)}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
+    }));
+  } catch (e) {
+    console.error("[sitemap] blog categories fetch failed:", (e as Error).message);
   }
 
   // Programmatic SEO landing pages (/[city]/[topic]).
@@ -73,5 +95,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] listing fetch failed:", (e as Error).message);
   }
 
-  return [...staticRoutes, ...blog, ...seoPages, ...listings];
+  return [...staticRoutes, ...blog, ...blogCategories, ...seoPages, ...listings];
 }

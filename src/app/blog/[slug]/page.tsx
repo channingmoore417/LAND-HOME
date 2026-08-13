@@ -8,6 +8,7 @@ import BlogBody from "@/components/BlogBody";
 import BlogCover from "@/components/BlogCover";
 import AuthorCard from "@/components/AuthorCard";
 import JsonLd from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +17,16 @@ import { SITE_URL as SITE } from "@/lib/seoConfig";
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await getPost(params.slug);
   if (!post) return { title: "Post not found" };
-  return {
-    title: post.meta_title || post.title,
-    description: post.meta_description || post.excerpt || undefined,
-  };
+  const title = post.meta_title || post.title;
+  const description = post.meta_description || post.excerpt || `${title} — ${site.name}`;
+  return pageMetadata({
+    title,
+    description,
+    path: `/blog/${post.slug}`,
+    image: post.cover_image ? photo(post.cover_image, 1200) : undefined,
+    imageAlt: post.title,
+    type: "article",
+  });
 }
 
 function fmtDate(d: string) {

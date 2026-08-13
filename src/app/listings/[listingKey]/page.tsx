@@ -5,6 +5,7 @@ import { getPublicClient } from "@/lib/supabase";
 import { site } from "@/config/site";
 import { usd, int, num, titleCase, splitFeatures, estAnnualTax } from "@/lib/format";
 import { photo } from "@/lib/images";
+import { pageMetadata } from "@/lib/seoMeta";
 import type { Listing, ListingMedia } from "@/lib/types";
 import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
@@ -130,12 +131,21 @@ export async function generateMetadata({
   const showAddr = listing.internet_address_yn !== false;
   const addr = showAddr ? listing.unparsed_address ?? "" : titleCase(listing.city);
   const title = `${addr}${addr ? ", " : ""}${titleCase(listing.city)}, ${listing.state_or_province ?? "LA"}`;
-  return {
+  const description = `${listing.bedrooms_total ?? "—"} bed, ${listing.bathrooms_total ?? "—"} bath, ${int(
+    listing.living_area,
+  )} sq ft home in ${titleCase(listing.city)}. Offered at ${usd(listing.list_price)} by ${site.name}.`;
+
+  const media = await getMedia(listing.listing_key);
+  const heroPhoto = media[0]?.media_url ? photo(media[0].media_url, 1200) : undefined;
+
+  return pageMetadata({
     title,
-    description: `${listing.bedrooms_total ?? "—"} bed, ${listing.bathrooms_total ?? "—"} bath, ${int(
-      listing.living_area,
-    )} sq ft home in ${titleCase(listing.city)}. Offered at ${usd(listing.list_price)} by ${site.name}.`,
-  };
+    description,
+    path: `/listings/${listing.listing_key}`,
+    image: heroPhoto,
+    imageAlt: title,
+    noIndex: listing.internet_display_yn === false,
+  });
 }
 
 export default async function ListingPage({

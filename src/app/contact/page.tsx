@@ -3,15 +3,16 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import ContactForm from "@/components/ContactForm";
 import JsonLd from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/seoMeta";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact Us",
   description:
     `Get in touch with The Land & Home Group, brokered by EXIT Realty Southern. Call ${site.phone} or send a message — local, no-pressure real estate help across Lake Charles, Sulphur and Southwest Louisiana.`,
-  alternates: { canonical: `${SITE}/contact` },
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   const jsonLd = [

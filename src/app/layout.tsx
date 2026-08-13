@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${site.name} | Lake Charles Real Estate`, template: `%s | ${site.name}` },
   description: DESC,
+  verification: {
+    google: "UMH1v38QMsah0vOpy-uV5lPTIij5xk9Q_RLKQm4-SxI",
+  },
   openGraph: {
     type: "website",
     siteName: site.name,

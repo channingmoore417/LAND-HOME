@@ -11,6 +11,7 @@ import { fetchCards, fetchFirstPhotos, fetchMapPins, PRICE_MAX, type SortKey } f
 import { parseFilters, toCriteria, one, arr, type SP } from "@/lib/listingQuery";
 import { neighborhoodsFor, zipAreasFor } from "@/lib/neighborhoods";
 import type { ListingFilters } from "@/components/ListingsControls";
+import { pageMetadata } from "@/lib/seoMeta";
 
 // IDX search page. ALL filtering/sorting/pagination happens server-side
 // against Supabase so it scales to the full feed (3,000+ listings).
@@ -18,11 +19,12 @@ export const dynamic = "force-dynamic";
 
 const PER = 9;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Homes for Sale in Southwest Louisiana",
   description:
     "Browse homes for sale in Lake Charles, Sulphur and Southwest Louisiana with The Land & Home Group. Search on the map, filter by price, beds, baths, type and more.",
-};
+  path: "/listings",
+});
 
 export default async function ListingsPage({ searchParams }: { searchParams: SP }) {
   const f = parseFilters(searchParams);

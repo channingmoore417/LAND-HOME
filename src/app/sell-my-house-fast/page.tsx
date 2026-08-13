@@ -4,13 +4,14 @@ import { site } from "@/config/site";
 import CashOfferForm from "@/components/CashOfferForm";
 import JsonLd from "@/components/JsonLd";
 import { SITE_URL as SITE } from "@/lib/seoConfig";
+import { pageMetadata } from "@/lib/seoMeta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Sell My House Fast in Lake Charles, LA | Cash Offer As-Is",
   description:
     `Sell your house fast in Lake Charles & Southwest Louisiana — as-is, any condition. Fast, fair cash offer, no repairs, no fees. Call ${site.phone}.`,
-  alternates: { canonical: `${SITE}/sell-my-house-fast` },
-};
+  path: "/sell-my-house-fast",
+});
 
 // FAQ copy lives in ONE place so the visible accordion and the FAQPage
 // structured data can never drift apart.

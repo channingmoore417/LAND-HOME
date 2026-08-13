@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPosts, categorySlug, type BlogPost } from "@/lib/blog";
 import BlogCover from "@/components/BlogCover";
+import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Southwest Louisiana Real Estate Blog",
   description:
     "Local guides for buying and selling in Lake Charles and Southwest Louisiana — neighborhoods, moving tips, the buying process, first-time buyer help, and market know-how from The Land & Home Group.",
-};
+  path: "/blog",
+});
 
 function PostCard({ p, big }: { p: BlogPost; big?: boolean }) {
   return (
