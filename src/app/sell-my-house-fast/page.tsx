@@ -8,7 +8,7 @@ import { SITE_URL as SITE } from "@/lib/seoConfig";
 export const metadata: Metadata = {
   title: "Sell My House Fast in Lake Charles, LA | Cash Offer As-Is",
   description:
-    "Sell your house fast in Lake Charles & Southwest Louisiana — as-is, any condition. Fast, fair cash offer, no repairs, no fees. Call (337) 245-0909.",
+    `Sell your house fast in Lake Charles & Southwest Louisiana — as-is, any condition. Fast, fair cash offer, no repairs, no fees. Call ${site.phone}.`,
   alternates: { canonical: `${SITE}/sell-my-house-fast` },
 };
 
