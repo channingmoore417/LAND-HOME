@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 const PER = 12;
 
 export const metadata: Metadata = pageMetadata({
-  title: `Our Listings | ${site.name}`,
+  title: "Our Listings in Lake Charles & Southwest Louisiana",
   description:
     "Homes for sale listed by The Land & Home Group across Lake Charles, Sulphur and Southwest Louisiana. Browse our current listings.",
   path: "/our-listings",
