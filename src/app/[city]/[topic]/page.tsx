@@ -7,6 +7,8 @@ import { usd } from "@/lib/format";
 import { fetchCards, fetchFirstPhotos, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
 import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
+import { pageMetadata } from "@/lib/seoMeta";
+import { photo } from "@/lib/images";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
 import LocalMap from "@/components/LocalMap";
@@ -68,13 +70,24 @@ export async function generateMetadata({
   const page = await getSeoPage(`${params.city}/${params.topic}`);
   if (!page) return { title: "Page not found" };
   const c = resolveContent(page);
-  const url = `${SITE}/${page.slug}`;
-  return {
+
+  // Grab one representative listing photo for the link-preview image.
+  const { rows } = await fetchCards(seoCriteria(page), { limit: 1, sort: "new" });
+  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
+  const heroPhoto = rows[0] ? photos.get(rows[0].listing_key) : undefined;
+
+  const meta = pageMetadata({
     title: c.title,
     description: c.metaDesc,
-    alternates: { canonical: url },
-    openGraph: { title: c.title, description: c.metaDesc, url, type: "website" },
-  };
+    path: `/${page.slug}`,
+    image: heroPhoto ? photo(heroPhoto, 1200) : undefined,
+    imageAlt: c.h1,
+  });
+  // c.title already includes "| site.name" (see resolveContent), so use
+  // title.absolute to stop the layout's "%s | site.name" template from
+  // appending it a second time. openGraph/twitter titles are unaffected —
+  // those render as-is, not through the title template.
+  return { ...meta, title: { absolute: c.title } };
 }
 
 export default async function SeoLandingPage({

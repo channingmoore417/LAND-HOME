@@ -17,16 +17,33 @@ export const dynamic = "force-dynamic";
 
 const GBP_URL = "https://share.google/P0z9MIBZPEnlqMUMh";
 
+const HOME_OG_TITLE = "Lake Charles Realtor | Homes for Sale & Real Estate";
+const HOME_OG_DESC =
+  "Browse Lake Charles homes for sale and work with a trusted local real estate team. Live MLS listings, free home valuations, and no-pressure guidance.";
+
 export const metadata: Metadata = {
-  title: { absolute: "Lake Charles Realtor | Homes for Sale & Real Estate" },
+  // title.absolute bypasses the layout's "%s | site.name" template — this
+  // title is already the full, keyword-first SEO title on its own.
+  title: { absolute: HOME_OG_TITLE },
   description:
     "Looking for a Lake Charles realtor? The Land & Home Group helps you buy and sell across Lake Charles and Southwest Louisiana — browse homes for sale, get a free home value report, and work with a trusted local real estate team.",
   alternates: { canonical: "/" },
+  // openGraph/twitter objects REPLACE the layout's entirely rather than
+  // merging, so every field (including the image) has to be repeated here.
   openGraph: {
-    title: "Lake Charles Realtor | Homes for Sale & Real Estate",
-    description:
-      "Browse Lake Charles homes for sale and work with a trusted local real estate team. Live MLS listings, free home valuations, and no-pressure guidance.",
+    type: "website",
     url: SITE,
+    title: HOME_OG_TITLE,
+    description: HOME_OG_DESC,
+    siteName: site.name,
+    locale: "en_US",
+    images: [{ url: site.teamPhotoUrl, width: 1200, height: 630, alt: `${site.name} — Lake Charles real estate team` }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_OG_TITLE,
+    description: HOME_OG_DESC,
+    images: [site.teamPhotoUrl],
   },
 };
 
