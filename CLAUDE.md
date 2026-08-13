@@ -70,7 +70,8 @@ Next.js (App Router) + plain CSS port of the LHG black/gold template
 
 ### Unified form ids (stable)
 `contact`, `listing_inquiry`, `showing_request`, `saved_search`,
-`home_valuation`, `mortgage_preapproval`.
+`home_valuation`, `mortgage_preapproval`, `buyer_guide`, `buyer_quiz`,
+`cash_offer`.
 
 ## Env vars (see .env.example)
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — public reads

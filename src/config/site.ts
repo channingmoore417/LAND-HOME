@@ -33,7 +33,14 @@ export const site = {
         { label: "Moss Bluff", href: "/moss-bluff/homes-for-sale" },
       ],
     },
-    { label: "Sell", href: "/home-value" },
+    {
+      label: "Sell",
+      href: "/home-value",
+      children: [
+        { label: "What's My Home Worth?", href: "/home-value" },
+        { label: "Sell Fast for Cash (As-Is)", href: "/sell-my-house-fast" },
+      ],
+    },
     { label: "Our Listings", href: "/our-listings" },
     { label: "Listings", href: "/listings" },
     { label: "Blog", href: "/blog" },
@@ -51,6 +58,7 @@ export const site = {
           { label: "Lake Charles Homes for Sale", href: "/lake-charles/homes-for-sale" },
           { label: "Land for Sale in Lake Charles", href: "/lake-charles/land-for-sale" },
           { label: "Waterfront Homes in Lake Charles", href: "/lake-charles/waterfront-homes" },
+          { label: "Sell My House Fast (Cash Offer)", href: "/sell-my-house-fast" },
           { label: "All SWLA Listings", href: "/listings" },
         ],
       },
