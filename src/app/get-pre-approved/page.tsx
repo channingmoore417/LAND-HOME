@@ -6,6 +6,13 @@ import { site } from "@/config/site";
 
 const BAYOU_APPLY = "/contact";
 
+// Direct mortgage line + personal site — shown ONLY on this page (compliance
+// contact info for the loan officer), not the sitewide Land & Home Group number.
+const LO_PHONE = "(337) 476-2623";
+const LO_PHONE_HREF = "tel:+13374762623";
+const LO_WEBSITE = "https://mortgagesbychanning.com";
+const LO_WEBSITE_LABEL = "mortgagesbychanning.com";
+
 const TIMEFRAMES = ["As soon as possible", "1–3 months", "3–6 months", "Just exploring"];
 const HOUSING = ["I rent", "I own my home", "Living with family", "Other"];
 const PROPERTY = ["Single-family home", "Condo / townhome", "Multi-family (2–4 units)", "Manufactured home", "Land / new build"];
@@ -150,10 +157,22 @@ export default function GetPreApprovedPage() {
   return (
     <main className="results quiz">
       <div className="wrap" style={{ maxWidth: 720 }}>
-        <div className="quiz-powered">
+        <div className="lo-card">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={site.bayou.logoUrl} alt={site.bayou.name} />
-          <span>Pre-approval powered by <strong>{site.bayou.name}</strong></span>
+          <img className="lo-card__avatar" src={site.bayou.headshotUrl} alt={site.bayou.repName} />
+          <div className="lo-card__info">
+            <div className="lo-card__name">{site.bayou.repName}</div>
+            <div className="lo-card__brand">{site.bayou.name} &middot; {site.bayou.companyName}</div>
+            <div className="lo-card__nmls">
+              NMLS #{site.bayou.personalNmls}
+              {site.bayou.companyNmls ? ` · ${site.bayou.companyName} NMLS #${site.bayou.companyNmls}` : ""}
+            </div>
+            <div className="lo-card__contact">
+              <a href={LO_PHONE_HREF}>{LO_PHONE}</a>
+              <span className="lo-card__dot" aria-hidden="true">&middot;</span>
+              <a href={LO_WEBSITE} target="_blank" rel="noopener noreferrer">{LO_WEBSITE_LABEL}</a>
+            </div>
+          </div>
         </div>
 
         <div className="wiz__bar" style={{ marginBottom: 22 }}><div className="wiz__fill" style={{ width: `${fillPct}%` }} /></div>
@@ -262,7 +281,7 @@ export default function GetPreApprovedPage() {
               </div>
               <div className="home-cta" style={{ marginTop: 22 }}>
                 <a className="btn btn--primary" href={BAYOU_APPLY}>Talk to a Loan Officer</a>
-                <a className="btn btn--ghost" href={site.phoneHref}>Call {site.phone}</a>
+                <a className="btn btn--ghost" href={LO_PHONE_HREF}>Call {LO_PHONE}</a>
               </div>
               <p className="quiz-disclosure">
                 This snapshot is an estimate based on the information you provided — not a commitment to lend, a pre-approval,
