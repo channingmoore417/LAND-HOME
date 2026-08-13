@@ -157,24 +157,6 @@ export default function GetPreApprovedPage() {
   return (
     <main className="results quiz">
       <div className="wrap" style={{ maxWidth: 720 }}>
-        <div className="lo-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="lo-card__avatar" src={site.bayou.headshotUrl} alt={site.bayou.repName} />
-          <div className="lo-card__info">
-            <div className="lo-card__name">{site.bayou.repName}</div>
-            <div className="lo-card__brand">{site.bayou.name} &middot; {site.bayou.companyName}</div>
-            <div className="lo-card__nmls">
-              NMLS #{site.bayou.personalNmls}
-              {site.bayou.companyNmls ? ` · ${site.bayou.companyName} NMLS #${site.bayou.companyNmls}` : ""}
-            </div>
-            <div className="lo-card__contact">
-              <a href={LO_PHONE_HREF}>{LO_PHONE}</a>
-              <span className="lo-card__dot" aria-hidden="true">&middot;</span>
-              <a href={LO_WEBSITE} target="_blank" rel="noopener noreferrer">{LO_WEBSITE_LABEL}</a>
-            </div>
-          </div>
-        </div>
-
         <div className="wiz__bar" style={{ marginBottom: 22 }}><div className="wiz__fill" style={{ width: `${fillPct}%` }} /></div>
 
         <div className="hv-card quiz__card" key={step}>
@@ -293,6 +275,25 @@ export default function GetPreApprovedPage() {
           {name !== "done" && name !== "intro" && (
             <p className="quiz-disclosure quiz-disclosure--mini">Pre-approval powered by {site.bayou.name}. {site.bayou.disclosure}</p>
           )}
+        </div>
+
+        <div className="lo-card" style={{ marginTop: 22, marginBottom: 0 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="lo-card__avatar" src={site.bayou.headshotUrl} alt={site.bayou.repName} />
+          <div className="lo-card__info">
+            <div className="lo-card__badge">Powered by {site.bayou.name}</div>
+            <div className="lo-card__name">{site.bayou.repName}</div>
+            <div className="lo-card__tagline">{site.bayou.headline}</div>
+            <div className="lo-card__nmls">
+              NMLS #{site.bayou.personalNmls}
+              {site.bayou.companyNmls ? ` · ${site.bayou.companyName} NMLS #${site.bayou.companyNmls}` : ""}
+            </div>
+            <div className="lo-card__contact">
+              <a href={LO_PHONE_HREF}>{LO_PHONE}</a>
+              <span className="lo-card__dot" aria-hidden="true">&middot;</span>
+              <a href={LO_WEBSITE} target="_blank" rel="noopener noreferrer">{LO_WEBSITE_LABEL}</a>
+            </div>
+          </div>
         </div>
 
         <p style={{ textAlign: "center", marginTop: 16 }}>

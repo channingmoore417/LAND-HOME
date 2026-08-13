@@ -841,8 +841,9 @@ textarea.input{resize:vertical;min-height:84px;}
 .quiz-powered strong{color:var(--teal-deep);}
 .lo-card{display:flex;align-items:center;gap:16px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:18px;}
 .lo-card__avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;border:2px solid var(--aqua-line);}
-.lo-card__name{font-weight:700;color:var(--ink);font-size:1rem;}
-.lo-card__brand{color:var(--ink-muted);font-size:.82rem;margin-top:1px;}
+.lo-card__badge{color:var(--teal);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+.lo-card__name{font-weight:700;color:var(--ink);font-size:1rem;margin-top:2px;}
+.lo-card__tagline{color:var(--ink-muted);font-size:.82rem;margin-top:1px;}
 .lo-card__nmls{color:var(--ink-muted);font-size:.72rem;margin-top:3px;}
 .lo-card__contact{margin-top:6px;font-size:.82rem;display:flex;align-items:center;gap:8px;}
 .lo-card__contact a{color:var(--teal);font-weight:600;}
