@@ -1070,6 +1070,8 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .article__cta p{color:rgba(255,255,255,.82);margin:0 0 18px;}
 .article__cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
 .article__cta-row .btn{width:auto;display:inline-flex;align-items:center;padding:13px 24px;}
+
+.recently-viewed{margin:40px 0 0;padding-top:32px;border-top:1px solid var(--line);}
 .article__related{margin-top:30px;}
 .authorcard{display:flex;gap:20px;align-items:flex-start;background:var(--off);border:1px solid var(--line);border-radius:18px;padding:24px;margin:36px 0 8px;}
 .authorcard__avatar{flex:none;width:84px;height:84px;border-radius:50%;overflow:hidden;background:var(--teal);display:flex;align-items:center;justify-content:center;}

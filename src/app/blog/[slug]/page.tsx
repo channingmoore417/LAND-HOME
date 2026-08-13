@@ -8,6 +8,7 @@ import BlogBody from "@/components/BlogBody";
 import BlogCover from "@/components/BlogCover";
 import AuthorCard from "@/components/AuthorCard";
 import JsonLd from "@/components/JsonLd";
+import RecentlyViewedBox from "@/components/RecentlyViewedBox";
 import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
@@ -111,6 +112,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <a className="btn btn--hollow" href={site.phoneHref}>Call {site.phone}</a>
             </div>
           </section>
+
+          <RecentlyViewedBox />
 
           {related.length > 0 && (
             <section className="article__related">
