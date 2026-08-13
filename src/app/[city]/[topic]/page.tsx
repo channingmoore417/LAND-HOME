@@ -76,18 +76,13 @@ export async function generateMetadata({
   const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
   const heroPhoto = rows[0] ? photos.get(rows[0].listing_key) : undefined;
 
-  const meta = pageMetadata({
+  return pageMetadata({
     title: c.title,
     description: c.metaDesc,
     path: `/${page.slug}`,
     image: heroPhoto ? photo(heroPhoto, 1200) : undefined,
     imageAlt: c.h1,
   });
-  // c.title already includes "| site.name" (see resolveContent), so use
-  // title.absolute to stop the layout's "%s | site.name" template from
-  // appending it a second time. openGraph/twitter titles are unaffected —
-  // those render as-is, not through the title template.
-  return { ...meta, title: { absolute: c.title } };
 }
 
 export default async function SeoLandingPage({

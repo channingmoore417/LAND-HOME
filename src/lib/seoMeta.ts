@@ -25,8 +25,17 @@ export function pageMetadata({
 }): Metadata {
   const url = `${SITE_URL}${path}`;
   const img = image || site.teamPhotoUrl;
+
+  // Some titles come from hand-authored CMS data (blog post meta_title,
+  // seo_pages custom_meta_title) that may already end in "| {site.name}".
+  // Append it once, and always emit title.absolute — bypassing the layout's
+  // "%s | site.name" template entirely — so a title can never get the site
+  // name appended twice regardless of what the source data already contains.
+  const suffix = ` | ${site.name}`;
+  const fullTitle = title.endsWith(suffix) || title === site.name ? title : `${title}${suffix}`;
+
   return {
-    title,
+    title: { absolute: fullTitle },
     description,
     alternates: { canonical: url },
     ...(noIndex ? { robots: { index: false, follow: false } } : {}),

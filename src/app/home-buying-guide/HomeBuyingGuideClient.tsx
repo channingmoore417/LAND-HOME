@@ -66,7 +66,7 @@ export default function HomeBuyingGuideClient() {
           <div className="guidehero">
             <div className="guidehero__copy">
               <span className="hero__script">free download</span>
-              <h1>The SWLA Home Buyer&apos;s Guide</h1>
+              <h1>The Southwest Louisiana Home Buyer&apos;s Guide</h1>
               <p className="hero__sub">
                 Everything you need to buy with confidence — from getting pre-approved to closing day —
                 written for buyers right here in Southwest Louisiana.

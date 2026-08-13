@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: { category: string 
   const cat = cats.find((c) => categorySlug(c) === params.category);
   if (!cat) return { title: "Blog Category" };
   return pageMetadata({
-    title: `${cat} — SWLA Real Estate Blog`,
+    title: `${cat} — Southwest Louisiana Real Estate Guides`,
     description: `${cat} guides for buying and selling in Lake Charles and Southwest Louisiana.`,
     path: `/blog/category/${params.category}`,
   });
