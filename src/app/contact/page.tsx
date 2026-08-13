@@ -9,7 +9,7 @@ import { SITE_URL as SITE } from "@/lib/seoConfig";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Get in touch with The Land & Home Group, brokered by EXIT Realty Southern. Call (337) 245-0909 or send a message — local, no-pressure real estate help across Lake Charles, Sulphur and Southwest Louisiana.",
+    `Get in touch with The Land & Home Group, brokered by EXIT Realty Southern. Call ${site.phone} or send a message — local, no-pressure real estate help across Lake Charles, Sulphur and Southwest Louisiana.`,
   alternates: { canonical: `${SITE}/contact` },
 };
 
@@ -62,7 +62,7 @@ export default function ContactPage() {
           </p>
           <div className="hero__cta">
             <a className="btn btn--aqua" href={site.phoneHref}>Call {site.phone}</a>
-            <a className="btn btn--hollow" href="sms:+13372450909">Text Us</a>
+            <a className="btn btn--hollow" href={site.phoneHref.replace("tel:", "sms:")}>Text Us</a>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">

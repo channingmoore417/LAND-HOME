@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { site } from "@/config/site";
 
 // Standalone contact form for the /contact page. Posts to the single
 // /api/forms endpoint with the stable `contact` form_id.
@@ -39,9 +40,9 @@ export default function ContactForm() {
         }),
       });
       if (res.ok) setSent(true);
-      else setErr("Something went wrong. Please call us at (337) 245-0909.");
+      else setErr(`Something went wrong. Please call us at ${site.phone}.`);
     } catch {
-      setErr("Something went wrong. Please call us at (337) 245-0909.");
+      setErr(`Something went wrong. Please call us at ${site.phone}.`);
     }
     setBusy(false);
   }
@@ -53,7 +54,7 @@ export default function ContactForm() {
         <h3>Thanks — we&apos;ll be in touch shortly.</h3>
         <p>
           We typically reply the same business day. Need something now? Call or text us at{" "}
-          <a href="tel:+13372450909"><strong>(337) 245-0909</strong></a>.
+          <a href={site.phoneHref}><strong>{site.phone}</strong></a>.
         </p>
       </div>
     );

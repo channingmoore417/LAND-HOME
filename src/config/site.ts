@@ -6,8 +6,8 @@
 export const site = {
   name: "The Land & Home Group",
   brokerage: "EXIT Realty Southern",
-  phone: "(337) 245-0909",
-  phoneHref: "tel:+13372450909",
+  phone: "(713) 314-6466",
+  phoneHref: "tel:+17133146466",
   logoUrl:
     "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a29b0edff11dedc40eb9d4e.png",
   teamPhotoUrl:
@@ -57,7 +57,7 @@ export const site = {
       {
         title: "Connect",
         links: [
-          { label: "(337) 245-0909", href: "tel:+13372450909" },
+          { label: "(713) 314-6466", href: "tel:+17133146466" },
           { label: "thelandhomegroup", href: "https://instagram.com/thelandhomegroup" },
           { label: "Lake Charles, LA", href: "/contact" },
           { label: "Schedule a Call", href: "/contact" },
