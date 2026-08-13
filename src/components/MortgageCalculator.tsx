@@ -5,7 +5,7 @@ import { site } from "@/config/site";
 
 const fmt = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
 
-// Payment estimator + Bayou Mortgage module. Logic ported from the
+// Payment estimator + mortgage partner module. Logic ported from the
 // template; values are estimates only (see disclosure).
 export default function MortgageCalculator({
   price,
@@ -115,8 +115,10 @@ export default function MortgageCalculator({
       <div className="bayou">
         <div className="bayou__txt">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="bayou__logo" src={site.bayou.logoUrl} alt={site.bayou.name} />
+          <img className="bayou__avatar" src={site.bayou.headshotUrl} alt={site.bayou.repName} />
           <div className="bayou__copy">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="bayou__logo" src={site.bayou.logoUrl} alt={site.bayou.name} />
             <div className="t">{site.bayou.headline}</div>
             <div className="s">{site.bayou.sub}</div>
           </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
 
-const BAYOU_APPLY = "https://bayou-mortgage.com";
+const BAYOU_APPLY = "/contact";
 
 const TIMEFRAMES = ["As soon as possible", "1–3 months", "3–6 months", "Just exploring"];
 const HOUSING = ["I rent", "I own my home", "Living with family", "Other"];
@@ -152,8 +152,8 @@ export default function GetPreApprovedPage() {
       <div className="wrap" style={{ maxWidth: 720 }}>
         <div className="quiz-powered">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={site.bayou.logoUrl} alt="Bayou Mortgage" />
-          <span>Pre-approval powered by <strong>Bayou Mortgage</strong></span>
+          <img src={site.bayou.logoUrl} alt={site.bayou.name} />
+          <span>Pre-approval powered by <strong>{site.bayou.name}</strong></span>
         </div>
 
         <div className="wiz__bar" style={{ marginBottom: 22 }}><div className="wiz__fill" style={{ width: `${fillPct}%` }} /></div>
@@ -216,7 +216,7 @@ export default function GetPreApprovedPage() {
             <div className="wiz__step">
               <div className="quiz-eyebrow">Step 13 of {QCOUNT}</div>
               <h2 className="wiz__q">Where should we send your results?</h2>
-              <p className="prose" style={{ color: "var(--ink-muted)", marginTop: 0 }}>A Bayou Mortgage loan officer will follow up with your options — no pressure.</p>
+              <p className="prose" style={{ color: "var(--ink-muted)", marginTop: 0 }}>A {site.bayou.name} loan officer will follow up with your options — no pressure.</p>
               <div className="hv-grid hv-grid--2" style={{ marginTop: 18 }}>
                 <div className="field"><label>First Name</label><input className="input" type="text" autoComplete="given-name" value={a.firstName} onChange={(e) => set({ firstName: e.target.value })} /></div>
                 <div className="field"><label>Last Name</label><input className="input" type="text" autoComplete="family-name" value={a.lastName} onChange={(e) => set({ lastName: e.target.value })} /></div>
@@ -247,7 +247,7 @@ export default function GetPreApprovedPage() {
               </div>
               <p className="prose" style={{ color: "var(--ink-muted)", textAlign: "center" }}>
                 At {a.price ? usd(num(a.price)) : "your target price"}, your debt-to-income {verdictText}. Here are the
-                loan programs that look like a fit — a Bayou Mortgage loan officer will confirm and get you a real pre-approval.
+                loan programs that look like a fit — a {site.bayou.name} loan officer will confirm and get you a real pre-approval.
               </p>
               <div className="elig">
                 {r.programs.map((p) => (
@@ -261,7 +261,7 @@ export default function GetPreApprovedPage() {
                 ))}
               </div>
               <div className="home-cta" style={{ marginTop: 22 }}>
-                <a className="btn btn--primary" href={BAYOU_APPLY} target="_blank" rel="noopener">Start My Pre-Approval</a>
+                <a className="btn btn--primary" href={BAYOU_APPLY}>Talk to a Loan Officer</a>
                 <a className="btn btn--ghost" href={site.phoneHref}>Call {site.phone}</a>
               </div>
               <p className="quiz-disclosure">
@@ -272,7 +272,7 @@ export default function GetPreApprovedPage() {
           )}
 
           {name !== "done" && name !== "intro" && (
-            <p className="quiz-disclosure quiz-disclosure--mini">Pre-approval powered by Bayou Mortgage. {site.bayou.disclosure}</p>
+            <p className="quiz-disclosure quiz-disclosure--mini">Pre-approval powered by {site.bayou.name}. {site.bayou.disclosure}</p>
           )}
         </div>
 

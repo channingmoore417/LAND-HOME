@@ -141,10 +141,11 @@ button{cursor:pointer;}
 .calc__break div{display:flex;justify-content:space-between;font-size:.82rem;color:rgba(255,255,255,.8);}
 .calc__break div b{color:#fff;font-weight:600;}
 
-/* Bayou partner module (contained, keeps Bayou identity) */
+/* Mortgage partner module (contained) */
 .bayou{background:var(--bayou-navy);display:flex;align-items:center;justify-content:space-between;gap:24px;padding:22px 30px;flex-wrap:wrap;}
 .bayou__txt{display:flex;align-items:center;gap:18px;}
-.bayou__logo{height:54px;width:auto;flex:none;display:block;}
+.bayou__avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none;display:block;border:2px solid rgba(255,255,255,.25);}
+.bayou__logo{height:20px;width:auto;display:block;margin-bottom:6px;}
 .bayou__copy .t{color:#fff;font-weight:700;font-size:1.02rem;line-height:1.25;}
 .bayou__copy .s{color:#B8CCDD;font-size:.84rem;margin-top:2px;max-width:42ch;}
 .bayou__cta{background:var(--bayou-blue);color:#fff;border:0;border-radius:10px;padding:14px 26px;font-weight:700;font-size:.9rem;transition:.2s;white-space:nowrap;}

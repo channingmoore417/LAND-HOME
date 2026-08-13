@@ -248,7 +248,7 @@ export default async function SeoLandingPage({
         />
       )}
 
-      {/* Pre-approval CTA → Bayou Mortgage quote page */}
+      {/* Pre-approval CTA → mortgage pre-approval quiz page */}
       <section className="preapproval">
         <div className="wrap preapproval__inner">
           <div className="preapproval__txt">
