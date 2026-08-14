@@ -72,11 +72,14 @@ export async function getCitySiblings(city: string): Promise<SeoPage[]> {
   return (data as SeoPage[]) ?? [];
 }
 
-// Carlyss has no distinct value in the MLS feed's `city` column (it shares
-// Sulphur's ZIP) — matched by an approximate lat/long box instead, derived
-// from a map of the community. Spot-check results against this box
-// periodically; it's a best-effort boundary, not a surveyed one.
-const CARLYSS_BOUNDS = { latMin: 30.195, latMax: 30.225, lngMin: -93.315, lngMax: -93.295 };
+// Carlyss has no distinct value in the MLS feed's `city` column — it shares
+// Sulphur's ZIP (70665) and Sulphur's city label. Per local knowledge:
+// ZIP 70665, south of I-10. There's a visible gap in listing density between
+// lat 30.22-30.23 (only ~6 active listings vs 25-44 on either side) that
+// lines up with the I-10 corridor itself (highway right-of-way, no
+// residential listings) — using 30.215 as the cutoff.
+const CARLYSS_ZIP = "70665";
+const CARLYSS_LAT_MAX = 30.215; // south of I-10
 
 export function seoCriteria(page: SeoPage): ListingCriteria {
   const category =
@@ -96,7 +99,7 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
   } as const;
 
   if (page.slug.startsWith("carlyss/")) {
-    return { ...CARLYSS_BOUNDS, ...shared };
+    return { postalCode: CARLYSS_ZIP, latMax: CARLYSS_LAT_MAX, ...shared };
   }
 
   return {
