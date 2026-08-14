@@ -72,21 +72,41 @@ export async function getCitySiblings(city: string): Promise<SeoPage[]> {
   return (data as SeoPage[]) ?? [];
 }
 
+// Carlyss has no distinct value in the MLS feed's `city` column (it shares
+// Sulphur's ZIP) — matched by an approximate lat/long box instead, derived
+// from a map of the community. Spot-check results against this box
+// periodically; it's a best-effort boundary, not a surveyed one.
+const CARLYSS_BOUNDS = { latMin: 30.195, latMax: 30.225, lngMin: -93.315, lngMax: -93.295 };
+
 export function seoCriteria(page: SeoPage): ListingCriteria {
-  return {
-    city: page.city ?? undefined,
+  const category =
+    page.page_type === "land"
+      ? "land"
+      : page.page_type === "single_family"
+        ? "single_family"
+        : page.page_type === "mobile"
+          ? "mobile"
+          : undefined;
+  const shared = {
     bedsMin: page.beds_min ?? undefined,
     priceMin: page.price_min ?? undefined,
     priceMax: page.price_max ?? undefined,
-    category:
-      page.page_type === "land"
-        ? "land"
-        : page.page_type === "single_family"
-          ? "single_family"
-          : page.page_type === "mobile"
-            ? "mobile"
-            : undefined,
+    category,
     features: page.feature_key ? [page.feature_key] : undefined,
+  } as const;
+
+  if (page.slug.startsWith("carlyss/")) {
+    return { ...CARLYSS_BOUNDS, ...shared };
+  }
+
+  return {
+    // Some cities' listings are mislabeled in the MLS feed's `city` column
+    // (e.g. DeQuincy listings show up tagged Sulphur/Lake Charles/Ragley).
+    // When a page specifies postal_code, filter by ZIP instead of the
+    // unreliable city name — city is still kept for display (H1, breadcrumbs).
+    city: page.postal_code ? undefined : (page.city ?? undefined),
+    postalCode: page.postal_code ?? undefined,
+    ...shared,
   };
 }
 

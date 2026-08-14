@@ -31,6 +31,8 @@ export const site = {
         { label: "Cameron", href: "/cameron/homes-for-sale" },
         { label: "Welsh", href: "/welsh/homes-for-sale" },
         { label: "Moss Bluff", href: "/moss-bluff/homes-for-sale" },
+        { label: "DeQuincy", href: "/dequincy/homes-for-sale" },
+        { label: "Carlyss", href: "/carlyss/homes-for-sale" },
       ],
     },
     {
