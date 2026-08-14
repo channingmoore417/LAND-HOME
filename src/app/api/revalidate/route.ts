@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
   // New/changed inventory affects the home + search listing counts.
   touch("/");
-  touch("/listings");
+  touch("/homes-for-sale");
 
   if (body.listing_key) touch(`/listings/${body.listing_key}`);
   for (const k of body.listing_keys ?? []) touch(`/listings/${k}`);

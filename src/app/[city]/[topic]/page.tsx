@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
-import { fetchCards, fetchFirstPhotos, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
+import { fetchCards, fetchFirstPhotos, fetchPhotosMap, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
 import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import { pageMetadata } from "@/lib/seoMeta";
@@ -59,7 +59,7 @@ function searchHref(page: SeoPage): string {
   else if (page.page_type === "mobile") p.set("type", "Mobile / Manufactured");
   if (page.page_type === "beds" && page.beds_min) p.set("beds", String(page.beds_min));
   if (page.feature_key) p.append("feature", page.feature_key);
-  return `/listings${p.toString() ? `?${p}` : ""}`;
+  return `/homes-for-sale${p.toString() ? `?${p}` : ""}`;
 }
 
 export async function generateMetadata({
@@ -100,8 +100,8 @@ export default async function SeoLandingPage({
     fetchCards(criteria, { limit: 12, sort: "new" }),
     getCitySiblings(page.city ?? ""),
   ]);
-  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
+  for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
   const content = resolveContent(page);
   const faqs = faqsFor(page, stats);
@@ -129,8 +129,8 @@ export default async function SeoLandingPage({
     isHub && page.city
       ? await Promise.all([neighborhoodCards(page.city), zipCards(page.city)])
       : [[], []];
-  const hoodHref = (slug: string) => `/listings?city=${encodeURIComponent(cityLabel)}&neighborhood=${slug}`;
-  const zipHref = (slug: string) => `/listings?city=${encodeURIComponent(cityLabel)}&zip=${slug}`;
+  const hoodHref = (slug: string) => `/homes-for-sale?city=${encodeURIComponent(cityLabel)}&neighborhood=${slug}`;
+  const zipHref = (slug: string) => `/homes-for-sale?city=${encodeURIComponent(cityLabel)}&zip=${slug}`;
 
   const jsonLd = jsonLdGraph({
     content, stats, cards: rows, faqs, siteUrl: SITE, pageUrl, cityHubUrl, cityLabel, topicLabel,
@@ -191,7 +191,7 @@ export default async function SeoLandingPage({
                   <span className="script">nothing active</span>
                   <h3>No {topicLabel.toLowerCase()} are active right now</h3>
                   <p>Inventory changes daily — check back soon or browse all listings.</p>
-                  <Link href="/listings">Browse all listings</Link>
+                  <Link href="/homes-for-sale">Browse all listings</Link>
                 </div>
               ) : (
                 <>

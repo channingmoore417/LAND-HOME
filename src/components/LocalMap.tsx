@@ -5,7 +5,7 @@ import { site } from "@/config/site";
 // Reused on the SEO landing pages and the Buy hub.
 export default function LocalMap({
   cityLabel = "Southwest Louisiana",
-  href = "/listings",
+  href = "/homes-for-sale",
   ctaLabel = "Browse listings",
   mapOnly = false,
   showPhoto = true,

@@ -135,7 +135,7 @@ export default async function AboutPage() {
               </div>
               <div className="hero__cta">
                 <Link className="btn btn--aqua" href="/contact">Get in Touch</Link>
-                <Link className="btn btn--hollow" href="/listings">Browse Listings</Link>
+                <Link className="btn btn--hollow" href="/homes-for-sale">Browse Listings</Link>
               </div>
             </div>
             <div className="hero__photo">

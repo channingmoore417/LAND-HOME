@@ -3,7 +3,7 @@ import Link from "next/link";
 import SortSelect from "@/components/SortSelect";
 import ListingCard from "@/components/ListingCard";
 import LocalMap from "@/components/LocalMap";
-import { fetchCards, fetchFirstPhotos, type ListingCriteria, type SortKey } from "@/lib/listings";
+import { fetchCards, fetchPhotosMap, type ListingCriteria, type SortKey } from "@/lib/listings";
 import { site } from "@/config/site";
 import { pageMetadata } from "@/lib/seoMeta";
 
@@ -32,8 +32,8 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
     offset: (page - 1) * PER,
     sort,
   });
-  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
+  for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
   const pages = Math.max(1, Math.ceil(total / PER));
   const startIdx = (page - 1) * PER;
@@ -105,7 +105,7 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
                   Our team&apos;s next listings will appear here automatically. In the meantime,
                   browse every home for sale across Southwest Louisiana.
                 </p>
-                <Link href="/listings">Browse all listings</Link>
+                <Link href="/homes-for-sale">Browse all listings</Link>
               </div>
             ) : (
               rows.map((c) => <ListingCard key={c.listing_key} c={c} />)
@@ -153,7 +153,7 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
         </div>
       </section>
 
-      <LocalMap cityLabel="Southwest Louisiana" href="/listings" ctaLabel="Browse all SWLA listings" />
+      <LocalMap cityLabel="Southwest Louisiana" href="/homes-for-sale" ctaLabel="Browse all SWLA listings" />
     </>
   );
 }

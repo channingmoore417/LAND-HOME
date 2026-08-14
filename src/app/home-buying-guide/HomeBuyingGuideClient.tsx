@@ -119,7 +119,7 @@ export default function HomeBuyingGuideClient() {
                   </p>
                   <button type="button" className="btn btn--primary" onClick={openGuide} style={{ width: "100%" }}>Download the Guide</button>
                   <div className="home-cta" style={{ marginTop: 16 }}>
-                    <Link className="btn btn--ghost" href="/listings">Browse Homes</Link>
+                    <Link className="btn btn--ghost" href="/homes-for-sale">Browse Homes</Link>
                     <Link className="btn btn--ghost" href="/buy">Explore Buying</Link>
                   </div>
                 </div>

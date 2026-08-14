@@ -13,7 +13,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").r
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${SITE}/`, changeFrequency: "daily", priority: 1 },
-    { url: `${SITE}/listings`, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${SITE}/homes-for-sale`, changeFrequency: "hourly", priority: 0.9 },
     { url: `${SITE}/our-listings`, changeFrequency: "hourly", priority: 0.8 },
     { url: `${SITE}/buy`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE}/sell-my-house-fast`, changeFrequency: "monthly", priority: 0.8 },

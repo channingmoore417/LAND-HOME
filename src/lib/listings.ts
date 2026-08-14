@@ -71,6 +71,7 @@ export interface Card {
   internet_address_yn: boolean;
   days_on_market: number | null;
   photo_url?: string | null; // attached after fetchFirstPhotos
+  photos?: string[]; // attached after fetchPhotosMap — powers the card slider
 }
 
 // Applies every filter to a Supabase query builder. Shared so the search page
@@ -158,6 +159,27 @@ export async function fetchFirstPhotos(keys: string[]): Promise<Map<string, stri
     .order("order", { ascending: true });
   for (const m of (data as { listing_key: string; media_url: string }[]) ?? []) {
     if (!map.has(m.listing_key)) map.set(m.listing_key, m.media_url);
+  }
+  return map;
+}
+
+// Up to `limit` photos per listing_key, in order — powers the card photo
+// slider (swipe through a listing's photos without opening it).
+export async function fetchPhotosMap(keys: string[], limit = 6): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+  if (keys.length === 0) return map;
+  const supabase = getLiveClient();
+  const { data } = await supabase
+    .from("listing_media")
+    .select("listing_key, media_url, order")
+    .in("listing_key", keys)
+    .order("order", { ascending: true });
+  for (const m of (data as { listing_key: string; media_url: string }[]) ?? []) {
+    const arr = map.get(m.listing_key) ?? [];
+    if (arr.length < limit) {
+      arr.push(m.media_url);
+      map.set(m.listing_key, arr);
+    }
   }
   return map;
 }

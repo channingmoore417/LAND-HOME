@@ -19,7 +19,7 @@ export const site = {
       label: "Buy",
       href: "/buy",
       children: [
-        { label: "All Homes for Sale", href: "/buy" },
+        { label: "All Homes for Sale", href: "/homes-for-sale" },
         { label: "Lake Charles", href: "/lake-charles/homes-for-sale" },
         { label: "Sulphur", href: "/sulphur/homes-for-sale" },
         { label: "Iowa", href: "/iowa/homes-for-sale" },
@@ -44,7 +44,6 @@ export const site = {
       ],
     },
     { label: "Our Listings", href: "/our-listings" },
-    { label: "Listings", href: "/listings" },
     { label: "Blog", href: "/blog" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
@@ -61,7 +60,7 @@ export const site = {
           { label: "Land for Sale in Lake Charles", href: "/lake-charles/land-for-sale" },
           { label: "Waterfront Homes in Lake Charles", href: "/lake-charles/waterfront-homes" },
           { label: "Sell My House Fast (Cash Offer)", href: "/sell-my-house-fast" },
-          { label: "All SWLA Listings", href: "/listings" },
+          { label: "All SWLA Listings", href: "/homes-for-sale" },
         ],
       },
       {

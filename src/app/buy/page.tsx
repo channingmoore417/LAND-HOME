@@ -98,7 +98,7 @@ export default async function BuyPage() {
             {stats.priceMin ? <div><div className="n">{usd(stats.priceMin)}</div><div className="k">Starting Price</div></div> : null}
           </div>
           <div className="hero__cta">
-            <Link className="btn btn--aqua" href="/listings">Browse all listings</Link>
+            <Link className="btn btn--aqua" href="/homes-for-sale">Browse all listings</Link>
             <a className="btn btn--hollow" href={site.phoneHref}>Call Us Now</a>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default async function BuyPage() {
       </section>
 
       {/* About + map */}
-      <LocalMap href="/listings" ctaLabel="Browse all listings" />
+      <LocalMap href="/homes-for-sale" ctaLabel="Browse all listings" />
 
       {/* Buyer FAQ */}
       <section className="faq">

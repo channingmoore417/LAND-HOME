@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchCards, fetchFirstPhotos, fetchMapPins, type ListingCriteria, type SortKey } from "@/lib/listings";
+import { fetchCards, fetchPhotosMap, fetchMapPins, type ListingCriteria, type SortKey } from "@/lib/listings";
 import { parseFilters, toCriteria, type SP } from "@/lib/listingQuery";
 
 export const runtime = "nodejs";
@@ -35,8 +35,8 @@ export async function GET(req: Request) {
     fetchCards(criteria, { limit: LIST_LIMIT, sort: f.sort as SortKey }),
   ]);
 
-  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
+  for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
   return NextResponse.json({ pins, cards: rows, total });
 }

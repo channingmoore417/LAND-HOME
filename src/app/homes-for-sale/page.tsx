@@ -7,7 +7,7 @@ import ListingCard from "@/components/ListingCard";
 import MapSearch from "@/components/MapSearch";
 import FilterDrawer from "@/components/FilterDrawer";
 import TrackSearch from "@/components/TrackSearch";
-import { fetchCards, fetchFirstPhotos, fetchMapPins, PRICE_MAX, type SortKey } from "@/lib/listings";
+import { fetchCards, fetchPhotosMap, fetchMapPins, PRICE_MAX, type SortKey } from "@/lib/listings";
 import { parseFilters, toCriteria, one, arr, type SP } from "@/lib/listingQuery";
 import { neighborhoodsFor, zipAreasFor } from "@/lib/neighborhoods";
 import type { ListingFilters } from "@/components/ListingsControls";
@@ -23,10 +23,10 @@ export const metadata: Metadata = pageMetadata({
   title: "Homes for Sale in Southwest Louisiana",
   description:
     "Browse homes for sale in Lake Charles, Sulphur and Southwest Louisiana with The Land & Home Group. Search on the map, filter by price, beds, baths, type and more.",
-  path: "/listings",
+  path: "/homes-for-sale",
 });
 
-export default async function ListingsPage({ searchParams }: { searchParams: SP }) {
+export default async function HomesForSalePage({ searchParams }: { searchParams: SP }) {
   const f = parseFilters(searchParams);
   const page = Math.max(1, Number(one(searchParams.page)) || 1);
   const view = one(searchParams.view) === "split" ? "split" : "list";
@@ -57,7 +57,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
   const viewHref = (v: "split" | "list") => {
     const p = new URLSearchParams(keepStr);
     if (v === "split") p.set("view", "split"); // list is the default
-    return `/listings${p.toString() ? `?${p}` : ""}`;
+    return `/homes-for-sale${p.toString() ? `?${p}` : ""}`;
   };
 
   // Filter-only query for the live map API (exclude view & page; sort kept).
@@ -82,8 +82,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
       fetchCards(criteria, { limit: 60, sort: f.sort as SortKey }),
       fetchMapPins(criteria),
     ]);
-    const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-    for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+    const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
+    for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
     return (
       <>
@@ -113,8 +113,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
     offset: (page - 1) * PER,
     sort: f.sort as SortKey,
   });
-  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
+  for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
   const pages = Math.max(1, Math.ceil(total / PER));
   const startIdx = (page - 1) * PER;
@@ -123,7 +123,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
     const p = new URLSearchParams(keepStr);
     if (f.sort !== "new") p.set("sort", f.sort);
     if (n > 1) p.set("page", String(n));
-    return `/listings${p.toString() ? `?${p}` : ""}`;
+    return `/homes-for-sale${p.toString() ? `?${p}` : ""}`;
   };
 
   return (
@@ -158,7 +158,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: SP 
                     <span className="script">no matches</span>
                     <h3>No homes fit those filters</h3>
                     <p>Try widening your price range or clearing a filter or two.</p>
-                    <Link href="/listings">Reset all filters</Link>
+                    <Link href="/homes-for-sale">Reset all filters</Link>
                   </div>
                 ) : (
                   rows.map((c, i) => (
@@ -205,7 +205,7 @@ function Hero({ areaName, city }: { areaName: string; city: string }) {
     <header className="hero hero--index hero--listings">
       <div className="wrap">
         <div className="hero__crumb">
-          <Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/listings">Listings</Link>
+          <Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/homes-for-sale">Homes for Sale</Link>
           &nbsp;/&nbsp; {city || "Southwest Louisiana"}
         </div>
         <span className="hero__script">homes for sale in</span>
@@ -227,7 +227,7 @@ function ListBar({ view, query, viewHref, wide }: { view: "split" | "list"; quer
   return (
     <div className="listbar">
       <div className={`listbar__inner${wide ? " listbar__inner--wide" : ""}`}>
-        <form className="hsearch hsearch--bar" action="/listings" method="get">
+        <form className="hsearch hsearch--bar" action="/homes-for-sale" method="get">
           <input type="hidden" name="view" value={view} />
           <input className="hsearch__input" type="text" name="q" defaultValue={query}
             placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />

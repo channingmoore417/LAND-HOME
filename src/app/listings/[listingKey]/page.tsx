@@ -232,7 +232,7 @@ export default async function ListingPage({
             <div>
               <div className="hero__crumb">
                 <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}
-                <Link href="/listings">{titleCase(listing.city)}</Link>
+                <Link href="/homes-for-sale">{titleCase(listing.city)}</Link>
                 {listing.listing_id ? ` · MLS# ${listing.listing_id}` : ""}
               </div>
               <span className="hero__script">welcome home to</span>
@@ -419,7 +419,7 @@ export default async function ListingPage({
       {/* FIND US — local team + Google map embed */}
       <LocalMap
         cityLabel={titleCase(listing.city)}
-        href={`/listings?city=${encodeURIComponent(listing.city ?? "")}`}
+        href={`/homes-for-sale?city=${encodeURIComponent(listing.city ?? "")}`}
         ctaLabel={`More homes in ${titleCase(listing.city)}`}
       />
     </>

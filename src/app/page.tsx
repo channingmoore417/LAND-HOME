@@ -6,7 +6,7 @@ import LocalMap from "@/components/LocalMap";
 import JsonLd from "@/components/JsonLd";
 import Testimonials from "@/components/Testimonials";
 import BlogCover from "@/components/BlogCover";
-import { fetchCards, fetchFirstPhotos } from "@/lib/listings";
+import { fetchCards, fetchPhotosMap } from "@/lib/listings";
 import { cityCards } from "@/lib/neighborhoods";
 import { getPosts } from "@/lib/blog";
 import { REVIEWS } from "@/lib/reviews";
@@ -80,8 +80,8 @@ export default async function Home() {
     cityCards(),
     getPosts({ limit: 3 }),
   ]);
-  const photos = await fetchFirstPhotos(team.map((r) => r.listing_key));
-  for (const r of team) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(team.map((r) => r.listing_key));
+  for (const r of team) r.photos = photos.get(r.listing_key) ?? [];
 
   const jsonLd = [
     {
@@ -128,7 +128,7 @@ export default async function Home() {
       url: SITE,
       potentialAction: {
         "@type": "SearchAction",
-        target: `${SITE}/listings?q={search_term_string}`,
+        target: `${SITE}/homes-for-sale?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },
@@ -158,7 +158,7 @@ export default async function Home() {
                 The Land &amp; Home Group helps you buy and sell across Lake Charles and Southwest
                 Louisiana — local expertise, modern tools, and no-pressure guidance every step of the way.
               </p>
-              <form className="hsearch" action="/listings" method="get">
+              <form className="hsearch" action="/homes-for-sale" method="get">
                 <input type="hidden" name="view" value="split" />
                 <input className="hsearch__input" type="text" name="q" placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
                 <button className="hsearch__btn" type="submit">Search</button>
@@ -220,7 +220,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="home-cta">
-            <Link className="btn btn--primary" href="/listings">Start Browsing Homes</Link>
+            <Link className="btn btn--primary" href="/homes-for-sale">Start Browsing Homes</Link>
             <Link className="btn btn--ghost" href="/home-value">Get My Home Value</Link>
           </div>
         </div>
@@ -258,7 +258,7 @@ export default async function Home() {
         hrefFor={(slug) => `/${slug}`}
       />
       <div className="wrap home-cta home-cta--tight">
-        <Link className="btn btn--primary" href="/listings">Search All Homes for Sale</Link>
+        <Link className="btn btn--primary" href="/homes-for-sale">Search All Homes for Sale</Link>
         <Link className="btn btn--ghost" href="/buy">Explore Buying in SWLA</Link>
       </div>
 
@@ -396,7 +396,7 @@ export default async function Home() {
 
       <LocalMap cityLabel="Southwest Louisiana" mapOnly />
       <div className="wrap home-cta home-cta--tight">
-        <Link className="btn btn--primary" href="/listings">Start Your Home Search</Link>
+        <Link className="btn btn--primary" href="/homes-for-sale">Start Your Home Search</Link>
         <a className="btn btn--ghost" href={site.phoneHref}>Call {site.phone}</a>
       </div>
     </div>

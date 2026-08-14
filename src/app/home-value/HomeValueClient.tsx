@@ -352,7 +352,7 @@ export default function HomeValueClient() {
               </div>
               {picked?.city && (
                 <p style={{ textAlign: "center", marginTop: 18 }}>
-                  <Link className="seo-seeall" href={`/listings?city=${encodeURIComponent(picked.city)}`}>
+                  <Link className="seo-seeall" href={`/homes-for-sale?city=${encodeURIComponent(picked.city)}`}>
                     See what&apos;s for sale in {picked.city} &rarr;
                   </Link>
                 </p>

@@ -90,7 +90,7 @@ export default function BuyerQuizClient() {
       const k = FEATURES.find((x) => x.key === f)?.filter;
       if (k) p.append("feature", k);
     }
-    return `/listings${p.toString() ? `?${p}` : ""}`;
+    return `/homes-for-sale${p.toString() ? `?${p}` : ""}`;
   }
 
   async function finish() {

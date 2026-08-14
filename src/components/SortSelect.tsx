@@ -12,7 +12,7 @@ const OPTIONS: { value: string; label: string }[] = [
   { value: "sqft", label: "Largest" },
 ];
 
-export default function SortSelect({ sort, baseQuery, basePath = "/listings" }: { sort: string; baseQuery: string; basePath?: string }) {
+export default function SortSelect({ sort, baseQuery, basePath = "/homes-for-sale" }: { sort: string; baseQuery: string; basePath?: string }) {
   const router = useRouter();
   return (
     <div className="sortbox">

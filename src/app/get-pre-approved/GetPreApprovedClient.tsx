@@ -297,7 +297,7 @@ export default function GetPreApprovedClient() {
         </div>
 
         <p style={{ textAlign: "center", marginTop: 16 }}>
-          <Link className="seo-seeall" href="/listings">Or browse homes for sale &rarr;</Link>
+          <Link className="seo-seeall" href="/homes-for-sale">Or browse homes for sale &rarr;</Link>
         </p>
       </div>
     </main>
