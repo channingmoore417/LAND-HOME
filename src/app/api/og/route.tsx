@@ -78,33 +78,55 @@ export async function GET(req: Request) {
             style={{ position: "absolute", inset: 0, objectFit: "cover" }}
           />
         ) : null}
+        {/* Soft transition zone above the solid band, so the photo doesn't
+            hard-cut into brand color. */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            left: 0,
+            right: 0,
+            bottom: 300,
+            height: 180,
             display: "flex",
-            background:
-              "linear-gradient(to top, rgba(22,56,72,0.94) 0%, rgba(22,56,72,0.72) 38%, rgba(22,56,72,0.15) 68%, rgba(22,56,72,0.05) 100%)",
+            background: "linear-gradient(to top, rgba(15,38,50,0.9) 0%, rgba(15,38,50,0) 100%)",
+          }}
+        />
+        {/* Near-opaque brand-teal band — deliberately solid, not a soft
+            alpha blend, so it reads as a clean brand color instead of
+            muddying into whatever's in the photo underneath (grass, sky,
+            siding, etc). */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 300,
+            display: "flex",
+            backgroundColor: "rgba(15,38,50,0.96)",
           }}
         />
         <div
           style={{
             position: "absolute",
-            top: 44,
-            left: 56,
+            top: 40,
+            left: 40,
             display: "flex",
             alignItems: "center",
+            backgroundColor: "rgba(15,38,50,0.82)",
+            borderRadius: 12,
+            padding: "10px 20px 10px 12px",
           }}
         >
           {logoData ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoData} width={44} height={44} style={{ objectFit: "contain" }} />
+            <img src={logoData} width={56} height={56} style={{ objectFit: "contain" }} />
           ) : null}
           <div
             style={{
               display: "flex",
-              marginLeft: 14,
-              fontSize: 22,
+              marginLeft: 16,
+              fontSize: 26,
               fontWeight: 600,
               color: "#FFFFFF",
               letterSpacing: "0.02em",
@@ -118,7 +140,7 @@ export async function GET(req: Request) {
             position: "absolute",
             left: 56,
             right: 56,
-            bottom: 52,
+            bottom: 56,
             display: "flex",
             flexDirection: "column",
           }}
