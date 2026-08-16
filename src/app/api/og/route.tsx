@@ -21,11 +21,39 @@ async function loadGoogleFont(family: string, weight: number, text: string) {
   return res.arrayBuffer();
 }
 
+// satori (the renderer behind ImageResponse) fetches <img src> URLs itself,
+// with no control over headers — Cotality's photo CDN and our logo CDN both
+// silently fail that fetch (satori swallows the error and renders nothing,
+// no exception), leaving a blank canvas. Fetching ourselves with a real
+// browser UA/Accept and inlining as a data URI sidesteps that entirely.
+async function toDataUri(url: string): Promise<string | undefined> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+      },
+    });
+    if (!res.ok) return undefined;
+    const contentType = res.headers.get("content-type") || "image/jpeg";
+    const buf = await res.arrayBuffer();
+    let binary = "";
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return `data:${contentType};base64,${btoa(binary)}`;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const title = searchParams.get("title") || site.name;
   const kicker = searchParams.get("kicker") || "";
   const photoUrl = searchParams.get("photo") || site.teamPhotoUrl;
+
+  const [photoData, logoData] = await Promise.all([toDataUri(photoUrl), toDataUri(site.logoUrl)]);
 
   const text = `${title}${kicker}${site.name}`;
   let fonts: { name: string; data: ArrayBuffer; weight: 700 | 600; style: "normal" }[] = [];
@@ -50,16 +78,22 @@ export async function GET(req: Request) {
           height: "630px",
           display: "flex",
           position: "relative",
+          // Solid brand color under everything — if the photo fetch fails
+          // for any reason, this still renders a real branded card instead
+          // of a blank canvas.
+          backgroundColor: "#163848",
           fontFamily: fonts.length ? "Outfit" : "sans-serif",
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photoUrl}
-          width={1200}
-          height={630}
-          style={{ position: "absolute", inset: 0, objectFit: "cover" }}
-        />
+        {photoData ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={photoData}
+            width={1200}
+            height={630}
+            style={{ position: "absolute", inset: 0, objectFit: "cover" }}
+          />
+        ) : null}
         <div
           style={{
             position: "absolute",
@@ -78,8 +112,10 @@ export async function GET(req: Request) {
             alignItems: "center",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={site.logoUrl} width={44} height={44} style={{ objectFit: "contain" }} />
+          {logoData ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoData} width={44} height={44} style={{ objectFit: "contain" }} />
+          ) : null}
           <div
             style={{
               display: "flex",
