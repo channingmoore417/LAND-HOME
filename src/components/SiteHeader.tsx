@@ -4,15 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { useAuth } from "@/components/AuthProvider";
+import type { NavCityEntry } from "@/lib/seo";
 
 interface NavChild { label: string; href: string }
 interface NavItem { label: string; href: string; children?: readonly NavChild[] }
 
 // Global header — rendered once in app/layout.tsx, site-wide.
-// Client component so the mobile hamburger can open/close the nav.
-export default function SiteHeader() {
+// Client component so the mobile hamburger (and the mobile city accordion)
+// can open/close. cityMenu is fetched server-side in layout.tsx from
+// seo_pages, so Buy > City > Topic (mobile homes, new construction, 4+
+// bedroom, etc.) always reflects whatever programmatic pages actually exist.
+export default function SiteHeader({ cityMenu }: { cityMenu: NavCityEntry[] }) {
   const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
+  const [expandedCity, setExpandedCity] = useState<string | null>(null);
+  const close = () => { setOpen(false); setExpandedCity(null); };
   const nav = site.nav as readonly NavItem[];
   const { user, ready, openAuth } = useAuth();
 
@@ -35,6 +40,24 @@ export default function SiteHeader() {
                   {item.children.map((c) => (
                     <Link key={c.href} href={c.href}>{c.label}</Link>
                   ))}
+                  {item.label === "Buy" &&
+                    cityMenu.map((city) =>
+                      city.topics.length > 0 ? (
+                        <div className="nav__subitem" key={city.href}>
+                          <Link href={city.href}>
+                            {city.label}
+                            <span className="nav__flyout-caret" aria-hidden>&#9656;</span>
+                          </Link>
+                          <div className="nav__flyout">
+                            {city.topics.map((t) => (
+                              <Link key={t.href} href={t.href}>{t.label}</Link>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <Link key={city.href} href={city.href}>{city.label}</Link>
+                      ),
+                    )}
                 </div>
               </div>
             ) : (
@@ -69,6 +92,34 @@ export default function SiteHeader() {
                 {item.children.map((c) => (
                   <Link key={c.href} href={c.href} onClick={close}>{c.label}</Link>
                 ))}
+                {item.label === "Buy" &&
+                  cityMenu.map((city) =>
+                    city.topics.length > 0 ? (
+                      <div className="nav__mobile-city" key={city.href}>
+                        <div className="nav__mobile-city-row">
+                          <Link href={city.href} onClick={close}>{city.label}</Link>
+                          <button
+                            aria-label={`${city.label} topics`}
+                            aria-expanded={expandedCity === city.label}
+                            onClick={() =>
+                              setExpandedCity((cur) => (cur === city.label ? null : city.label))
+                            }
+                          >
+                            {expandedCity === city.label ? "−" : "+"}
+                          </button>
+                        </div>
+                        {expandedCity === city.label && (
+                          <div className="nav__mobile-sub2">
+                            {city.topics.map((t) => (
+                              <Link key={t.href} href={t.href} onClick={close}>{t.label}</Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <Link key={city.href} href={city.href} onClick={close}>{city.label}</Link>
+                    ),
+                  )}
               </div>
             )}
           </div>

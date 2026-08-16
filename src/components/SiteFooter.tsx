@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { site } from "@/config/site";
+import type { NavCityEntry } from "@/lib/seo";
 
 // Global footer — rendered once in app/layout.tsx, site-wide.
 // Holds the MLS disclaimer required on every page.
-export default function SiteFooter() {
+export default function SiteFooter({ cityMenu }: { cityMenu: NavCityEntry[] }) {
   return (
     <footer className="footer">
       <div className="wrap">
@@ -25,6 +26,18 @@ export default function SiteFooter() {
               </ul>
             </div>
           ))}
+          {cityMenu.length > 0 && (
+            <div>
+              <h4>Browse by City</h4>
+              <ul className="cities">
+                {cityMenu.map((c) => (
+                  <li key={c.href}>
+                    <Link href={c.href}>{c.label} Homes for Sale</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <div className="footer__bottom">
           <div>

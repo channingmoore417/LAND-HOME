@@ -4,7 +4,7 @@
 // filter criteria and fetch its siblings for internal linking.
 // ============================================================
 
-import { getLiveClient } from "@/lib/supabase";
+import { getLiveClient, getPublicClient } from "@/lib/supabase";
 import type { ListingCriteria } from "@/lib/listings";
 
 export interface SeoPage {
@@ -58,6 +58,78 @@ export async function getCityHubs(): Promise<{ slug: string; city: string }[]> {
     .eq("page_type", "city")
     .eq("active", true);
   return ((data as { slug: string; city: string }[]) ?? []).sort((a, b) => a.city.localeCompare(b.city));
+}
+
+export interface NavCityTopic {
+  label: string;
+  href: string;
+}
+
+export interface NavCityEntry {
+  label: string;
+  href: string; // city's homes-for-sale hub
+  // Every active page for the city other than the hub itself, for a nested
+  // Buy > City > Topic menu. Empty when the city only has its hub page —
+  // callers should render those as a plain link, not an expandable submenu.
+  topics: NavCityTopic[];
+}
+
+// Fixed display order for topics within a city's submenu — falls back to
+// slug order for any page_type not listed (keeps new topics from vanishing
+// if this list isn't updated the moment a new one is added in Supabase).
+const TOPIC_ORDER = [
+  "single_family",
+  "land",
+  "single_story",
+  "acre_plus",
+  "pool",
+  "new_construction",
+  "waterfront",
+  "beds",
+  "mobile",
+];
+
+function topicSortKey(page: SeoPage): number {
+  const key = page.page_type === "feature" ? page.feature_key ?? "" : page.page_type;
+  const i = TOPIC_ORDER.indexOf(key);
+  return i === -1 ? TOPIC_ORDER.length : i;
+}
+
+// One query, grouped client-side into a city -> topics tree, so the header
+// nav and footer stay in sync with Supabase automatically as programmatic
+// pages are added/retired — no hand-maintained link list to go stale.
+export async function getNavCityMenu(): Promise<NavCityEntry[]> {
+  // Nav/footer data — unlike SEO landing pages, this doesn't need to reflect
+  // Supabase edits within seconds, so the cached client (not getLiveClient's
+  // forced no-store) is used deliberately: a no-store fetch in the root
+  // layout would mark every single page on the site as dynamic, killing
+  // static generation for pages that have nothing to do with this menu.
+  const supabase = getPublicClient();
+  const { data } = await supabase
+    .from("seo_pages")
+    .select("*")
+    .eq("active", true);
+  const rows = (data as SeoPage[]) ?? [];
+
+  const byCity = new Map<string, SeoPage[]>();
+  for (const row of rows) {
+    if (!row.city) continue;
+    const list = byCity.get(row.city) ?? [];
+    list.push(row);
+    byCity.set(row.city, list);
+  }
+
+  const entries: NavCityEntry[] = [];
+  for (const [city, pages] of byCity) {
+    const hub = pages.find((p) => p.page_type === "city");
+    if (!hub) continue;
+    const topics = pages
+      .filter((p) => p.page_type !== "city")
+      .sort((a, b) => topicSortKey(a) - topicSortKey(b))
+      .map((p) => ({ label: pageTopicLabel(p), href: `/${p.slug}` }));
+    entries.push({ label: city, href: `/${hub.slug}`, topics });
+  }
+  return entries.sort((a, b) => a.label.localeCompare(b.label));
 }
 
 // All active pages for a city — used to render the internal-linking cluster.

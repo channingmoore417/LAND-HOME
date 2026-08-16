@@ -18,22 +18,12 @@ export const site = {
     {
       label: "Buy",
       href: "/buy",
-      children: [
-        { label: "All Homes for Sale", href: "/homes-for-sale" },
-        { label: "Lake Charles", href: "/lake-charles/homes-for-sale" },
-        { label: "Sulphur", href: "/sulphur/homes-for-sale" },
-        { label: "Iowa", href: "/iowa/homes-for-sale" },
-        { label: "Westlake", href: "/westlake/homes-for-sale" },
-        { label: "Ragley", href: "/ragley/homes-for-sale" },
-        { label: "Jennings", href: "/jennings/homes-for-sale" },
-        { label: "DeRidder", href: "/deridder/homes-for-sale" },
-        { label: "Vinton", href: "/vinton/homes-for-sale" },
-        { label: "Cameron", href: "/cameron/homes-for-sale" },
-        { label: "Welsh", href: "/welsh/homes-for-sale" },
-        { label: "Moss Bluff", href: "/moss-bluff/homes-for-sale" },
-        { label: "DeQuincy", href: "/dequincy/homes-for-sale" },
-        { label: "Carlyss", href: "/carlyss/homes-for-sale" },
-      ],
+      // Per-city (and per-city-topic: mobile homes, new construction,
+      // 4+ bedroom, etc.) links are NOT hand-maintained here — they're
+      // fetched live from seo_pages (see getNavCityMenu in lib/seo.ts) and
+      // rendered by SiteHeader as a nested Buy > City > Topic menu, so this
+      // list never drifts out of sync with which programmatic pages exist.
+      children: [{ label: "All Homes for Sale", href: "/homes-for-sale" }],
     },
     {
       label: "Sell",
