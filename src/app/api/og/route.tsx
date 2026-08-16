@@ -3,21 +3,15 @@ import { site } from "@/config/site";
 
 export const runtime = "edge";
 
-// Google Fonts serves woff2 by default, which satori (the renderer behind
-// ImageResponse) can't parse — an old-browser UA forces a ttf response.
-const LEGACY_UA =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2";
-
-async function loadGoogleFont(family: string, weight: number, text: string) {
-  const css = await (
-    await fetch(
-      `https://fonts.googleapis.com/css2?family=${family}:wght@${weight}&text=${encodeURIComponent(text)}`,
-      { headers: { "User-Agent": LEGACY_UA } },
-    )
-  ).text();
-  const match = css.match(/src: url\(([^)]+)\) format\('(?:truetype|opentype)'\)/);
-  if (!match) throw new Error(`no font url for ${family}`);
-  const res = await fetch(match[1]);
+// satori (the renderer behind ImageResponse) throws hard if zero fonts are
+// loaded — it has no built-in default. Fetching a font from Google Fonts at
+// request time was unreliable (every single request failed in production:
+// "No fonts are loaded"), so instead we serve a font bundled with the repo
+// as a same-origin static asset — no external dependency, can't flake.
+async function loadLocalFont(req: Request): Promise<ArrayBuffer> {
+  const url = new URL("/fonts/noto-sans-regular.ttf", req.url);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`font fetch failed: ${res.status}`);
   return res.arrayBuffer();
 }
 
@@ -53,22 +47,12 @@ export async function GET(req: Request) {
   const kicker = searchParams.get("kicker") || "";
   const photoUrl = searchParams.get("photo") || site.teamPhotoUrl;
 
-  const [photoData, logoData] = await Promise.all([toDataUri(photoUrl), toDataUri(site.logoUrl)]);
-
-  const text = `${title}${kicker}${site.name}`;
-  let fonts: { name: string; data: ArrayBuffer; weight: 700 | 600; style: "normal" }[] = [];
-  try {
-    const [bold, semibold] = await Promise.all([
-      loadGoogleFont("Outfit", 700, text),
-      loadGoogleFont("Outfit", 600, text),
-    ]);
-    fonts = [
-      { name: "Outfit", data: bold, weight: 700, style: "normal" },
-      { name: "Outfit", data: semibold, weight: 600, style: "normal" },
-    ];
-  } catch {
-    // Font fetch failed — fall back to satori's default sans-serif rather than 500ing.
-  }
+  const [photoData, logoData, fontData] = await Promise.all([
+    toDataUri(photoUrl),
+    toDataUri(site.logoUrl),
+    loadLocalFont(req),
+  ]);
+  const fonts = [{ name: "Noto Sans", data: fontData, weight: 400 as const, style: "normal" as const }];
 
   return new ImageResponse(
     (
@@ -82,7 +66,7 @@ export async function GET(req: Request) {
           // for any reason, this still renders a real branded card instead
           // of a blank canvas.
           backgroundColor: "#163848",
-          fontFamily: fonts.length ? "Outfit" : "sans-serif",
+          fontFamily: "Noto Sans",
         }}
       >
         {photoData ? (
