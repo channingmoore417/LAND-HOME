@@ -13,6 +13,11 @@ export default function SiteFooter({ cityMenu }: { cityMenu: NavCityEntry[] }) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="footer__logo" src={site.logoUrl} alt={site.name} />
             <p>{site.footer.blurb}</p>
+            <address className="footer__address">
+              {site.footer.address}
+              <br />
+              <a href={site.phoneHref}>{site.phone}</a>
+            </address>
           </div>
           {site.footer.columns.map((col) => (
             <div key={col.title}>

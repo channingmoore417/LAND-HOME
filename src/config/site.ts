@@ -42,6 +42,7 @@ export const site = {
   footer: {
     blurb:
       "Modern coastal real estate, brokered by EXIT Realty Southern. Serving Sulphur, Lake Charles and Southwest Louisiana with a personal, no-pressure approach.",
+    address: "3701 Maplewood Dr, Sulphur, LA 70663",
     columns: [
       {
         title: "Popular Searches",
