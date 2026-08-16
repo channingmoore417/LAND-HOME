@@ -44,7 +44,6 @@ async function toDataUri(url: string): Promise<string | undefined> {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const title = searchParams.get("title") || site.name;
-  const kicker = searchParams.get("kicker") || "";
   const photoUrl = searchParams.get("photo") || site.teamPhotoUrl;
 
   const [photoData, logoData, fontData] = await Promise.all([
@@ -145,21 +144,6 @@ export async function GET(req: Request) {
             flexDirection: "column",
           }}
         >
-          {kicker ? (
-            <div
-              style={{
-                display: "flex",
-                fontSize: 24,
-                fontWeight: 600,
-                color: "#61C1CC",
-                letterSpacing: "0.18em",
-                textTransform: "uppercase",
-                marginBottom: 10,
-              }}
-            >
-              {kicker}
-            </div>
-          ) : null}
           <div
             style={{
               display: "flex",

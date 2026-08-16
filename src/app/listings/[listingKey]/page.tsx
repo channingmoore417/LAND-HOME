@@ -6,6 +6,7 @@ import { site } from "@/config/site";
 import { usd, int, num, titleCase, splitFeatures, estAnnualTax } from "@/lib/format";
 import { photo } from "@/lib/images";
 import { pageMetadata } from "@/lib/seoMeta";
+import { SITE_URL } from "@/lib/seoConfig";
 import type { Listing, ListingMedia } from "@/lib/types";
 import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
@@ -138,11 +139,19 @@ export async function generateMetadata({
   const media = await getMedia(listing.listing_key);
   const heroPhoto = media[0]?.media_url ? photo(media[0].media_url, 1200) : undefined;
 
+  // Branded cover image (photo + logo + title overlay) for the link-preview
+  // card — see /api/og. Falls back to the raw photo if there's no hero shot.
+  let ogImage = heroPhoto;
+  if (heroPhoto) {
+    const qs = new URLSearchParams({ title, photo: heroPhoto });
+    ogImage = `${SITE_URL}/api/og?${qs.toString()}`;
+  }
+
   return pageMetadata({
     title,
     description,
     path: `/listings/${listing.listing_key}`,
-    image: heroPhoto,
+    image: ogImage,
     imageAlt: title,
     noIndex: listing.internet_display_yn === false,
   });

@@ -76,16 +76,12 @@ export async function generateMetadata({
   const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
   const heroPhoto = rows[0] ? photos.get(rows[0].listing_key) : undefined;
 
-  // PROTOTYPE: branded cover image (photo + logo + title overlay) for the
-  // link-preview card, scoped to one page pending approval — see /api/og.
+  // Branded cover image (photo + logo + title overlay) for the link-preview
+  // card — see /api/og. Falls back to the raw photo if there's no hero shot.
   let ogImage = heroPhoto ? photo(heroPhoto, 1200) : undefined;
-  if (page.slug === "sulphur/homes-for-sale" && heroPhoto) {
-    const params = new URLSearchParams({
-      title: `${page.city} Homes For Sale`,
-      kicker: "Southwest Louisiana",
-      photo: photo(heroPhoto, 1200),
-    });
-    ogImage = `${SITE}/api/og?${params.toString()}`;
+  if (heroPhoto) {
+    const qs = new URLSearchParams({ title: c.h1, photo: photo(heroPhoto, 1200) });
+    ogImage = `${SITE}/api/og?${qs.toString()}`;
   }
 
   return pageMetadata({
