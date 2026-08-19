@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
+import { syncLeadToBoldTrail } from "@/lib/boldtrail";
 
 export const runtime = "nodejs";
 
@@ -59,11 +60,13 @@ function spamReason(p: FormPayload): string | null {
   return null;
 }
 
-async function writeToSupabase(p: FormPayload) {
+// Returns which table the submission landed in and the new row id, so the
+// BoldTrail sync below can stamp the row once the contact is created.
+async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: number } | null> {
   const supabase = getAdminClient();
 
   if (p.form_id === "showing_request") {
-    const { error } = await supabase.from("showing_requests").insert({
+    const { data, error } = await supabase.from("showing_requests").insert({
       listing_key: p.listing_key ?? null,
       full_name: p.name ?? null,
       email: p.email ?? null,
@@ -71,9 +74,9 @@ async function writeToSupabase(p: FormPayload) {
       preferred_times: p.preferred_times ?? null,
       message: p.message ?? null,
       status: "new",
-    });
+    }).select("id").single();
     if (error) throw error;
-    return;
+    return { table: "showing_requests", id: data.id };
   }
 
   if (p.form_id === "saved_search") {
@@ -84,11 +87,11 @@ async function writeToSupabase(p: FormPayload) {
       alert_frequency: p.alert_frequency ?? "instant",
     });
     if (error) throw error;
-    return;
+    return null;
   }
 
   // Everything else is a lead. `destination` = which form produced it.
-  const { error } = await supabase.from("leads").insert({
+  const { data, error } = await supabase.from("leads").insert({
     full_name: p.name ?? null,
     email: p.email ?? null,
     phone: p.phone ?? null,
@@ -97,8 +100,9 @@ async function writeToSupabase(p: FormPayload) {
     listing_key: p.listing_key ?? null,
     message: p.message ?? null,
     working_with_agent: p.working_with_agent ?? null,
-  });
+  }).select("id").single();
   if (error) throw error;
+  return { table: "leads", id: data.id };
 }
 
 export async function POST(req: Request) {
@@ -138,12 +142,37 @@ export async function POST(req: Request) {
   // 1) Persist to Supabase first so a webhook outage never loses a lead.
   let dbOk = true;
   let dbError: string | null = null;
+  let dbRow: { table: string; id: number } | null = null;
   try {
-    await writeToSupabase(payload);
+    dbRow = await writeToSupabase(payload);
   } catch (e) {
     dbOk = false;
     dbError = (e as Error).message;
     console.error("[forms] supabase write failed:", dbError);
+  }
+
+  // 1b) Push the contact into BoldTrail (kvCORE) — best-effort: never blocks
+  // or fails the submission, and skips itself when the token isn't set.
+  let boldtrailOk: boolean | null = null;
+  const bt = await syncLeadToBoldTrail({
+    name: payload.name,
+    email: payload.email,
+    phone: payload.phone,
+    source: "landhomegroup.com",
+    formId: payload.form_id,
+  });
+  if (bt) {
+    boldtrailOk = bt.ok;
+    if (bt.ok && dbRow) {
+      try {
+        await getAdminClient()
+          .from(dbRow.table)
+          .update({ boldtrail_contact_id: bt.contactId, boldtrail_synced_at: new Date().toISOString() })
+          .eq("id", dbRow.id);
+      } catch (e) {
+        console.error("[forms] boldtrail stamp failed:", (e as Error).message);
+      }
+    }
   }
 
   // 2) Forward the same payload to the single external webhook (if set).
@@ -166,7 +195,7 @@ export async function POST(req: Request) {
 
   const ok = dbOk || webhookOk === true;
   return NextResponse.json(
-    { ok, submission_id: payload.submission_id, dbOk, dbError, webhookOk },
+    { ok, submission_id: payload.submission_id, dbOk, dbError, webhookOk, boldtrailOk },
     { status: ok ? 200 : 500 },
   );
 }
