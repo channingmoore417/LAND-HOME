@@ -83,6 +83,13 @@ export async function syncLeadToBoldTrail(lead: BoldTrailLead): Promise<BoldTrai
       body: JSON.stringify(body),
     });
     const text = await res.text();
+    if (res.status === 409) {
+      // BoldTrail's duplicate protection: the contact already exists (their
+      // search index can lag a fresh create by ~30s, so our search-first
+      // pass may miss it). Not a failure — the contact is there.
+      console.log(`[boldtrail] duplicate suppressed by BoldTrail for ${email ?? phone} (form=${lead.formId})`);
+      return { ok: true, contactId: null, existing: true, detail: "duplicate suppressed by BoldTrail" };
+    }
     if (!res.ok) {
       console.error(`[boldtrail] create failed ${res.status} (form=${lead.formId}): ${text.slice(0, 400)}`);
       return { ok: false, contactId: null, existing: false, detail: `create failed ${res.status}` };
