@@ -74,7 +74,13 @@ export async function syncLeadToBoldTrail(lead: BoldTrailLead): Promise<BoldTrai
       last_name: lastName,
     };
     if (email) body.email = email;
-    if (phone) body.phone = phone;
+    if (phone) {
+      // kvCORE's contact schema stores mobile numbers as cell_phone_1; send
+      // plain `phone` too — unknown attributes are ignored, so whichever
+      // name the endpoint honors wins.
+      body.cell_phone_1 = phone;
+      body.phone = phone;
+    }
     if (lead.source) body.source = lead.source;
 
     const res = await fetch(`${BASE}/v2/public/contact`, {
