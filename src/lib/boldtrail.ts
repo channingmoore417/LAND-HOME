@@ -15,8 +15,22 @@ export interface BoldTrailLead {
   email?: string | null;
   phone?: string | null;
   source?: string | null; // where the lead came from, e.g. "landhomegroup.com"
-  formId?: string | null; // which form produced it (for logging only)
+  formId?: string | null; // which form produced it → deal_type + hashtag
+  city?: string | null; // property city (when the form is about a listing) → hashtag
 }
+
+// Which side of a deal each form signals. Forms not listed (plain contact)
+// send no deal_type and let BoldTrail default it.
+const DEAL_TYPE: Record<string, string> = {
+  listing_inquiry: "buyer",
+  showing_request: "buyer",
+  buyer_guide: "buyer",
+  buyer_quiz: "buyer",
+  mortgage_preapproval: "buyer",
+  saved_search: "buyer",
+  home_valuation: "seller",
+  cash_offer: "seller",
+};
 
 export interface BoldTrailResult {
   ok: boolean;
@@ -82,6 +96,14 @@ export async function syncLeadToBoldTrail(lead: BoldTrailLead): Promise<BoldTrai
       body.phone = phone;
     }
     if (lead.source) body.source = lead.source;
+    const dealType = lead.formId ? DEAL_TYPE[lead.formId] : undefined;
+    if (dealType) body.deal_type = dealType;
+    const hashtags = [
+      "website-lead",
+      ...(lead.formId ? [lead.formId.replace(/_/g, "-")] : []),
+      ...(lead.city ? [lead.city.toLowerCase().replace(/\s+/g, "-")] : []),
+    ];
+    body.hashtags = hashtags;
 
     const res = await fetch(`${BASE}/v2/public/contact`, {
       method: "POST",

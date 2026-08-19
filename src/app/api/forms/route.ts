@@ -154,12 +154,21 @@ export async function POST(req: Request) {
   // 1b) Push the contact into BoldTrail (kvCORE) — best-effort: never blocks
   // or fails the submission, and skips itself when the token isn't set.
   let boldtrailOk: boolean | null = null;
+  let listingCity: string | null = null;
+  if (payload.listing_key) {
+    try {
+      const { data: listing } = await getAdminClient()
+        .from("listings").select("city").eq("listing_key", payload.listing_key).maybeSingle();
+      listingCity = listing?.city ?? null;
+    } catch { /* city hashtag is a nice-to-have */ }
+  }
   const bt = await syncLeadToBoldTrail({
     name: payload.name,
     email: payload.email,
     phone: payload.phone,
     source: "landhomegroup.com",
     formId: payload.form_id,
+    city: listingCity,
   });
   if (bt) {
     boldtrailOk = bt.ok;
