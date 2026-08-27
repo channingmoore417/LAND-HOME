@@ -9,8 +9,8 @@ needs so nothing is dropped in mapping.
 on every payload.
 
 `form_id` values: `contact` · `listing_inquiry` · `showing_request` ·
-`home_valuation` · `mortgage_preapproval` · `buyer_guide` · `buyer_quiz`
-(`saved_search` is defined in the API but no form sends it yet).
+`home_valuation` · `mortgage_preapproval` · `buyer_guide` · `buyer_quiz` ·
+`review` (`saved_search` is defined in the API but no form sends it yet).
 
 ---
 
@@ -141,7 +141,24 @@ needs a small change to send it separately first.
 
 ---
 
-## 9. Saved Search (`saved_search`) — future
+## 9. Client Review (`review`) — /reviews
+
+Post-closing feedback page. `email` is **optional** on this form; `name` is
+sent as full name only (no first/last split).
+
+| Custom field | Suggested key | Type | Webhook key |
+|---|---|---|---|
+| Review Rating | `review_rating` | Number (1–5) | `criteria.rating` |
+| Review Feedback | `review_feedback` | Text (long) | `criteria.feedback` |
+
+`message` carries the same info as one line ("4-star client review · …").
+Workflow idea: rating ≤ 3 → task/notification for a personal follow-up call;
+rating 4–5 → thank-you text. (The page itself shows the Google review link to
+everyone — no star-gating.)
+
+---
+
+## 10. Saved Search (`saved_search`) — future
 
 No UI sends this yet. When built, the payload will carry `email`, `name`,
 `criteria` (search filters), `alert_frequency`. Hold off creating fields
@@ -157,6 +174,7 @@ until the form exists.
 - [ ] Create the 15 prequal fields (§5)
 - [ ] Create the 1 buyer-guide field (§6)
 - [ ] Create the 6 buyer-quiz fields (§7)
+- [ ] Create the 2 review fields (§9) + low-rating follow-up workflow
 - [ ] Build one inbound-webhook trigger per `form_id` (or one trigger with a `form_id` branch)
 - [ ] Map `name` → Full Name on contact / listing inquiry / tour (no first/last split there)
 - [ ] Confirm array fields (`pa_eligible_programs`, `quiz_communities`, `quiz_features`) render readably

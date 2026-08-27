@@ -61,6 +61,7 @@ export const site = {
           { label: "thelandhomegroup", href: "https://instagram.com/thelandhomegroup" },
           { label: "Lake Charles, LA", href: "/contact" },
           { label: "Schedule a Call", href: "/contact" },
+          { label: "Leave a Review", href: "/reviews" },
         ],
       },
     ],
@@ -85,6 +86,10 @@ export const site = {
   // + RealEstateAgent/LocalBusiness geo coordinates in structured data).
   localSeo: {
     gbpName: "Lauren Bane Huffman | Lake Charles Realtor",
+    // One-tap Google review dialog (place ID derived from the map embed).
+    // If GBP moves, grab the new link from the GBP dashboard ("Ask for reviews").
+    writeReviewUrl:
+      "https://search.google.com/local/writereview?placeid=ChIJ6Z_tuGmPO4YRoBCCNQukZJA",
     mapEmbedUrl:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4300.206904046305!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sLauren%20Bane%20Huffman%20%7C%20Lake%20Charles%20Realtor!5e1!3m2!1sen!2sus!4v1781719708228!5m2!1sen!2sus",
     latitude: 30.2271655,
