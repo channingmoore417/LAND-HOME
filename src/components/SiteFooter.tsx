@@ -47,6 +47,12 @@ export default function SiteFooter({ cityMenu }: { cityMenu: NavCityEntry[] }) {
         <div className="footer__bottom">
           <div>
             &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
+            {site.footer.legalLinks.map((l) => (
+              <span key={l.href}>
+                {" · "}
+                <Link href={l.href}>{l.label}</Link>
+              </span>
+            ))}
           </div>
           <div className="eh">{site.footer.legal}</div>
         </div>
