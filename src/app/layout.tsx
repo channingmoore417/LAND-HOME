@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import AuthProvider from "@/components/AuthProvider";
@@ -70,6 +71,14 @@ export default async function RootLayout({
           {children}
           <SiteFooter cityMenu={cityMenu} />
         </AuthProvider>
+        {/* GHL (LeadConnector) chat widget — site-wide; also the A2P opt-in surface */}
+        <Script
+          src="https://widgets.leadconnectorhq.com/loader.js"
+          data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
+          data-widget-id="6a92efa123454f63fecac23a"
+          data-source="WEB_USER"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
