@@ -66,6 +66,10 @@ export const site = {
     ],
     legal:
       "Equal Housing Opportunity · Information deemed reliable but not guaranteed.",
+    legalLinks: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
   },
 
   // Bayou Mortgage partner module (the referral flywheel).
