@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
 
 // All the lead-capture UI for a listing: sidebar lead card + message form,
 // the sticky mobile bar, and the Tour / Ask modals. Every form posts to the
@@ -154,7 +155,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
           ) : (
             <form onSubmit={handleMessage}>
               <input className="input" name="name" type="text" placeholder="Full name" required />
-              <input className="input" name="phone" type="tel" placeholder="Phone" />
+              {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
               <input className="input" name="email" type="email" placeholder="Email" required />
               <textarea
                 className="input"
@@ -234,7 +235,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                   ))}
                 </div>
                 <input className="input" name="name" type="text" placeholder="First & last name" required />
-                <input className="input" name="phone" type="tel" placeholder="Phone" required />
+                {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" required />}
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <button className="btn btn--aqua" disabled={busy}>
                   {busy ? "Sending…" : "Confirm Tour Request"}
@@ -270,7 +271,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
             ) : (
               <form onSubmit={handleAsk}>
                 <input className="input" name="name" type="text" placeholder="First & last name" required />
-                <input className="input" name="phone" type="tel" placeholder="Phone" />
+                {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <textarea
                   className="input"

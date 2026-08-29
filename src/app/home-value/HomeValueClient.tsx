@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
 
 interface GeoResult { address: string; street?: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
@@ -78,7 +79,7 @@ export default function HomeValueClient() {
   function back() { setErr(""); setStep((s) => Math.max(1, s - 1)); }
 
   async function submit() {
-    if (!firstName || !lastName || !email || !phone) { setErr("Please add your name, email, and phone to get your report."); return; }
+    if (!firstName || !lastName || !email || (!A2P_REVIEW_MODE && !phone)) { setErr("Please add your name and email to get your report."); return; }
     const name = `${firstName.trim()} ${lastName.trim()}`.trim();
     setLoading(true);
     let est: Estimate | null = null;
@@ -296,8 +297,10 @@ export default function HomeValueClient() {
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>Email</label>
                       <input className="input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-                    <div className="field"><label>Phone</label>
-                      <input className="input" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
+                    {!A2P_REVIEW_MODE && (
+                      <div className="field"><label>Phone</label>
+                        <input className="input" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
+                    )}
                   </div>
                   <p className="hv-fine">By submitting you agree to be contacted by The Land &amp; Home Group about your home. Consent is not a condition of any purchase or sale.</p>
                 </div>

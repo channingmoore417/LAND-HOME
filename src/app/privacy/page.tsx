@@ -149,6 +149,8 @@ export default function PrivacyPage() {
               <br />
               Phone: <a href={site.phoneHref}>{site.phone}</a>
               <br />
+              Email: <a href={site.emailHref}>{site.email}</a>
+              <br />
               Web: <Link href="/contact">{SITE.replace("https://", "")}/contact</Link>
             </p>
           </div>

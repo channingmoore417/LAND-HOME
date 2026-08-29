@@ -17,6 +17,8 @@ export default function SiteFooter({ cityMenu }: { cityMenu: NavCityEntry[] }) {
               {site.footer.address}
               <br />
               <a href={site.phoneHref}>{site.phone}</a>
+              <br />
+              <a href={site.emailHref}>{site.email}</a>
             </address>
           </div>
           {site.footer.columns.map((col) => (

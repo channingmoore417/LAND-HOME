@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
 
 const BAYOU_APPLY = "/contact";
 
@@ -121,10 +122,10 @@ export default function GetPreApprovedClient() {
     setErr(""); next();
   }
 
-  const canContact = () => !!a.firstName.trim() && !!a.lastName.trim() && /\S+@\S+\.\S+/.test(a.email) && a.phone.replace(/\D/g, "").length >= 7;
+  const canContact = () => !!a.firstName.trim() && !!a.lastName.trim() && /\S+@\S+\.\S+/.test(a.email) && (A2P_REVIEW_MODE || a.phone.replace(/\D/g, "").length >= 7);
 
   async function finish() {
-    if (!canContact()) { setErr("Please add your name, email, and phone so a loan officer can send your results."); return; }
+    if (!canContact()) { setErr("Please add your name and email so a loan officer can send your results."); return; }
     setSubmitting(true);
     const r = evaluate(a);
     try {
@@ -224,7 +225,9 @@ export default function GetPreApprovedClient() {
               </div>
               <div className="hv-grid hv-grid--2">
                 <div className="field"><label>Email</label><input className="input" type="email" autoComplete="email" value={a.email} onChange={(e) => set({ email: e.target.value })} /></div>
-                <div className="field"><label>Phone</label><input className="input" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
+                {!A2P_REVIEW_MODE && (
+                  <div className="field"><label>Phone</label><input className="input" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
+                )}
               </div>
               {err && <p className="hv-err">{err}</p>}
               <div className="quiz-nav">

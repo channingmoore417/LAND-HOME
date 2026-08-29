@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { site } from "@/config/site";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
 
 // Cash-offer request form for /sell-my-house-fast. Posts to the single
 // /api/forms endpoint with the stable `cash_offer` form_id.
@@ -124,10 +125,12 @@ export default function CashOfferForm() {
           <label>Full Name</label>
           <input className="input" type="text" name="name" autoComplete="name" required />
         </div>
-        <div className="field">
-          <label>Phone</label>
-          <input className="input" type="tel" name="phone" autoComplete="tel" required />
-        </div>
+        {!A2P_REVIEW_MODE && (
+          <div className="field">
+            <label>Phone</label>
+            <input className="input" type="tel" name="phone" autoComplete="tel" required />
+          </div>
+        )}
       </div>
       <div className="field">
         <label>Email</label>

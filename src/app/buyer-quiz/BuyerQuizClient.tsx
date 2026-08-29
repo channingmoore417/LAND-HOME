@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
 
 const COMMUNITIES = [
@@ -236,8 +237,10 @@ export default function BuyerQuizClient() {
               <div className="hv-grid hv-grid--2">
                 <div className="field"><label>Email</label>
                   <input className="input" type="email" autoComplete="email" value={a.email} onChange={(e) => set({ email: e.target.value })} /></div>
-                <div className="field"><label>Phone</label>
-                  <input className="input" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
+                {!A2P_REVIEW_MODE && (
+                  <div className="field"><label>Phone</label>
+                    <input className="input" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
+                )}
               </div>
               <Nav onBack={back} onNext={finish} canNext={canAdvance() && !submitting} nextLabel={submitting ? "Matching…" : "See my matches →"} />
               <p className="hv-fine">By submitting you agree to be contacted by {site.name} about your search. Opt out anytime.</p>

@@ -8,6 +8,8 @@ export const site = {
   brokerage: "EXIT Realty Southern",
   phone: "(713) 314-6466",
   phoneHref: "tel:+17133146466",
+  email: "lauren@landhomegroup.com",
+  emailHref: "mailto:lauren@landhomegroup.com",
   logoUrl:
     "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a29b0edff11dedc40eb9d4e.png",
   teamPhotoUrl:

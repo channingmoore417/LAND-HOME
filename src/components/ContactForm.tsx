@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { site } from "@/config/site";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
 
 // Standalone contact form for the /contact page. Posts to the single
 // /api/forms endpoint with the stable `contact` form_id.
@@ -78,10 +79,12 @@ export default function ContactForm() {
           <label>Full Name</label>
           <input className="input" type="text" name="name" required />
         </div>
-        <div className="field">
-          <label>Phone</label>
-          <input className="input" type="tel" name="phone" required />
-        </div>
+        {!A2P_REVIEW_MODE && (
+          <div className="field">
+            <label>Phone</label>
+            <input className="input" type="tel" name="phone" required />
+          </div>
+        )}
       </div>
       <div className="field">
         <label>Email</label>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
 
 // The downloadable buyer's guide (PDF). Page captures the lead, then opens it.
@@ -27,7 +28,7 @@ export default function HomeBuyingGuideClient() {
 
   async function submit() {
     setErr("");
-    if (!firstName || !lastName || !email || !phone || !timeline) {
+    if (!firstName || !lastName || !email || (!A2P_REVIEW_MODE && !phone) || !timeline) {
       setErr("Please complete every field so we can send your guide.");
       return;
     }
@@ -92,8 +93,10 @@ export default function HomeBuyingGuideClient() {
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>Email</label>
                       <input className="input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
-                    <div className="field"><label>Phone</label>
-                      <input className="input" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+                    {!A2P_REVIEW_MODE && (
+                      <div className="field"><label>Phone</label>
+                        <input className="input" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+                    )}
                   </div>
                   <div className="field"><label>When are you looking to buy?</label>
                     <div className="qsel" style={{ width: "100%" }}>
