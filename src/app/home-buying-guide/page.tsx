@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { logActivity } from "@/lib/activity";
+import { pageLoadedAt } from "@/lib/spam";
 
 // The downloadable buyer's guide (PDF). Page captures the lead, then opens it.
 const GUIDE_URL =
@@ -45,6 +46,7 @@ export default function BuyingGuidePage() {
           phone,
           message: `Home Buyer's Guide download · buying timeline: ${timeline}`,
           criteria: { timeline },
+          form_loaded_at: pageLoadedAt,
           source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });

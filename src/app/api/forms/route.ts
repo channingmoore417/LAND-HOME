@@ -47,14 +47,16 @@ interface FormPayload {
 const MIN_SUBMIT_MS = 2500;
 
 // Returns a reason string if the payload looks like spam, else null.
-// Checks are only applied when the relevant signal is present, so forms that
-// don't send these fields are unaffected.
+// The timing signal is REQUIRED: every site form sends `form_loaded_at`
+// (see src/lib/spam.ts), so a payload without it did not come from one of
+// our pages — it's a bot POSTing at the endpoint directly.
 function spamReason(p: FormPayload): string | null {
   if (typeof p.company === "string" && p.company.trim() !== "") return "honeypot";
-  if (typeof p.form_loaded_at === "number" && Number.isFinite(p.form_loaded_at)) {
-    const elapsed = Date.now() - p.form_loaded_at;
-    if (elapsed >= 0 && elapsed < MIN_SUBMIT_MS) return "too-fast";
+  if (typeof p.form_loaded_at !== "number" || !Number.isFinite(p.form_loaded_at)) {
+    return "no-signal";
   }
+  const elapsed = Date.now() - p.form_loaded_at;
+  if (elapsed >= 0 && elapsed < MIN_SUBMIT_MS) return "too-fast";
   return null;
 }
 

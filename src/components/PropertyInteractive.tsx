@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { pageLoadedAt } from "@/lib/spam";
 
 // All the lead-capture UI for a listing: sidebar lead card + message form,
 // the sticky mobile bar, and the Tour / Ask modals. Every form posts to the
@@ -18,6 +19,7 @@ async function submitForm(payload: Record<string, unknown>) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       ...payload,
+      form_loaded_at: pageLoadedAt,
       source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
     }),
   });

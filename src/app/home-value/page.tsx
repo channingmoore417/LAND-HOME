@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { pageLoadedAt } from "@/lib/spam";
 import { logActivity } from "@/lib/activity";
 
 interface GeoResult { address: string; street?: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
@@ -109,6 +110,7 @@ export default function HomeValuePage() {
             estimate: est && est.comp_count > 0
               ? { low: est.est_low, median: est.est_median, high: est.est_high, comps: est.comp_count } : null,
           },
+          form_loaded_at: pageLoadedAt,
           source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });

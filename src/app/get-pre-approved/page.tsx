@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
+import { pageLoadedAt } from "@/lib/spam";
 
 const BAYOU_APPLY = "https://bayou-mortgage.com";
 
@@ -135,6 +136,7 @@ export default function GetPreApprovedPage() {
             estDTI: Math.round(r.dti * 100), estPayment: r.payment,
             eligible: r.programs.filter((p) => p.status === "eligible").map((p) => p.name),
           },
+          form_loaded_at: pageLoadedAt,
           source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });
