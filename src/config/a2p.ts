@@ -7,4 +7,4 @@
 //
 // >>> Flip to false as soon as the A2P campaign is APPROVED to restore
 // >>> phone capture on all lead forms.
-export const A2P_REVIEW_MODE = true;
+export const A2P_REVIEW_MODE = false;
