@@ -73,6 +73,14 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     lock(false);
   };
 
+  // The inquiry message always names the property from the page it was sent
+  // from, so downstream (contact note, team SMS) reads the address, not just
+  // the MLS key.
+  const withAddress = (msg: FormDataEntryValue | null) => {
+    const text = String(msg ?? "").trim();
+    return text ? `Re: ${address} — ${text}` : `Inquiry about ${address}`;
+  };
+
   async function handleMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
@@ -83,7 +91,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
       name: f.get("name"),
       phone: f.get("phone"),
       email: f.get("email"),
-      message: f.get("message"),
+      message: withAddress(f.get("message")),
     });
     setBusy(false);
     if (ok) setMsgSent(true);
@@ -116,7 +124,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
       name: f.get("name"),
       phone: f.get("phone"),
       email: f.get("email"),
-      message: f.get("message"),
+      message: withAddress(f.get("message")),
     });
     setBusy(false);
     if (ok) setAskSent(true);
@@ -277,7 +285,6 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                   className="input"
                   name="message"
                   placeholder="What would you like to know about this home?"
-                  defaultValue={`I'd like more information about ${address}.`}
                 />
                 <button className="btn btn--aqua" disabled={busy}>
                   {busy ? "Sending…" : "Send Question"}
