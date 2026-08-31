@@ -89,6 +89,9 @@ async function writeToSupabase(p: FormPayload) {
   }
 
   // Everything else is a lead. `destination` = which form produced it.
+  // `criteria` carries the form's structured answers (valuation property
+  // details, pre-approval numbers, quiz picks); the DB trigger forwards its
+  // keys to GHL flat so each one is individually mappable.
   const { error } = await supabase.from("leads").insert({
     full_name: p.name ?? null,
     email: p.email ?? null,
@@ -98,6 +101,7 @@ async function writeToSupabase(p: FormPayload) {
     listing_key: p.listing_key ?? null,
     message: p.message ?? null,
     working_with_agent: p.working_with_agent ?? null,
+    criteria: p.criteria ?? null,
   });
   if (error) throw error;
 }
