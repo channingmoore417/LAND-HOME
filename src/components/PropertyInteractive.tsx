@@ -24,6 +24,14 @@ async function submitForm(payload: Record<string, unknown>) {
   return res.ok;
 }
 
+// Pull the split name fields out of a form and return the payload fields the
+// forms API expects (combined `name` plus first/last).
+function nameFields(f: FormData) {
+  const first = String(f.get("first_name") || "").trim();
+  const last = String(f.get("last_name") || "").trim();
+  return { name: `${first} ${last}`.trim(), first_name: first, last_name: last };
+}
+
 function dateOptions() {
   const wd = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const mo = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -79,7 +87,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     const ok = await submitForm({
       form_id: "listing_inquiry",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...nameFields(f),
       phone: f.get("phone"),
       email: f.get("email"),
       message: f.get("message"),
@@ -95,7 +103,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     const ok = await submitForm({
       form_id: "showing_request",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...nameFields(f),
       phone: f.get("phone"),
       email: f.get("email"),
       preferred_times: `${tourMode} · ${dates[dateIdx].label}`,
@@ -112,7 +120,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     const ok = await submitForm({
       form_id: "listing_inquiry",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...nameFields(f),
       phone: f.get("phone"),
       email: f.get("email"),
       message: f.get("message"),
@@ -153,7 +161,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
             <p className="form__ok">Thanks — we&apos;ll be in touch shortly about this home.</p>
           ) : (
             <form onSubmit={handleMessage}>
-              <input className="input" name="name" type="text" placeholder="Full name" required />
+              <div className="name2">
+                <input className="input" name="first_name" type="text" autoComplete="given-name" placeholder="First name" required />
+                <input className="input" name="last_name" type="text" autoComplete="family-name" placeholder="Last name" required />
+              </div>
               <input className="input" name="phone" type="tel" placeholder="Phone" />
               <input className="input" name="email" type="email" placeholder="Email" required />
               <textarea
@@ -233,7 +244,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                     </div>
                   ))}
                 </div>
-                <input className="input" name="name" type="text" placeholder="First & last name" required />
+                <div className="name2">
+                  <input className="input" name="first_name" type="text" autoComplete="given-name" placeholder="First name" required />
+                  <input className="input" name="last_name" type="text" autoComplete="family-name" placeholder="Last name" required />
+                </div>
                 <input className="input" name="phone" type="tel" placeholder="Phone" required />
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <button className="btn btn--aqua" disabled={busy}>
@@ -269,7 +283,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
               <p className="form__ok">Got it — we&apos;ll answer your question shortly.</p>
             ) : (
               <form onSubmit={handleAsk}>
-                <input className="input" name="name" type="text" placeholder="First & last name" required />
+                <div className="name2">
+                  <input className="input" name="first_name" type="text" autoComplete="given-name" placeholder="First name" required />
+                  <input className="input" name="last_name" type="text" autoComplete="family-name" placeholder="Last name" required />
+                </div>
                 <input className="input" name="phone" type="tel" placeholder="Phone" />
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <textarea

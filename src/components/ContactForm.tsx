@@ -22,13 +22,17 @@ export default function ContactForm() {
     setErr("");
     setBusy(true);
     const f = new FormData(e.currentTarget);
+    const firstName = String(f.get("first_name") || "").trim();
+    const lastName = String(f.get("last_name") || "").trim();
     try {
       const res = await fetch("/api/forms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           form_id: "contact",
-          name: f.get("name"),
+          name: `${firstName} ${lastName}`.trim(),
+          first_name: firstName,
+          last_name: lastName,
           email: f.get("email"),
           phone: f.get("phone"),
           message: `[${f.get("topic") || "General"}] ${f.get("message") || ""}`,
@@ -74,17 +78,23 @@ export default function ContactForm() {
       </div>
       <div className="hv-grid hv-grid--2">
         <div className="field">
-          <label>Full Name</label>
-          <input className="input" type="text" name="name" required />
+          <label>First Name</label>
+          <input className="input" type="text" name="first_name" autoComplete="given-name" required />
         </div>
         <div className="field">
-          <label>Phone</label>
-          <input className="input" type="tel" name="phone" required />
+          <label>Last Name</label>
+          <input className="input" type="text" name="last_name" autoComplete="family-name" required />
         </div>
       </div>
-      <div className="field">
-        <label>Email</label>
-        <input className="input" type="email" name="email" required />
+      <div className="hv-grid hv-grid--2">
+        <div className="field">
+          <label>Phone</label>
+          <input className="input" type="tel" name="phone" autoComplete="tel" required />
+        </div>
+        <div className="field">
+          <label>Email</label>
+          <input className="input" type="email" name="email" autoComplete="email" required />
+        </div>
       </div>
       <div className="field">
         <label>How can we help?</label>

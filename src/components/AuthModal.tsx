@@ -5,7 +5,7 @@ import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { site } from "@/config/site";
 
 // Sign-up / login modal. Instant registration with NO separate password — the
-// phone number is used as the password. Plus Google / Apple OAuth.
+// phone number is used as the password.
 export default function AuthModal({
   onClose,
   onAuthed,
@@ -24,15 +24,6 @@ export default function AuthModal({
   const [err, setErr] = useState("");
 
   const digits = (s: string) => s.replace(/\D/g, "");
-
-  async function oauth(provider: "google" | "apple") {
-    setErr("");
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: typeof window !== "undefined" ? window.location.href : undefined },
-    });
-    if (error) setErr(`${provider === "google" ? "Google" : "Apple"} sign-in isn't set up yet. ${error.message}`);
-  }
 
   async function finishProfile() {
     const uid = (await supabase.auth.getUser()).data.user?.id;
@@ -84,14 +75,6 @@ export default function AuthModal({
       <div className="authm__card" onClick={(e) => e.stopPropagation()}>
         <button className="authm__close" aria-label="Close" onClick={onClose}>×</button>
         <h2 className="authm__title">{mode === "signup" ? "Continue Your Home Search." : "Welcome back."}</h2>
-
-        <div className="authm__oauth">
-          <button className="oauthbtn oauthbtn--google" onClick={() => oauth("google")}>
-            <span className="oauthbtn__g">G</span> Sign in with Google
-          </button>
-        </div>
-
-        <div className="authm__or"><span>or</span></div>
 
         {mode === "signup" ? (
           <>

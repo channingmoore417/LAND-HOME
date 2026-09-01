@@ -48,7 +48,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [supabase]);
 
   // Load the user's saved listing keys whenever they sign in/out, and replay a
-  // pending favorite (e.g. saved across the Google/Apple OAuth redirect).
+  // pending favorite (e.g. one clicked while signed out, saved before the modal).
   useEffect(() => {
     if (!user) { setFavs(new Set()); return; }
     let mounted = true;
