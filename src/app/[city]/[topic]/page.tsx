@@ -12,6 +12,7 @@ import JsonLd from "@/components/JsonLd";
 import LocalMap from "@/components/LocalMap";
 import Testimonials from "@/components/Testimonials";
 import AreaShowcase from "@/components/AreaShowcase";
+import MarketStats from "@/components/MarketStats";
 import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
 import { neighborhoodCards, zipCards, neighborhoodsFor, zipAreasFor } from "@/lib/neighborhoods";
 
@@ -229,6 +230,9 @@ export default async function SeoLandingPage({
           </div>
         </section>
       )}
+
+      {/* Real MLS market metrics (city hub only) */}
+      {isHub && <MarketStats city={page.city} />}
 
       {/* Neighborhoods + ZIP showcases (city hub only) */}
       {isHub && (

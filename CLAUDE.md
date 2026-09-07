@@ -45,6 +45,15 @@ Trestle  →  sync (Supabase Edge Function)  →  Supabase  →  THIS Next.js si
 - **Edge Function `trestle-sync`** (resumable Deno port of the sync) +
   `pg_cron`/`pg_net` available for scheduling. Trestle creds live as function
   secrets (the bootstrap secret in chat history is BURNED — rotate before prod).
+- **Market metrics** (migration `market_snapshots_and_stats`):
+  - `market_stats(p_city)` RPC — live per-city medians (price, DOM, $/sqft,
+    reductions, new-in-30d) over Active Residential; anon-callable, feeds the
+    `MarketStats` section on city hub pages via `src/lib/marketStats.ts`.
+  - `market_snapshots` table (public-read) + `capture_market_snapshot()`,
+    run weekly by pg_cron job `capture-market-snapshot` (Sun 08:00 UTC).
+    Month-over-month deltas appear automatically once a snapshot ≥23 days
+    old exists (first eligible: ~Oct 2026); until then the UI omits them.
+    Feed is Active/Pending only — all price stats are LIST price, never sold.
 
 ### Trestle/SWLAR gotcha (already solved)
 Media uses `MediaClassification eq 'PHOTO'` (NOT `MediaCategory`, which is null).
