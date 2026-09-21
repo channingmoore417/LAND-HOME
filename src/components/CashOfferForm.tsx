@@ -1,13 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { site } from "@/config/site";
+import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 
 // Cash-offer request form for /sell-my-house-fast. Posts to the single
 // /api/forms endpoint with the stable `cash_offer` form_id.
-// Same spam protection as ContactForm: honeypot + minimum submit time,
-// both enforced server-side in /api/forms.
+// Same spam protection as ContactForm: signals from useFormGuard(), scored
+// server-side in src/lib/spam.ts.
 
 const CITIES = [
   "Lake Charles", "Sulphur", "Moss Bluff", "Westlake", "Carlyss", "Iowa",
@@ -18,7 +19,7 @@ export default function CashOfferForm() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const loadedAt = useRef<number>(Date.now());
+  const guard = useFormGuard();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,28 +29,20 @@ export default function CashOfferForm() {
     const address = String(f.get("address") || "");
     const city = String(f.get("city") || "");
     try {
-      const res = await fetch("/api/forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          form_id: "cash_offer",
-          name: f.get("name"),
-          email: f.get("email"),
-          phone: f.get("phone"),
-          message: `Cash offer request for ${address}${city ? `, ${city}` : ""}. Condition: ${f.get("condition") || "—"}. Timeframe: ${f.get("timeframe") || "—"}. ${f.get("notes") || ""}`,
-          criteria: {
-            address, city,
-            condition: f.get("condition"),
-            timeframe: f.get("timeframe"),
-            notes: f.get("notes"),
-          },
-          // Spam signals:
-          company: f.get("company") || "", // honeypot — should be empty
-          form_loaded_at: loadedAt.current,
-          source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-        }),
+      const ok = await guard.submit({
+        form_id: "cash_offer",
+        name: f.get("name"),
+        email: f.get("email"),
+        phone: f.get("phone"),
+        message: `Cash offer request for ${address}${city ? `, ${city}` : ""}. Condition: ${f.get("condition") || "—"}. Timeframe: ${f.get("timeframe") || "—"}. ${f.get("notes") || ""}`,
+        criteria: {
+          address, city,
+          condition: f.get("condition"),
+          timeframe: f.get("timeframe"),
+          notes: f.get("notes"),
+        },
       });
-      if (res.ok) setSent(true);
+      if (ok) setSent(true);
       else setErr(`Something went wrong. Please call us at ${site.phone}.`);
     } catch {
       setErr(`Something went wrong. Please call us at ${site.phone}.`);
@@ -74,10 +67,7 @@ export default function CashOfferForm() {
   return (
     <form className="contact-form" onSubmit={onSubmit}>
       {/* Honeypot — hidden from real users; bots tend to fill every field. */}
-      <div className="hp-field" aria-hidden="true">
-        <label htmlFor="co-company">Company (leave this blank)</label>
-        <input type="text" id="co-company" name="company" tabIndex={-1} autoComplete="off" />
-      </div>
+      <HoneypotField inputRef={guard.hpRef} />
       <div className="field">
         <label>Property Address</label>
         <input className="input" type="text" name="address" autoComplete="street-address" placeholder="123 Main St" required />

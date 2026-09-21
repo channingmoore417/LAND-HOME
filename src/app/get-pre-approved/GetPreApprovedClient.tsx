@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 
 const BAYOU_APPLY = "/contact";
 
@@ -100,6 +101,7 @@ export default function GetPreApprovedClient() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState("");
+  const guard = useFormGuard();
 
   const name = STEPS[step];
   const fillPct = step === 0 ? 5 : step >= STEPS.length - 1 ? 100 : (Math.min(step, QCOUNT) / QCOUNT) * 100;
@@ -129,22 +131,18 @@ export default function GetPreApprovedClient() {
     setSubmitting(true);
     const r = evaluate(a);
     try {
-      await fetch("/api/forms", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          form_id: "mortgage_preapproval",
-          name: `${a.firstName.trim()} ${a.lastName.trim()}`.trim(),
-          first_name: a.firstName, last_name: a.lastName, email: a.email, phone: a.phone,
-          message: `Pre-approval check · ${a.timeframe} · price ${a.price} · down ${a.down} · income ${a.income} · debts ${a.debts} · credit ${a.credit} · DTI ~${Math.round(r.dti * 100)}% · ${a.military === "Yes" ? "veteran/military" : "civilian"}`,
-          criteria: {
-            timeframe: a.timeframe, housing: a.housing, firstTime: a.firstTime, military: a.military,
-            property: a.property, zip: a.zip, price: a.price, down: a.down, credit: a.credit,
-            income: a.income, monthlyDebts: a.debts, employment: a.employment,
-            estDTI: Math.round(r.dti * 100), estPayment: r.payment,
-            eligible: r.programs.filter((p) => p.status === "eligible").map((p) => p.name),
-          },
-          source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-        }),
+      await guard.submit({
+        form_id: "mortgage_preapproval",
+        name: `${a.firstName.trim()} ${a.lastName.trim()}`.trim(),
+        first_name: a.firstName, last_name: a.lastName, email: a.email, phone: a.phone,
+        message: `Pre-approval check · ${a.timeframe} · price ${a.price} · down ${a.down} · income ${a.income} · debts ${a.debts} · credit ${a.credit} · DTI ~${Math.round(r.dti * 100)}% · ${a.military === "Yes" ? "veteran/military" : "civilian"}`,
+        criteria: {
+          timeframe: a.timeframe, housing: a.housing, firstTime: a.firstTime, military: a.military,
+          property: a.property, zip: a.zip, price: a.price, down: a.down, credit: a.credit,
+          income: a.income, monthlyDebts: a.debts, employment: a.employment,
+          estDTI: Math.round(r.dti * 100), estPayment: r.payment,
+          eligible: r.programs.filter((p) => p.status === "eligible").map((p) => p.name),
+        },
       });
     } catch { /* still show results */ }
     setSubmitting(false);
@@ -218,6 +216,7 @@ export default function GetPreApprovedClient() {
             <div className="wiz__step">
               <div className="quiz-eyebrow">Step 13 of {QCOUNT}</div>
               <h2 className="wiz__q">Where should we send your results?</h2>
+              <HoneypotField inputRef={guard.hpRef} />
               <p className="prose" style={{ color: "var(--ink-muted)", marginTop: 0 }}>A {site.bayou.name} loan officer will follow up with your options — no pressure.</p>
               <div className="hv-grid hv-grid--2" style={{ marginTop: 18 }}>
                 <div className="field"><label>First Name</label><input className="input" type="text" autoComplete="given-name" value={a.firstName} onChange={(e) => set({ firstName: e.target.value })} /></div>

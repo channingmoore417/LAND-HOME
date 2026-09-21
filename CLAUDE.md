@@ -68,6 +68,25 @@ Next.js (App Router) + plain CSS port of the LHG black/gold template
   Supabase (service role) and forwards the same payload to `FORMS_WEBHOOK_URL`.
 - `src/app/page.tsx` — minimal featured-listings landing (placeholder).
 
+### Spam filtering (all forms)
+Every form goes through `useFormGuard()` (`src/components/FormGuard.tsx`),
+which attaches three signals — a `company` honeypot, `form_loaded_at`, and a
+page-level `human_interactions` count — and renders `<HoneypotField>`.
+`/api/forms` scores them alongside request origin, content heuristics, per-IP
+rate limiting and duplicate suppression in `src/lib/spam.ts`. The gate runs
+BEFORE the Supabase write and the BoldTrail sync, so junk never reaches the
+CRM. Nothing but the honeypot and an instant submit is fatal on its own; a
+submission is dropped only at `SPAM_THRESHOLD`. Dropped ones get a normal 200
+(bots learn nothing) and are logged to Vercel as `[forms] dropped spam` with
+score + reasons.
+
+- **Any new form MUST use `useFormGuard().submit()` and render
+  `<HoneypotField>`** — a POST without those signals scores 5+ and is dropped.
+- The spam-phrase list is deliberately off-domain only: never add real-estate
+  or mortgage vocabulary (loan, rate, investment, refinance, cash offer…).
+- Rate limit + dedupe are in-process, so they are per serverless instance.
+  Move them to Supabase/Upstash if spam volume justifies it.
+
 ### Unified form ids (stable)
 `contact`, `listing_inquiry`, `showing_request`, `saved_search`,
 `home_valuation`, `mortgage_preapproval`, `buyer_guide`, `buyer_quiz`,

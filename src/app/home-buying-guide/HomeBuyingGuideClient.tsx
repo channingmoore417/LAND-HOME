@@ -5,6 +5,7 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
+import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 
 // The downloadable buyer's guide (PDF). Page captures the lead, then opens it.
 const GUIDE_URL =
@@ -21,6 +22,7 @@ export default function HomeBuyingGuideClient() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
+  const guard = useFormGuard();
 
   function openGuide() {
     if (typeof window !== "undefined") window.open(GUIDE_URL, "_blank", "noopener");
@@ -34,20 +36,15 @@ export default function HomeBuyingGuideClient() {
     }
     setLoading(true);
     try {
-      await fetch("/api/forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          form_id: "buyer_guide",
-          name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-          first_name: firstName,
-          last_name: lastName,
-          email,
-          phone,
-          message: `Home Buyer's Guide download · buying timeline: ${timeline}`,
-          criteria: { timeline },
-          source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-        }),
+      await guard.submit({
+        form_id: "buyer_guide",
+        name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone,
+        message: `Home Buyer's Guide download · buying timeline: ${timeline}`,
+        criteria: { timeline },
       });
     } catch { /* still let them download */ }
     logActivity("guide", { meta: { timeline } });
@@ -84,6 +81,7 @@ export default function HomeBuyingGuideClient() {
               {!done ? (
                 <>
                   <h2 className="wiz__q">Get the free guide</h2>
+                  <HoneypotField inputRef={guard.hpRef} />
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>First Name</label>
                       <input className="input" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>

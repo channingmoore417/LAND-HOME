@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
 import { syncLeadToBoldTrail } from "@/lib/boldtrail";
+import { clientIp, evaluateSpam } from "@/lib/spam";
 
 export const runtime = "nodejs";
 
@@ -38,26 +39,11 @@ interface FormPayload {
   working_with_agent?: boolean;
   criteria?: Record<string, unknown>;
   alert_frequency?: string;
-  // Spam-protection signals (optional; sent by public-facing forms):
+  // Spam signals, attached by useFormGuard() on every form (see spam.ts):
   company?: string; // honeypot — must be empty
   form_loaded_at?: number; // epoch ms when the form was rendered
+  human_interactions?: number; // key/pointer events before submit
   [k: string]: unknown;
-}
-
-// Minimum time (ms) a real person needs to fill out a form. Anything faster
-// is almost certainly an automated submission.
-const MIN_SUBMIT_MS = 2500;
-
-// Returns a reason string if the payload looks like spam, else null.
-// Checks are only applied when the relevant signal is present, so forms that
-// don't send these fields are unaffected.
-function spamReason(p: FormPayload): string | null {
-  if (typeof p.company === "string" && p.company.trim() !== "") return "honeypot";
-  if (typeof p.form_loaded_at === "number" && Number.isFinite(p.form_loaded_at)) {
-    const elapsed = Date.now() - p.form_loaded_at;
-    if (elapsed >= 0 && elapsed < MIN_SUBMIT_MS) return "too-fast";
-  }
-  return null;
 }
 
 // Returns which table the submission landed in and the new row id, so the
@@ -131,17 +117,39 @@ export async function POST(req: Request) {
     submitted_at: new Date().toISOString(),
   };
 
-  // Spam gate: silently accept (so bots get no signal) but drop the
-  // submission — never write it or forward it downstream.
-  const reason = spamReason(payload);
-  if (reason) {
-    console.warn(`[forms] dropped spam (${reason}) for form_id=${payload.form_id}`);
+  // Spam gate. Respond exactly as we would on success so bots learn nothing
+  // about why they were dropped, but never write, sync or forward it. This
+  // runs before the Supabase write AND before the BoldTrail sync, so junk
+  // never reaches the CRM.
+  const verdict = evaluateSpam(payload, {
+    ip: clientIp(req.headers),
+    origin: req.headers.get("origin"),
+    host: req.headers.get("host"),
+  });
+  if (verdict.spam) {
+    console.warn(
+      "[forms] dropped spam",
+      JSON.stringify({
+        form_id: payload.form_id,
+        score: verdict.score,
+        reasons: verdict.reasons,
+        email: payload.email ?? null,
+      }),
+    );
     return NextResponse.json({ ok: true, submission_id: payload.submission_id });
   }
+  // Near-misses are worth seeing — they are how the threshold gets tuned.
+  if (verdict.score > 0) {
+    console.info(
+      "[forms] allowed with spam score",
+      JSON.stringify({ form_id: payload.form_id, score: verdict.score, reasons: verdict.reasons }),
+    );
+  }
 
-  // Strip the spam-protection signals so they're never stored or forwarded.
+  // Strip the spam signals so they are never stored or forwarded downstream.
   delete payload.company;
   delete payload.form_loaded_at;
+  delete payload.human_interactions;
 
   // 1) Persist to Supabase first so a webhook outage never loses a lead.
   let dbOk = true;
