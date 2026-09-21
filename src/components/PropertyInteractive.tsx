@@ -2,27 +2,16 @@
 
 import { useState } from "react";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 
 // All the lead-capture UI for a listing: sidebar lead card + message form,
 // the sticky mobile bar, and the Tour / Ask modals. Every form posts to the
-// single /api/forms endpoint with a stable form_id.
+// single /api/forms endpoint with a stable form_id, guarded by useFormGuard().
 
 interface Props {
   listingKey: string;
   address: string; // full label for modals, e.g. "123 Main St, Lake Charles, LA 70601"
   priceLabel: string; // e.g. "$424,500"
-}
-
-async function submitForm(payload: Record<string, unknown>) {
-  const res = await fetch("/api/forms", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...payload,
-      source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-    }),
-  });
-  return res.ok;
 }
 
 function dateOptions() {
@@ -52,6 +41,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
   const [tourSent, setTourSent] = useState(false);
   const [askSent, setAskSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  // One guard per form — each owns its own honeypot input.
+  const msgGuard = useFormGuard();
+  const tourGuard = useFormGuard();
+  const askGuard = useFormGuard();
 
   function lock(open: boolean) {
     document.body.style.overflow = open ? "hidden" : "";
@@ -85,7 +78,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     e.preventDefault();
     setBusy(true);
     const f = new FormData(e.currentTarget);
-    const ok = await submitForm({
+    const ok = await msgGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
       name: f.get("name"),
@@ -101,7 +94,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     e.preventDefault();
     setBusy(true);
     const f = new FormData(e.currentTarget);
-    const ok = await submitForm({
+    const ok = await tourGuard.submit({
       form_id: "showing_request",
       listing_key: listingKey,
       name: f.get("name"),
@@ -118,7 +111,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     e.preventDefault();
     setBusy(true);
     const f = new FormData(e.currentTarget);
-    const ok = await submitForm({
+    const ok = await askGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
       name: f.get("name"),
@@ -162,6 +155,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
             <p className="form__ok">Thanks — we&apos;ll be in touch shortly about this home.</p>
           ) : (
             <form onSubmit={handleMessage}>
+              <HoneypotField inputRef={msgGuard.hpRef} />
               <input className="input" name="name" type="text" placeholder="Full name" required />
               {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
               <input className="input" name="email" type="email" placeholder="Email" required />
@@ -217,6 +211,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
               <p className="form__ok">Tour requested! We&apos;ll confirm your time by phone or email.</p>
             ) : (
               <form onSubmit={handleTour}>
+                <HoneypotField inputRef={tourGuard.hpRef} />
                 <div className="tour__toggle">
                   {(["In-Person Tour", "Video Chat Tour"] as const).map((m) => (
                     <button
@@ -278,6 +273,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
               <p className="form__ok">Got it — we&apos;ll answer your question shortly.</p>
             ) : (
               <form onSubmit={handleAsk}>
+                <HoneypotField inputRef={askGuard.hpRef} />
                 <input className="input" name="name" type="text" placeholder="First & last name" required />
                 {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
                 <input className="input" name="email" type="email" placeholder="Email" required />

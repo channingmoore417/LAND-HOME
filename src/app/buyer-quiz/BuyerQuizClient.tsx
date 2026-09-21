@@ -5,6 +5,7 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
+import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 
 const COMMUNITIES = [
   "Lake Charles", "Sulphur", "Moss Bluff", "Iowa", "Vinton", "Cameron",
@@ -50,6 +51,7 @@ export default function BuyerQuizClient() {
     beds: "3+", baths: "2+", firstName: "", lastName: "", email: "", phone: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const guard = useFormGuard();
 
   const name = STEPS[step];
   const total = STEPS.length - 2; // question steps only
@@ -98,19 +100,15 @@ export default function BuyerQuizClient() {
     if (!canAdvance()) return;
     setSubmitting(true);
     try {
-      await fetch("/api/forms", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          form_id: "buyer_quiz",
-          name: `${a.firstName.trim()} ${a.lastName.trim()}`.trim(),
-          first_name: a.firstName, last_name: a.lastName, email: a.email, phone: a.phone,
-          message: `Buyer Match quiz · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bed / ${a.baths} bath · ${TIMELINES.find((t) => t.key === a.timeline)?.label || "—"}`,
-          criteria: {
-            communities: a.communities, price: a.price, features: a.features,
-            beds: a.beds, baths: a.baths, timeline: a.timeline,
-          },
-          source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-        }),
+      await guard.submit({
+        form_id: "buyer_quiz",
+        name: `${a.firstName.trim()} ${a.lastName.trim()}`.trim(),
+        first_name: a.firstName, last_name: a.lastName, email: a.email, phone: a.phone,
+        message: `Buyer Match quiz · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bed / ${a.baths} bath · ${TIMELINES.find((t) => t.key === a.timeline)?.label || "—"}`,
+        criteria: {
+          communities: a.communities, price: a.price, features: a.features,
+          beds: a.beds, baths: a.baths, timeline: a.timeline,
+        },
       });
     } catch { /* still show matches */ }
     logActivity("quiz", { meta: { communities: a.communities, price: a.price, features: a.features, beds: a.beds, baths: a.baths, timeline: a.timeline } });
@@ -227,6 +225,7 @@ export default function BuyerQuizClient() {
             <>
               <div className="quiz-eyebrow">Question 7 of 7</div>
               <h2 className="wiz__q">Where should we send your matches?</h2>
+              <HoneypotField inputRef={guard.hpRef} />
               <p className="prose" style={{ color: "var(--ink-muted)" }}>We&apos;ll put together a personalized list and reach out — no spam, no pressure.</p>
               <div className="hv-grid hv-grid--2" style={{ marginTop: 18 }}>
                 <div className="field"><label>First Name</label>

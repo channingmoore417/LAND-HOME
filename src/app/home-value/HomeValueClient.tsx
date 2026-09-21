@@ -5,6 +5,7 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
+import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 
 interface GeoResult { address: string; street?: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
 interface Estimate {
@@ -35,6 +36,7 @@ export default function HomeValueClient() {
   const [result, setResult] = useState<Estimate | null>(null);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
+  const guard = useFormGuard();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function onAddressChange(v: string) {
@@ -98,20 +100,16 @@ export default function HomeValueClient() {
       if (res.ok) est = await res.json();
     } catch { /* still capture the lead */ }
     try {
-      await fetch("/api/forms", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          form_id: "home_valuation", name, first_name: firstName, last_name: lastName, email, phone,
-          message: `Home valuation request for ${picked!.address}`,
-          criteria: {
-            first_name: firstName, last_name: lastName,
-            address: picked!.address, city: picked!.city, zip: picked!.zip,
-            beds, baths, sqft, year, condition, timeframe, notes,
-            estimate: est && est.comp_count > 0
-              ? { low: est.est_low, median: est.est_median, high: est.est_high, comps: est.comp_count } : null,
-          },
-          source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-        }),
+      await guard.submit({
+        form_id: "home_valuation", name, first_name: firstName, last_name: lastName, email, phone,
+        message: `Home valuation request for ${picked!.address}`,
+        criteria: {
+          first_name: firstName, last_name: lastName,
+          address: picked!.address, city: picked!.city, zip: picked!.zip,
+          beds, baths, sqft, year, condition, timeframe, notes,
+          estimate: est && est.comp_count > 0
+            ? { low: est.est_low, median: est.est_median, high: est.est_high, comps: est.comp_count } : null,
+        },
       });
     } catch { /* non-fatal */ }
     logActivity("valuation", { meta: { address: picked!.address, city: picked!.city, zip: picked!.zip } });
@@ -288,6 +286,7 @@ export default function HomeValueClient() {
               {step === 4 && (
                 <div className="wiz__step">
                   <h2 className="wiz__q">Where should we send your report?</h2>
+                  <HoneypotField inputRef={guard.hpRef} />
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>First Name</label>
                       <input className="input" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
