@@ -20,6 +20,11 @@ export const FEATURE_COLUMN: Record<string, string> = {
   updated: "is_updated_remodeled",
   single_story: "is_single_story",
   acre_plus: "has_acre_plus",
+  // Read from the listing description by generated columns in Supabase.
+  shop: "has_shop",
+  fixer: "is_fixer_upper",
+  golf: "is_golf_course",
+  owner_financing: "has_owner_financing",
 };
 
 export interface ListingCriteria {
@@ -33,7 +38,7 @@ export interface ListingCriteria {
   sqftMax?: number;
   yearMin?: number;
   type?: string; // UI value: "Single Family" | "Multi-Family" | "New Construction" | "Land" | "Mobile / Manufactured"
-  category?: "land" | "single_family" | "mobile"; // SEO-page shorthand
+  category?: "land" | "single_family" | "mobile" | "residential"; // SEO-page shorthand
   features?: string[]; // feature keys (see FEATURE_COLUMN)
   postalCode?: string; // ZIP (prefix match, tolerates ZIP+4)
   subdivisionAny?: string[]; // neighborhood: subdivision_name ILIKE keywords (OR'd)
@@ -98,6 +103,7 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   if (c.category === "land") query = query.eq("property_type", "Land");
   else if (c.category === "single_family") query = query.eq("property_sub_type", "SingleFamilyResidence");
   else if (c.category === "mobile") query = query.in("property_sub_type", MOBILE_SUBTYPES);
+  else if (c.category === "residential") query = query.eq("property_type", "Residential");
 
   if (c.type === "Single Family") query = query.eq("property_sub_type", "SingleFamilyResidence");
   else if (c.type === "Multi-Family")

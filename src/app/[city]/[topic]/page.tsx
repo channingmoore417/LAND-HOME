@@ -142,9 +142,10 @@ export default async function SeoLandingPage({
   const isHood = page.page_type === "neighborhood" && !!page.neighborhood;
   // School-zone pages ("in the Barbe school district") read like neighborhoods.
   const school = page.page_type === "school" ? page.high_school_district : null;
-  const isArea = isHood || !!school;
-  const place = isHood ? page.neighborhood! : school ? `the ${school} school district` : cityLabel;
-  const placeTitle = isHood ? page.neighborhood! : school ? `${school} School District` : cityLabel;
+  const zip = page.page_type === "zip" ? page.postal_code : null;
+  const isArea = isHood || !!school || !!zip;
+  const place = isHood ? page.neighborhood! : school ? `the ${school} school district` : zip ? zip : cityLabel;
+  const placeTitle = isHood ? page.neighborhood! : school ? `${school} School District` : zip ? zip : cityLabel;
   const topicLabel = pageTopicLabel(page);
   const noun = topicNoun(page);
   const cityHubUrl = `${SITE}/${citySlug}/homes-for-sale`;
@@ -187,7 +188,7 @@ export default async function SeoLandingPage({
             <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}
             <Link href={`/${citySlug}/homes-for-sale`}>{cityLabel}</Link> &nbsp;/&nbsp; {topicLabel}
           </nav>
-          <span className="hero__script">{isHood ? `a ${cityLabel.toLowerCase()} neighborhood` : school ? `${cityLabel.toLowerCase()} homes zoned for` : `${topicLabel.toLowerCase()} in`}</span>
+          <span className="hero__script">{isHood ? `a ${cityLabel.toLowerCase()} neighborhood` : school ? `${cityLabel.toLowerCase()} homes zoned for` : zip ? `${cityLabel.toLowerCase()} zip code` : `${topicLabel.toLowerCase()} in`}</span>
           <h1>{content.h1}</h1>
           <p className="hero__sub">
             {stats.count.toLocaleString()} {noun} for sale in {isArea ? `${place}, ${cityLabel}` : `${cityLabel}, Louisiana`}{typical}.

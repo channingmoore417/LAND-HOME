@@ -7,7 +7,7 @@
 
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
-import { pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
+import { pageTopicLabel, topicNoun, shortUsd, type SeoPage } from "@/lib/seo";
 import type { Card, ListingStats } from "@/lib/listings";
 import type { PageMarket } from "@/lib/market";
 import { napSchema } from "@/lib/nap";
@@ -86,6 +86,30 @@ export function generatedBody(page: SeoPage): string {
       `## Financing\nManufactured-home financing differs from a standard mortgage; confirm land ownership and utilities up front. The Land & Home Group and a trusted local lender can walk you through it.`,
     ].join("\n\n");
   }
+  if (t === "price" && page.price_max) {
+    const cap = shortUsd(page.price_max);
+    return [
+      fact,
+      `## Homes under ${cap} in ${city}\nThese are houses for sale in ${city} listed at ${cap} or less. Lots and land are left out so you only see homes. At this price you'll mostly find starter homes, older homes on established streets, and some mobile homes on their own land.`,
+      `## Buying at this price\nHomes in this range move fast, so get pre-approved before you start touring. Check the roof age, the flood zone and an insurance quote early, since insurance can change what a home really costs each month.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
+  if (t === "price") {
+    return [
+      fact,
+      `## Luxury homes in ${city}\nThese are homes for sale in ${city} listed at ${shortUsd(page.price_min ?? 500000)} and up, from larger custom homes in established neighborhoods to newer builds and homes on acreage or the water.`,
+      `## Buying a luxury home\nHigher-priced homes often take longer to sell, which can leave room to negotiate. Ask for the insurance history, check the flood zone, and get a jumbo loan pre-approval lined up if you're financing.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
+  if (t === "zip" && page.postal_code) {
+    return [
+      `These are all the homes for sale in the ${page.postal_code} ZIP code in ${city}, updated throughout the day from the MLS.`,
+      `## Buying in ${page.postal_code}\nA ZIP code covers a lot of ground, so prices and school zones can change from one street to the next. Check the flood zone and school zone for the exact address, and get an insurance quote early.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
   if (t === "beds") {
     return [
       fact,
@@ -102,6 +126,10 @@ export function generatedBody(page: SeoPage): string {
     waterfront: `## Waterfront living in ${city}\nWaterfront property is among the most sought-after in the area, offering boating, fishing, and views right out the back door. Look closely at docks, bulkheads, and access when you tour.`,
     updated: `## Updated & remodeled homes in ${city}\nMove-in-ready, recently updated homes save you the work of renovating. Browse remodeled homes in ${city} with newer kitchens, baths, and systems.`,
     garage: `## Homes with garages in ${city}\nGarage space means storage, workshop room, and protected parking. Browse ${city} homes with attached and detached garages.`,
+    shop: `## Homes with a shop in ${city}\nA shop gives you room for tools, a boat, a side business or a hobby without giving up the garage. These are homes in ${city} where the listing mentions a shop or workshop, from small storage shops to full metal buildings with power and roll-up doors.\n\n## What to look at in the shop\nAsk for the size, whether it has power, water and a slab, and whether it was permitted. Check how it sits on the lot and whether trucks and trailers can get to it.`,
+    fixer: `## Fixer upper homes in ${city}\nThese are homes in ${city} where the listing says the house needs work, like a fixer, a handyman special or an investor special. They're usually priced below move-in ready homes, which can make them a way into a neighborhood that's otherwise out of reach.\n\n## Before you buy a fixer upper\nGet a full inspection, and get repair bids before you make your offer, not after. Roofs, foundations and old wiring are the big ones here. Some loans won't cover a home that needs major repairs, so talk to a lender early about renovation loans.`,
+    golf: `## Golf course homes in ${city}\nThese are homes in ${city} on or backing up to a golf course, or in golf course communities like Graywood. Expect larger homes and lots, and often an HOA.\n\n## Before you buy on a golf course\nAsk about HOA dues and whether club membership is separate from the home. Look at which way the home faces the course, since stray balls come with the view on some lots.`,
+    owner_financing: `## Owner financed homes and land in ${city}\nWith owner financing, the seller acts as the bank and you make payments to them instead of a lender. It can help buyers who don't fit a traditional loan, and it's especially common on land. These are listings in ${city} where the seller says they'll consider it.\n\n## Before you sign an owner-financed deal\nGet the terms in writing: price, down payment, interest rate, length and any balloon payment. Use a title company, make sure the deal is recorded, and have your own agent or attorney review the contract. Ask whether the seller still owes money on the property.`,
   };
   const block = (fk && featBlocks[fk]) || `## ${pageTopicLabel(page)} in ${city}\nBrowse ${topicNoun(page)} for sale in ${city}, updated live throughout the day.`;
   return [fact, block, `## Ready to tour?\n${CLOSE_CTA}`].join("\n\n");
@@ -163,7 +191,12 @@ function fillTokens(text: string, city: string, m: PageMarket | null, stats: Lis
 
 export function faqsFor(page: SeoPage, stats: ListingStats, market: PageMarket | null = null): Faq[] {
   // Neighborhood pages talk about the neighborhood, not the whole city.
-  const city = page.neighborhood || (page.page_type === "school" && page.high_school_district ? `the ${page.high_school_district} school district` : null) || page.city || "Southwest Louisiana";
+  const city =
+    page.neighborhood ||
+    (page.page_type === "school" && page.high_school_district ? `the ${page.high_school_district} school district` : null) ||
+    (page.page_type === "zip" ? page.postal_code : null) ||
+    page.city ||
+    "Southwest Louisiana";
   const noun = topicNoun(page);
   const m = market;
   const isLand = page.page_type === "land";
@@ -244,7 +277,7 @@ export function faqsFor(page: SeoPage, stats: ListingStats, market: PageMarket |
   }
 
   // Built-in "living in" questions, minus any the hand-written list already asks.
-  if (page.page_type !== "neighborhood" && page.page_type !== "school") faqs.push(...cityLivingFaqs(page, city).filter((f) => !f.skipIf.some((w) => asked.includes(w))));
+  if (!["neighborhood", "school", "zip"].includes(page.page_type)) faqs.push(...cityLivingFaqs(page, city).filter((f) => !f.skipIf.some((w) => asked.includes(w))));
 
   faqs.push({
     q: `How often are these ${city} listings updated?`,

@@ -10,7 +10,7 @@ import type { ListingCriteria } from "@/lib/listings";
 export interface SeoPage {
   id: number;
   slug: string; // e.g. "lake-charles/homes-for-sale"
-  page_type: string; // city | land | single_family | feature | neighborhood | school
+  page_type: string; // city | land | single_family | feature | neighborhood | school | price | zip
   city: string | null;
   property_sub_type: string | null;
   beds_min: number | null;
@@ -49,6 +49,11 @@ export function isIndexablePage(p: Pick<SeoPage, "page_type" | "listing_count" |
   if (p.page_type === "city" || p.page_type === "neighborhood") return true;
   if (p.listing_count == null) return true;
   return p.listing_count >= (p.min_listing_count ?? 3);
+}
+
+/** 200000 -> "$200K", 1000000 -> "$1M". */
+export function shortUsd(n: number): string {
+  return n >= 1_000_000 ? `$${+(n / 1_000_000).toFixed(1)}M` : `$${Math.round(n / 1000)}K`;
 }
 
 export function slugifyCity(city: string): string {
@@ -104,6 +109,12 @@ const TOPIC_ORDER = [
   "waterfront",
   "beds",
   "mobile",
+  "price",
+  "shop",
+  "fixer",
+  "golf",
+  "owner_financing",
+  "zip",
 ];
 
 function topicSortKey(page: SeoPage): number {
@@ -178,7 +189,10 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
         ? "single_family"
         : page.page_type === "mobile"
           ? "mobile"
-          : undefined;
+          // Price pages and "homes with a shop" are about houses, not lots.
+          : page.page_type === "price" || page.feature_key === "shop"
+            ? "residential"
+            : undefined;
   const shared = {
     bedsMin: page.beds_min ?? undefined,
     priceMin: page.price_min ?? undefined,
@@ -213,7 +227,8 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
 // Clean plural noun (no "for sale") for use inside sentences/FAQs, so we don't
 // produce "homes for sale are for sale".
 export function topicNoun(page: SeoPage): string {
-  if (page.page_type === "city" || page.page_type === "neighborhood" || page.page_type === "school") return "homes";
+  if (["city", "neighborhood", "school", "zip"].includes(page.page_type)) return "homes";
+  if (page.page_type === "price") return page.price_max ? `homes under ${shortUsd(page.price_max)}` : "luxury homes";
   if (page.page_type === "land") return "land listings";
   if (page.page_type === "single_family") return "single-family homes";
   if (page.page_type === "mobile") return "mobile & manufactured homes";
@@ -226,6 +241,10 @@ export function topicNoun(page: SeoPage): string {
     acre_plus: "properties with acreage",
     updated: "updated homes",
     garage: "homes with garages",
+    shop: "homes with a shop",
+    fixer: "fixer-upper homes",
+    golf: "golf course homes",
+    owner_financing: "owner-financed properties",
   };
   return (page.feature_key && map[page.feature_key]) || "homes";
 }
@@ -235,6 +254,8 @@ export function pageTopicLabel(page: SeoPage): string {
   if (page.page_type === "city") return "Homes for Sale";
   if (page.page_type === "neighborhood") return `${page.neighborhood ?? "Neighborhood"} Homes for Sale`;
   if (page.page_type === "school") return `${page.high_school_district ?? "School"} School District Homes`;
+  if (page.page_type === "zip") return `${page.postal_code ?? ""} Homes for Sale`;
+  if (page.page_type === "price") return page.price_max ? `Homes Under ${shortUsd(page.price_max)}` : "Luxury Homes";
   if (page.page_type === "land") return "Land & Lots for Sale";
   if (page.page_type === "single_family") return "Single-Family Homes";
   if (page.page_type === "mobile") return "Mobile & Manufactured Homes";
@@ -247,6 +268,10 @@ export function pageTopicLabel(page: SeoPage): string {
     acre_plus: "Homes with Acreage",
     updated: "Updated & Remodeled",
     garage: "Homes with Garages",
+    shop: "Homes with a Shop",
+    fixer: "Fixer Upper Homes",
+    golf: "Golf Course Homes",
+    owner_financing: "Owner Financed Homes & Land",
   };
   return (page.feature_key && map[page.feature_key]) || "Listings";
 }
@@ -265,6 +290,11 @@ export async function getListingLandingPages(l: {
   bedrooms_total: number | null;
   subdivision_name?: string | null;
   high_school?: string | null;
+  list_price?: number | null;
+  has_shop?: boolean | null;
+  is_fixer_upper?: boolean | null;
+  is_golf_course?: boolean | null;
+  has_owner_financing?: boolean | null;
   has_pool?: boolean | null;
   is_waterfront?: boolean | null;
   is_new_construction?: boolean | null;
@@ -303,6 +333,10 @@ export async function getListingLandingPages(l: {
         const sub = (l.subdivision_name ?? "").toLowerCase();
         return !!sub && (p.subdivision_keywords ?? []).some((k) => sub.includes(k.toLowerCase()));
       }
+      case "zip": return !!p.postal_code && zip === p.postal_code;
+      case "price":
+        return l.property_type === "Residential" && l.list_price != null &&
+          (p.price_min == null || l.list_price >= p.price_min) && (p.price_max == null || l.list_price <= p.price_max);
       case "school":
         return !!l.high_school && l.high_school.toLowerCase() === (p.high_school_district ?? "").toLowerCase();
       case "feature": {
@@ -312,6 +346,10 @@ export async function getListingLandingPages(l: {
         if (k === "new_construction") return !!l.is_new_construction;
         if (k === "single_story") return !!l.is_single_story;
         if (k === "acre_plus") return !!l.has_acre_plus;
+        if (k === "shop") return !!l.has_shop && l.property_type === "Residential";
+        if (k === "fixer") return !!l.is_fixer_upper;
+        if (k === "golf") return !!l.is_golf_course;
+        if (k === "owner_financing") return !!l.has_owner_financing;
         return false;
       }
       default: return false;
