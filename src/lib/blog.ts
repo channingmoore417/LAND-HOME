@@ -15,6 +15,8 @@ export interface BlogPost {
   meta_description: string | null;
   featured: boolean;
   published_at: string;
+  /** City page slug whose live selling numbers fill {{tokens}} in the body. */
+  market_slug?: string | null;
 }
 
 const LIST_COLS =

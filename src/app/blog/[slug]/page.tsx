@@ -11,6 +11,8 @@ import JsonLd from "@/components/JsonLd";
 import RecentlyViewedBox from "@/components/RecentlyViewedBox";
 import ListingAlertsQuiz, { OpenListingAlertsButton } from "@/components/ListingAlertsQuiz";
 import MobileActionBar from "@/components/MobileActionBar";
+import SellStatsBox from "@/components/SellStatsBox";
+import { getSellStats, fillSellTokens } from "@/lib/sellStats";
 import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +22,9 @@ import { SITE_URL as SITE } from "@/lib/seoConfig";
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await getPost(params.slug);
   if (!post) return { title: "Post not found" };
-  const title = post.meta_title || post.title;
-  const description = post.meta_description || post.excerpt || `${title} — ${site.name}`;
+  const stats = post.market_slug ? await getSellStats(post.market_slug) : null;
+  const title = fillSellTokens(post.meta_title || post.title, stats);
+  const description = fillSellTokens(post.meta_description || post.excerpt || `${title} — ${site.name}`, stats);
   return pageMetadata({
     title,
     description,
@@ -42,14 +45,17 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   const related = (await getPosts({ category: post.category, limit: 4 })).filter((p) => p.slug !== post.slug).slice(0, 3);
   const pageUrl = `${SITE}/blog/${post.slug}`;
-  const faqs = extractFaqs(post.body);
+  // City selling posts carry live MLS numbers as {{tokens}}.
+  const stats = post.market_slug ? await getSellStats(post.market_slug) : null;
+  const body = fillSellTokens(post.body, stats);
+  const faqs = extractFaqs(body);
 
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: post.title,
-      description: post.meta_description || post.excerpt || undefined,
+      description: fillSellTokens(post.meta_description || post.excerpt || "", stats) || undefined,
       datePublished: post.published_at,
       author: {
         "@type": "Person",
@@ -118,7 +124,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             <img className="article__cover" src={photo(post.cover_image, 1400)} alt={post.title} />
           )}
 
-          <BlogBody markdown={post.body} />
+          {stats && <SellStatsBox s={stats} />}
+
+          <BlogBody markdown={body} />
 
           <AuthorCard />
 

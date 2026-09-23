@@ -1454,3 +1454,13 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
   .ba-team__photo::before{inset:.75rem -.5rem -.75rem .75rem;}
 }
 @media(prefers-reduced-motion:reduce){.ba-city,.ba-btn{transition:none;}.ba-city:hover{transform:none;}}
+
+/* Live sell-time box on city selling posts */
+.sellbox{background:var(--off);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:0 0 28px;}
+.sellbox__head{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-mid);margin-bottom:12px;}
+.sellbox__live{width:9px;height:9px;border-radius:50%;background:#2BB673;box-shadow:0 0 0 4px rgba(43,182,115,.18);}
+.sellbox__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.sellbox__tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;}
+.sellbox__tile b{display:block;font-family:"Outfit",sans-serif;font-size:1.3rem;color:var(--teal-deep);line-height:1.2;}
+.sellbox__tile span{font-size:.75rem;color:var(--ink-muted);line-height:1.3;display:block;margin-top:4px;}
+@media(max-width:640px){.sellbox__grid{grid-template-columns:1fr 1fr;}}
