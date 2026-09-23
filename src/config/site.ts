@@ -108,14 +108,18 @@ export const site = {
   },
 
   // Blog author (team leader) — powers the author bio card + Person structured
-  // data for Google E-E-A-T. Drop a headshot URL in photoUrl when available.
+  // data for Google E-E-A-T. photoUrl is Lauren's headshot.
   blogAuthor: {
     name: "Lauren Huffman",
     title: "Team Leader · Lake Charles Realtor",
-    photoUrl: "",
+    photoUrl: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab41ce8ec718870e13e4db2.jpg",
     bio:
       "Lauren Huffman leads The Land & Home Group, brokered by EXIT Realty Southern. A Southwest Louisiana local and one of the area's most-reviewed agents, Lauren has helped hundreds of families buy and sell across Lake Charles, Sulphur, Moss Bluff, Westlake and the surrounding communities — with honest, no-pressure guidance and deep local market knowledge.",
     url: "/about",
     gbpUrl: "https://share.google/P0z9MIBZPEnlqMUMh",
+    instagramUrl: "https://www.instagram.com/thelandhomegroup",
+    facebookUrl: "https://www.facebook.com/landhomerealestategroup",
+    mapEmbedUrl:
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3447.3474971895225!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sThe%20Land%20%26%20Home%20Group%20%7C%20Lake%20Charles%20Realtor!5e0!3m2!1sen!2sus!4v1790188666149!5m2!1sen!2sus",
   },
 } as const;

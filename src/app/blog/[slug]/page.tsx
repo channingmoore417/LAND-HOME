@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPost, getPosts, categorySlug } from "@/lib/blog";
+import { getPost, getPosts, categorySlug, extractFaqs } from "@/lib/blog";
 import { photo } from "@/lib/images";
 import { site } from "@/config/site";
 import BlogBody from "@/components/BlogBody";
@@ -40,6 +40,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   const related = (await getPosts({ category: post.category, limit: 4 })).filter((p) => p.slug !== post.slug).slice(0, 3);
   const pageUrl = `${SITE}/blog/${post.slug}`;
+  const faqs = extractFaqs(post.body);
 
   const jsonLd = [
     {
@@ -54,7 +55,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         jobTitle: "Team Leader, " + site.name,
         worksFor: { "@type": "RealEstateAgent", name: site.name },
         url: `${SITE}/about`,
-        sameAs: [site.blogAuthor.gbpUrl],
+        image: site.blogAuthor.photoUrl,
+        sameAs: [site.blogAuthor.gbpUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl],
       },
       publisher: { "@type": "RealEstateAgent", name: site.name },
       mainEntityOfPage: pageUrl,
@@ -69,6 +71,17 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         { "@type": "ListItem", position: 3, name: post.title, item: pageUrl },
       ],
     },
+    ...(faqs.length
+      ? [{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }]
+      : []),
   ];
 
   return (
