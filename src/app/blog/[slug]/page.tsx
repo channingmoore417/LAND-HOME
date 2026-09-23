@@ -11,6 +11,7 @@ import JsonLd from "@/components/JsonLd";
 import RecentlyViewedBox from "@/components/RecentlyViewedBox";
 import ListingAlertsQuiz, { OpenListingAlertsButton } from "@/components/ListingAlertsQuiz";
 import MobileActionBar from "@/components/MobileActionBar";
+import CtaBand from "@/components/CtaBand";
 import SellStatsBox from "@/components/SellStatsBox";
 import { getSellStats, fillSellTokens } from "@/lib/sellStats";
 import { pageMetadata } from "@/lib/seoMeta";
@@ -49,6 +50,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const stats = post.market_slug ? await getSellStats(post.market_slug) : null;
   const body = fillSellTokens(post.body, stats);
   const faqs = extractFaqs(body);
+  // City selling posts talk to homeowners, so their CTAs are seller CTAs.
+  const seller = !!stats;
+  const cityName = stats?.city || post.city || "your area";
 
   const jsonLd = [
     {
@@ -95,8 +99,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   return (
     <>
       <JsonLd data={jsonLd} />
-      <ListingAlertsQuiz city={post.city} source={post.slug} />
-      <MobileActionBar />
+      {!seller && <ListingAlertsQuiz city={post.city} source={post.slug} />}
+      <MobileActionBar seller={seller} />
       <header className="hero hero--index hero--article">
         <div className="wrap" style={{ maxWidth: 820 }}>
           <nav className="hero__crumb" aria-label="Breadcrumb">
@@ -108,7 +112,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             By {site.blogAuthor.name} · {fmtDate(post.published_at)}{post.read_minutes ? ` · ${post.read_minutes} min read` : ""}
           </div>
           <div className="article__ctas">
-            <OpenListingAlertsButton className="btn btn--aqua">Get New Listings First</OpenListingAlertsButton>
+            {seller ? (
+              <Link className="btn btn--aqua" href="/home-value">What&apos;s My Home Worth?</Link>
+            ) : (
+              <OpenListingAlertsButton className="btn btn--aqua">Get New Listings First</OpenListingAlertsButton>
+            )}
             <a className="btn btn--hollow" href={site.phoneHref}>Call {site.phone}</a>
           </div>
         </div>
@@ -125,22 +133,44 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           )}
 
           {stats && <SellStatsBox s={stats} />}
+          {seller && (
+            <CtaBand
+              text={<>Want to know what <strong>your</strong> {cityName} home would sell for?</>}
+              actions={[
+                { kind: "link", label: "Get My Free Home Value", href: "/home-value", primary: true },
+                { kind: "link", label: "Get a Cash Offer", href: "/sell-my-house-fast" },
+              ]}
+            />
+          )}
 
           <BlogBody markdown={body} />
 
           <AuthorCard />
 
           {/* CTA */}
-          <section className="article__cta">
-            <span className="script">ready when you are</span>
-            <h2>Thinking about a move in Southwest Louisiana?</h2>
-            <p>Take our 60-second buyer quiz, get a free home value, or just reach out — no pressure.</p>
-            <div className="article__cta-row">
-              <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
-              <Link className="btn btn--hollow" href="/home-value">What&apos;s My Home Worth?</Link>
-              <a className="btn btn--hollow" href={site.phoneHref}>Call {site.phone}</a>
-            </div>
-          </section>
+          {seller ? (
+            <section className="article__cta">
+              <span className="script">thinking about selling?</span>
+              <h2>Find out what your {cityName} home is worth</h2>
+              <p>Get a free home value based on real local sales, or a cash offer if you need to sell as-is. No pressure either way.</p>
+              <div className="article__cta-row">
+                <Link className="btn btn--aqua" href="/home-value">Get My Free Home Value</Link>
+                <Link className="btn btn--hollow" href="/sell-my-house-fast">Get a Cash Offer</Link>
+                <a className="btn btn--hollow" href={site.phoneHref}>Call {site.phone}</a>
+              </div>
+            </section>
+          ) : (
+            <section className="article__cta">
+              <span className="script">ready when you are</span>
+              <h2>Thinking about a move in Southwest Louisiana?</h2>
+              <p>Take our 60-second buyer quiz, get a free home value, or just reach out — no pressure.</p>
+              <div className="article__cta-row">
+                <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
+                <Link className="btn btn--hollow" href="/home-value">What&apos;s My Home Worth?</Link>
+                <a className="btn btn--hollow" href={site.phoneHref}>Call {site.phone}</a>
+              </div>
+            </section>
+          )}
 
           <RecentlyViewedBox />
 
