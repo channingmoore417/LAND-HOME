@@ -9,6 +9,9 @@ import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, 
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import { getPageMarket, getCityGuides, PRICE_BAND_LABELS } from "@/lib/market";
 import BlogCover from "@/components/BlogCover";
+import CtaBand from "@/components/CtaBand";
+import MobileActionBar from "@/components/MobileActionBar";
+import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
 import { pageMetadata } from "@/lib/seoMeta";
 import { photo } from "@/lib/images";
 import ListingCard from "@/components/ListingCard";
@@ -154,6 +157,8 @@ export default async function SeoLandingPage({
   return (
     <>
       <JsonLd data={jsonLd} />
+      <ListingAlertsQuiz city={page.city} source={page.slug} />
+      <MobileActionBar />
 
       <header className="hero hero--index">
         <div className="wrap">
@@ -214,6 +219,13 @@ export default async function SeoLandingPage({
                   <div className="listings__grid">
                     {rows.map((c) => <ListingCard key={c.listing_key} c={c} />)}
                   </div>
+                  <CtaBand
+                    text={<>New {topicLabel.toLowerCase()} in {cityLabel} go fast. Get them the day they list.</>}
+                    actions={[
+                      { kind: "alerts", label: "Get New Listings First", primary: true },
+                      { kind: "link", label: "Take the Buyer Quiz", href: "/buyer-quiz" },
+                    ]}
+                  />
                   {stats.count > rows.length && (
                     <div className="seo-cta">
                       <Link className="btn btn--primary" href={seeAll} style={{ maxWidth: 360, margin: "0 auto" }}>
@@ -260,6 +272,13 @@ export default async function SeoLandingPage({
             <p className="mkt__fine">
               {isLandPage ? "Land" : "Home"} medians use {market.priced_count.toLocaleString()} priced {isLandPage ? "land listings" : "homes"}. Updated continuously from the MLS.
             </p>
+            <CtaBand
+              text={<>Own a home in {cityLabel}? See what it would sell for in this market.</>}
+              actions={[
+                { kind: "link", label: "What's My Home Worth?", href: "/home-value", primary: true },
+                { kind: "link", label: "Sell My House Fast", href: "/sell-my-house-fast" },
+              ]}
+            />
           </div>
         </section>
       )}
@@ -345,6 +364,13 @@ export default async function SeoLandingPage({
                 </Link>
               ))}
             </div>
+            <CtaBand
+              text={<>Moving to {cityLabel}? Tell us where you'll work and what you need, and we'll narrow it down for you.</>}
+              actions={[
+                { kind: "link", label: "Talk to a Local Agent", href: "/contact", primary: true },
+                { kind: "tel", label: `Call ${site.phone}`, href: site.phoneHref },
+              ]}
+            />
           </div>
         </section>
       )}
@@ -383,6 +409,14 @@ export default async function SeoLandingPage({
               </details>
             ))}
           </div>
+          <CtaBand
+            text={<>Still have a question about {cityLabel}? Ask a local. We answer fast.</>}
+            actions={[
+              { kind: "sms", label: "Text Us", href: site.phoneHref.replace("tel:", "sms:"), primary: true },
+              { kind: "tel", label: `Call ${site.phone}`, href: site.phoneHref },
+              { kind: "link", label: "Send a Message", href: "/contact" },
+            ]}
+          />
         </div>
       </section>
     </>

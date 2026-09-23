@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${site.name} | Lake Charles Real Estate`, template: `%s | ${site.name}` },
   description: DESC,
+  icons: {
+    icon: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab43fb08d8128ee4cb38e1b.jpg",
+    apple: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab43fb08d8128ee4cb38e1b.jpg",
+  },
   verification: {
     google: "UMH1v38QMsah0vOpy-uV5lPTIij5xk9Q_RLKQm4-SxI",
   },

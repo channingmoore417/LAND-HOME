@@ -10,6 +10,7 @@ import AuthorCard from "@/components/AuthorCard";
 import JsonLd from "@/components/JsonLd";
 import RecentlyViewedBox from "@/components/RecentlyViewedBox";
 import ListingAlertsQuiz, { OpenListingAlertsButton } from "@/components/ListingAlertsQuiz";
+import MobileActionBar from "@/components/MobileActionBar";
 import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
@@ -89,6 +90,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     <>
       <JsonLd data={jsonLd} />
       <ListingAlertsQuiz city={post.city} source={post.slug} />
+      <MobileActionBar />
       <header className="hero hero--index hero--article">
         <div className="wrap" style={{ maxWidth: 820 }}>
           <nav className="hero__crumb" aria-label="Breadcrumb">

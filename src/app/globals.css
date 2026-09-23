@@ -1294,3 +1294,21 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .adm__main{padding:20px 16px 60px;}
 .adm-row{grid-template-columns:1fr;gap:6px;}
 }
+
+/* Section-closing CTA row */
+.ctaband{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;margin-top:28px;padding:18px 22px;background:var(--aqua-soft);border:1px solid var(--line);border-radius:16px;}
+.ctaband__t{margin:0;color:var(--teal-deep);font-weight:600;font-size:1rem;line-height:1.5;flex:1 1 320px;}
+.ctaband__btns{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+.ctaband__btn{width:auto;display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;margin:0;border:1.5px solid transparent;line-height:1.2;cursor:pointer;font-family:inherit;}
+.ctaband__btn.btn--ghost{border-color:var(--teal);}
+.ctaband .btn + .btn,.article__ctas .btn + .btn{margin-top:0;}
+@media(max-width:560px){.ctaband__btns{width:100%;}.ctaband__btn{flex:1 1 100%;}}
+
+/* Sticky quick-action bar on phones */
+.mactbar{display:none;}
+@media(max-width:760px){
+  .mactbar{position:fixed;left:0;right:0;bottom:0;z-index:70;display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--teal);box-shadow:0 -4px 20px rgba(22,56,72,.25);}
+  .mactbar__b{display:flex;align-items:center;justify-content:center;border:1.5px solid rgba(255,255,255,.5);border-radius:24px;padding:11px 8px;color:#fff;font-weight:700;font-size:.86rem;background:transparent;font-family:inherit;cursor:pointer;}
+  .mactbar__b--hi{background:var(--aqua);border-color:var(--aqua);color:var(--teal-deep);}
+  body:has(.mactbar){padding-bottom:70px;}
+}
