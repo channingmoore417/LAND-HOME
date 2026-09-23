@@ -13,7 +13,8 @@ import { COMMUNITIES, FEATURES, PRICE_BANDS, BEDS, BATHS, matchHref } from "@/li
 // mapped fields as the /buyer-quiz page.
 //
 // Opens three ways: the hero button (OPEN_EVENT), once the reader is halfway
-// down the post, or after 45 seconds on the page — whichever comes first.
+// down the post (desktop only), or after 45 seconds on the page — whichever
+// comes first.
 // A dismissal snoozes the automatic open for a week; a submission ends it.
 
 export const OPEN_EVENT = "lhg:open-listing-alerts";
@@ -23,6 +24,8 @@ const DONE_KEY = "lhg_alerts_done";
 const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 const AUTO_DELAY_MS = 45_000;
 const AUTO_SCROLL = 0.5;
+// Phones skip the scroll trigger; it interrupts reading on a small screen.
+const MOBILE_QUERY = "(max-width: 768px)";
 
 const STEPS = ["area", "price", "beds", "baths", "features", "contact", "done"] as const;
 
@@ -86,7 +89,7 @@ export default function ListingAlertsQuiz({ city, source }: { city?: string | nu
     return () => window.removeEventListener(OPEN_EVENT, show);
   }, [show]);
 
-  // Automatic open: halfway down the post or after a delay.
+  // Automatic open: halfway down the post (desktop) or after a delay.
   useEffect(() => {
     if (!autoOpenAllowed()) return;
     let fired = false;
@@ -101,7 +104,8 @@ export default function ListingAlertsQuiz({ city, source }: { city?: string | nu
       if (max > 0 && window.scrollY / max >= AUTO_SCROLL) fire();
     };
     const timer = window.setTimeout(fire, AUTO_DELAY_MS);
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const useScroll = !window.matchMedia(MOBILE_QUERY).matches;
+    if (useScroll) window.addEventListener("scroll", onScroll, { passive: true });
     function cleanup() {
       window.clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
