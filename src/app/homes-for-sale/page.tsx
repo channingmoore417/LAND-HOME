@@ -29,7 +29,7 @@ const PER = 9;
 export const metadata: Metadata = pageMetadata({
   title: "Homes for Sale in Southwest Louisiana",
   description:
-    "Browse homes for sale in Lake Charles, Sulphur and Southwest Louisiana with The Land & Home Group. Search on the map, filter by price, beds, baths, type and more.",
+    "Browse every home for sale in Lake Charles, Sulphur and Southwest Louisiana. Search on the map and filter by price, beds, baths, acreage and more.",
   path: "/homes-for-sale",
 });
 
