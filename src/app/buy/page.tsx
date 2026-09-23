@@ -16,7 +16,7 @@ import { napSchema } from "@/lib/nap";
 export const metadata: Metadata = pageMetadata({
   title: "Buy a Home in Southwest Louisiana",
   description:
-    "Buy a home in Southwest Louisiana with The Land & Home Group. Browse homes by city — Lake Charles, Sulphur, Westlake and more — with live MLS listings, local guidance, and easy pre-approval.",
+    "Buy a home in Southwest Louisiana. Browse homes by city, from Lake Charles and Sulphur to Westlake and Moss Bluff, with live MLS listings and local agents.",
   path: "/buy",
 });
 
@@ -85,8 +85,7 @@ export default async function BuyPage() {
           <nav className="hero__crumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link> &nbsp;/&nbsp; Buy
           </nav>
-          <span className="hero__script">buy a home in</span>
-          <h1>Southwest Louisiana</h1>
+          <h1><span className="hero__script">buy a home in</span>Southwest Louisiana</h1>
           <p className="hero__sub">
             Find your next home across Lake Charles, Sulphur, Westlake and every community in between —
             with live MLS listings, real local guidance, and no-pressure help from start to close.

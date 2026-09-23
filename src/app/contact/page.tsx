@@ -12,7 +12,7 @@ import NapCard from "@/components/NapCard";
 export const metadata: Metadata = pageMetadata({
   title: "Contact Us",
   description:
-    `Get in touch with The Land & Home Group, brokered by EXIT Realty Southern. Call ${site.phone} or send a message — local, no-pressure real estate help across Lake Charles, Sulphur and Southwest Louisiana.`,
+    `Contact The Land & Home Group in Sulphur, LA. Call ${site.phone} or send a message for local, no-pressure real estate help in Lake Charles and Sulphur.`,
   path: "/contact",
 });
 

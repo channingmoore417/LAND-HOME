@@ -15,7 +15,7 @@ import { napSchema } from "@/lib/nap";
 export const metadata: Metadata = pageMetadata({
   title: "About Us",
   description:
-    "Meet the agents behind The Land & Home Group, brokered by EXIT Realty Southern — a local, no-pressure real estate team helping families buy and sell across Lake Charles, Sulphur and all of Southwest Louisiana.",
+    "Meet the local agents of The Land & Home Group, brokered by EXIT Realty Southern, helping families buy and sell in Lake Charles, Sulphur and nearby towns.",
   path: "/about",
   image: site.teamPhotoUrl,
 });

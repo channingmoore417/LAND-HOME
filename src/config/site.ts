@@ -129,7 +129,7 @@ export const site = {
     city: "Sulphur",
     region: "LA",
     postalCode: "70663",
-    website: "https://landhomegroup.com",
+    website: "https://www.landhomegroup.com",
     hours: [
       { days: "Monday – Friday", time: "8 AM – 8 PM" },
       { days: "Saturday – Sunday", time: "Closed" },

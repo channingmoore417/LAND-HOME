@@ -75,6 +75,19 @@ export async function generateMetadata({
   if (!page) return { title: "Page not found" };
   const c = resolveContent(page);
 
+  // Unless someone wrote one, build the meta description from this page's
+  // live numbers so each of the 130+ landing pages reads differently.
+  let description = page.custom_meta_desc || page.gen_meta_desc || "";
+  if (!description) {
+    const m = await getPageMarket(page.slug);
+    const place = page.page_type === "neighborhood" && page.neighborhood ? `${page.neighborhood}, Lake Charles` : `${page.city ?? "Southwest Louisiana"}, LA`;
+    const count = m?.count ?? 0;
+    const med = m?.median_price && m.priced_count >= 3 ? `, median asking price ${usd(m.median_price)}` : "";
+    description = count
+      ? `${count.toLocaleString()} ${topicNoun(page)} for sale in ${place}${med}. See photos, prices and new listings daily, with local agents ready to help.`
+      : c.metaDesc;
+  }
+
   // Grab one representative listing photo for the link-preview image.
   const { rows } = await fetchCards(seoCriteria(page), { limit: 1, sort: "new" });
   const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
@@ -90,7 +103,7 @@ export async function generateMetadata({
 
   return pageMetadata({
     title: c.title,
-    description: c.metaDesc,
+    description,
     path: `/${page.slug}`,
     image: ogImage,
     imageAlt: c.h1,

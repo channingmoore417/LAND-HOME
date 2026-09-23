@@ -6,7 +6,7 @@ import BuyerQuizClient from "./BuyerQuizClient";
 export const metadata: Metadata = pageMetadata({
   title: "Find Your Southwest Louisiana Home Match | Buyer Quiz",
   description:
-    `Answer a few quick questions about your ideal community, price range, and must-haves, and ${site.name} will match you with homes for sale across Southwest Louisiana.`,
+    `Answer a few quick questions about area, price and must-haves, and we will match you with homes for sale in Lake Charles and Southwest Louisiana.`,
   path: "/buyer-quiz",
 });
 

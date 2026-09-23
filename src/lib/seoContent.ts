@@ -111,7 +111,8 @@ export function resolveContent(page: SeoPage): ResolvedContent {
   const cityLa = page.city ? `${page.city}, LA` : "Southwest Louisiana";
   const topic = pageTopicLabel(page);
   const h1 = page.custom_h1 || page.gen_h1 || `${topic} in ${cityLa}`;
-  const title = page.custom_meta_title || page.gen_meta_title || `${h1} | ${site.name}`;
+  // pageMetadata adds the brand suffix only when the title stays under ~60 chars.
+  const title = page.custom_meta_title || page.gen_meta_title || h1;
   const metaDesc =
     page.custom_meta_desc ||
     page.gen_meta_desc ||

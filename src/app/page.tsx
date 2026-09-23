@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   // title is already the full, keyword-first SEO title on its own.
   title: { absolute: HOME_OG_TITLE },
   description:
-    "Looking for a Lake Charles realtor? The Land & Home Group helps you buy and sell across Lake Charles and Southwest Louisiana — browse homes for sale, get a free home value report, and work with a trusted local real estate team.",
+    "Lake Charles realtor team helping you buy and sell across Southwest Louisiana. Browse homes for sale, get a free home value, and work with local agents.",
   alternates: { canonical: "/" },
   // openGraph/twitter objects REPLACE the layout's entirely rather than
   // merging, so every field (including the image) has to be repeated here.

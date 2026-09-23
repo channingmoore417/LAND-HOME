@@ -3,6 +3,9 @@ import { cityCards } from "@/lib/neighborhoods";
 import { getTeam } from "@/lib/team";
 import AreaShowcase from "@/components/AreaShowcase";
 import TeamGrid from "@/components/TeamGrid";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, agentSchema } from "@/lib/schema";
+import { SITE_URL } from "@/lib/seoConfig";
 import Link from "next/link";
 import ListingsControls from "@/components/ListingsControls";
 import SortSelect from "@/components/SortSelect";
@@ -214,8 +217,7 @@ function Hero({ areaName, city }: { areaName: string; city: string }) {
           <Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/homes-for-sale">Homes for Sale</Link>
           &nbsp;/&nbsp; {city || "Southwest Louisiana"}
         </div>
-        <span className="hero__script">homes for sale in</span>
-        <h1>{areaName}</h1>
+        <h1><span className="hero__script">homes for sale in</span>{areaName}</h1>
         <p className="hero__sub">
           Browse active listings across Lake Charles, Sulphur, and Southwest Louisiana — search on the
           map or filter by price, beds and more.
@@ -302,6 +304,19 @@ async function HubExtras({ showCities }: { showCities: boolean }) {
   const [cities, team] = await Promise.all([showCities ? cityCards() : Promise.resolve([]), getTeam()]);
   return (
     <>
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: "Homes for Sale in Southwest Louisiana",
+            url: `${SITE_URL}/homes-for-sale`,
+            about: { "@type": "Place", name: "Southwest Louisiana" },
+            provider: agentSchema(),
+          },
+          breadcrumbSchema([["Home", "/"], ["Homes for Sale", "/homes-for-sale"]]),
+        ]}
+      />
       {cities.length > 0 && (
         <AreaShowcase
           eyebrow="by community"

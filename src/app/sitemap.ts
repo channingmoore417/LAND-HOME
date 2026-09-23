@@ -9,7 +9,7 @@ import { isIndexablePage } from "@/lib/seo";
 // 50,000 URLs, comfortably above the current ~3,000 listings.
 export const revalidate = 3600;
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").replace(/\/$/, "");
+import { SITE_URL as SITE } from "@/lib/seoConfig";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [

@@ -31,8 +31,11 @@ export function pageMetadata({
   // Append it once, and always emit title.absolute — bypassing the layout's
   // "%s | site.name" template entirely — so a title can never get the site
   // name appended twice regardless of what the source data already contains.
+  // Google cuts titles at ~60 characters; only add the brand suffix when it
+  // fits, so the keyword part is never the bit that gets truncated.
   const suffix = ` | ${site.name}`;
-  const fullTitle = title.endsWith(suffix) || title === site.name ? title : `${title}${suffix}`;
+  const fullTitle =
+    title.endsWith(suffix) || title === site.name || title.length + suffix.length > 60 ? title : `${title}${suffix}`;
 
   return {
     title: { absolute: fullTitle },

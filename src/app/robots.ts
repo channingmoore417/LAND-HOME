@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://landhomegroup.com").replace(/\/$/, "");
+import { SITE_URL as SITE } from "@/lib/seoConfig";
 
 export default function robots(): MetadataRoute.Robots {
   return {
