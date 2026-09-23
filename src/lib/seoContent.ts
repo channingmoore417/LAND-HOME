@@ -154,13 +154,15 @@ function fillTokens(text: string, city: string, m: PageMarket | null, stats: Lis
     median_dom: m?.median_dom != null ? String(m.median_dom) : "—",
     waterfront_count: (m?.waterfront_count ?? 0).toLocaleString(),
     land_count: (m?.land_count ?? 0).toLocaleString(),
+    pending_count: (m?.pending_count ?? 0).toLocaleString(),
     new_7d: (m?.new_7d ?? 0).toLocaleString(),
   };
   return text.replace(/\{(\w+)\}/g, (all, k: string) => vals[k] ?? all);
 }
 
 export function faqsFor(page: SeoPage, stats: ListingStats, market: PageMarket | null = null): Faq[] {
-  const city = page.city || "Southwest Louisiana";
+  // Neighborhood pages talk about the neighborhood, not the whole city.
+  const city = page.neighborhood || page.city || "Southwest Louisiana";
   const noun = topicNoun(page);
   const m = market;
   const isLand = page.page_type === "land";
@@ -241,7 +243,7 @@ export function faqsFor(page: SeoPage, stats: ListingStats, market: PageMarket |
   }
 
   // Built-in "living in" questions, minus any the hand-written list already asks.
-  faqs.push(...cityLivingFaqs(page, city).filter((f) => !f.skipIf.some((w) => asked.includes(w))));
+  if (page.page_type !== "neighborhood") faqs.push(...cityLivingFaqs(page, city).filter((f) => !f.skipIf.some((w) => asked.includes(w))));
 
   faqs.push({
     q: `How often are these ${city} listings updated?`,

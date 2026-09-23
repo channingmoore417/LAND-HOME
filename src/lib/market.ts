@@ -19,6 +19,8 @@ export interface PageMarket {
   waterfront_count: number;
   /** Land listings anywhere in the page's area. */
   land_count: number;
+  /** Pending (under contract) listings — neighborhood pages only. */
+  pending_count?: number;
 }
 
 export const PRICE_BAND_LABELS = ["Under $150k", "$150k–$250k", "$250k–$350k", "$350k–$500k", "$500k+"];

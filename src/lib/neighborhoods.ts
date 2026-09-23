@@ -42,7 +42,7 @@ export const NEIGHBORHOODS: Record<string, Neighborhood[]> = {
       name: "Morganfield",
       keywords: ["morganfield"],
       blurb:
-        "One of Lake Charles' fastest-growing master-planned communities. Morganfield — including Waterside Meadows and The Ridge — offers newer construction, community lakes, and family-friendly streets in the 70605 corridor.",
+        "One of Lake Charles' fastest-growing master-planned communities, in east Lake Charles off Corbina Road. Morganfield — including The Ridge, Edgewood, The Crest and Waterside Meadows — offers newer construction, community lakes, and family-friendly streets.",
     },
     {
       slug: "graywood",

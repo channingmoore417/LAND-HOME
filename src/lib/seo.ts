@@ -34,6 +34,9 @@ export interface SeoPage {
   custom_body: string | null;
   /** Hand-written FAQs; answers may use {tokens} filled from live market data. */
   custom_faqs: { q: string; a: string }[] | null;
+  /** Neighborhood pages (page_type "neighborhood"): display name + MLS subdivision keywords. */
+  neighborhood: string | null;
+  subdivision_keywords: string[] | null;
 }
 
 /**
@@ -43,7 +46,7 @@ export interface SeoPage {
  * refresh_seo_page_counts(); a page not yet counted is treated as indexable.
  */
 export function isIndexablePage(p: Pick<SeoPage, "page_type" | "listing_count" | "min_listing_count">): boolean {
-  if (p.page_type === "city") return true;
+  if (p.page_type === "city" || p.page_type === "neighborhood") return true;
   if (p.listing_count == null) return true;
   return p.listing_count >= (p.min_listing_count ?? 3);
 }
@@ -184,6 +187,12 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
     features: page.feature_key ? [page.feature_key] : undefined,
   } as const;
 
+  // Neighborhoods match on the MLS subdivision name, not the (often
+  // mislabeled) city column.
+  if (page.subdivision_keywords?.length) {
+    return { subdivisionAny: page.subdivision_keywords, ...shared };
+  }
+
   if (page.slug.startsWith("carlyss/")) {
     return { postalCode: CARLYSS_ZIP, latMax: CARLYSS_LAT_MAX, ...shared };
   }
@@ -202,7 +211,7 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
 // Clean plural noun (no "for sale") for use inside sentences/FAQs, so we don't
 // produce "homes for sale are for sale".
 export function topicNoun(page: SeoPage): string {
-  if (page.page_type === "city") return "homes";
+  if (page.page_type === "city" || page.page_type === "neighborhood") return "homes";
   if (page.page_type === "land") return "land listings";
   if (page.page_type === "single_family") return "single-family homes";
   if (page.page_type === "mobile") return "mobile & manufactured homes";
@@ -222,6 +231,7 @@ export function topicNoun(page: SeoPage): string {
 // Short label for the page within its city (used in breadcrumbs + cluster nav).
 export function pageTopicLabel(page: SeoPage): string {
   if (page.page_type === "city") return "Homes for Sale";
+  if (page.page_type === "neighborhood") return `${page.neighborhood ?? "Neighborhood"} Homes for Sale`;
   if (page.page_type === "land") return "Land & Lots for Sale";
   if (page.page_type === "single_family") return "Single-Family Homes";
   if (page.page_type === "mobile") return "Mobile & Manufactured Homes";
@@ -250,6 +260,7 @@ export async function getListingLandingPages(l: {
   property_type: string | null;
   property_sub_type: string | null;
   bedrooms_total: number | null;
+  subdivision_name?: string | null;
   has_pool?: boolean | null;
   is_waterfront?: boolean | null;
   is_new_construction?: boolean | null;
@@ -284,6 +295,10 @@ export async function getListingLandingPages(l: {
       case "mobile": return MOBILE.includes(l.property_sub_type ?? "");
       case "single_family": return l.property_sub_type === "SingleFamilyResidence";
       case "beds": return (l.bedrooms_total ?? 0) >= (p.beds_min ?? 4);
+      case "neighborhood": {
+        const sub = (l.subdivision_name ?? "").toLowerCase();
+        return !!sub && (p.subdivision_keywords ?? []).some((k) => sub.includes(k.toLowerCase()));
+      }
       case "feature": {
         const k = p.feature_key;
         if (k === "pool") return !!l.has_pool;
