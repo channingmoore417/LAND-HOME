@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { cityCards } from "@/lib/neighborhoods";
+import { getTeam } from "@/lib/team";
+import AreaShowcase from "@/components/AreaShowcase";
+import TeamGrid from "@/components/TeamGrid";
 import Link from "next/link";
 import ListingsControls from "@/components/ListingsControls";
 import SortSelect from "@/components/SortSelect";
@@ -103,6 +107,7 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
           </div>
         </main>
         <AreaBlurb areaName={areaName} city={f.city} total={total} />
+        <HubExtras showCities={!f.city} />
       </>
     );
   }
@@ -196,6 +201,7 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
         </div>
       </main>
       <AreaBlurb areaName={areaName} city={f.city} total={total} />
+      <HubExtras showCities={!f.city} />
     </>
   );
 }
@@ -286,6 +292,33 @@ function Box({
     <>
       {children}
       {page === 1 && index === 5 && <NotifyBand criteria={criteria as unknown as Record<string, unknown>} />}
+    </>
+  );
+}
+
+// City cards + the team, below the results. The Google map + NAP band comes
+// from the root layout (SiteLocalBand), so it isn't repeated here.
+async function HubExtras({ showCities }: { showCities: boolean }) {
+  const [cities, team] = await Promise.all([showCities ? cityCards() : Promise.resolve([]), getTeam()]);
+  return (
+    <>
+      {cities.length > 0 && (
+        <AreaShowcase
+          eyebrow="by community"
+          title="Browse homes by city"
+          cards={cities}
+          hrefFor={(slug) => `/${slug}`}
+        />
+      )}
+      {team.length > 0 && (
+        <section className="team">
+          <div className="wrap">
+            <span className="script">your local agents</span>
+            <h2 className="section__title" style={{ marginTop: 0 }}>Meet the team</h2>
+            <TeamGrid team={team} />
+          </div>
+        </section>
+      )}
     </>
   );
 }

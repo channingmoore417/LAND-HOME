@@ -1,7 +1,7 @@
 import { getLiveClient } from "./supabase";
 import type { Agent } from "./types";
 
-// Team roster for the About page. Reads the public-read `agents` table
+// Team roster for the About and all-listings pages. Reads the public-read `agents` table
 // (Supabase only — same architecture as listings). Edit the team by editing
 // rows in the `agents` table; nothing here changes.
 export async function getTeam(): Promise<Agent[]> {
@@ -10,6 +10,8 @@ export async function getTeam(): Promise<Agent[]> {
     .from("agents")
     .select("id, slug, full_name, mls_id, title, email, phone, photo_url, bio, specialties, active")
     .eq("active", true)
+    // sort_order pins the lineup (Lauren, then Karley); everyone else follows by id.
+    .order("sort_order", { ascending: true, nullsFirst: false })
     .order("id", { ascending: true });
 
   if (error) return [];
