@@ -189,8 +189,9 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
         ? "single_family"
         : page.page_type === "mobile"
           ? "mobile"
-          // Price pages and "homes with a shop" are about houses, not lots.
-          : page.page_type === "price" || page.feature_key === "shop"
+          // Price, school-zone and ZIP pages and "homes with a shop" are about
+          // houses, not lots or commercial.
+          : ["price", "school", "zip"].includes(page.page_type) || page.feature_key === "shop"
             ? "residential"
             : undefined;
   const shared = {
@@ -333,12 +334,12 @@ export async function getListingLandingPages(l: {
         const sub = (l.subdivision_name ?? "").toLowerCase();
         return !!sub && (p.subdivision_keywords ?? []).some((k) => sub.includes(k.toLowerCase()));
       }
-      case "zip": return !!p.postal_code && zip === p.postal_code;
+      case "zip": return l.property_type === "Residential" && !!p.postal_code && zip === p.postal_code;
       case "price":
         return l.property_type === "Residential" && l.list_price != null &&
           (p.price_min == null || l.list_price >= p.price_min) && (p.price_max == null || l.list_price <= p.price_max);
       case "school":
-        return !!l.high_school && l.high_school.toLowerCase() === (p.high_school_district ?? "").toLowerCase();
+        return l.property_type === "Residential" && !!l.high_school && l.high_school.toLowerCase() === (p.high_school_district ?? "").toLowerCase();
       case "feature": {
         const k = p.feature_key;
         if (k === "pool") return !!l.has_pool;
