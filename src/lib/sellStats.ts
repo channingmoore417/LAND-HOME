@@ -45,10 +45,16 @@ function pace(days: number | null): string {
 
 const n = (v: number | null | undefined) => (v == null ? "—" : v.toLocaleString());
 
+/** Months of inventory means little with only a couple of sales; hide it then. */
+export function reliableInventory(s: SellStats): number | null {
+  return s.sold_6mo >= 5 ? s.months_inventory : null;
+}
+
 /** Fills {{tokens}} in a post with live numbers. Unknown tokens are left as-is. */
 export function fillSellTokens(text: string, s: SellStats | null): string {
   if (!s) return text;
   const d = s.days_to_offer;
+  const mi = reliableInventory(s);
   const small = s.pending_n < 10 || s.sold_6mo < 10;
   const vals: Record<string, string> = {
     city: s.city,
@@ -61,12 +67,12 @@ export function fillSellTokens(text: string, s: SellStats | null): string {
     active_n: n(s.active_n),
     sold_6mo: n(s.sold_6mo),
     sales_per_month: n(s.sales_per_month),
-    months_inventory: n(s.months_inventory),
+    months_inventory: n(mi),
     median_sold: s.median_sold ? usd(s.median_sold) : "—",
     sale_to_list: s.sale_to_list == null ? "—" : `${s.sale_to_list}%`,
     pct_at_or_above: n(s.pct_at_or_above),
     pace: pace(d),
-    market_type: marketType(s.months_inventory),
+    market_type: marketType(mi),
     as_of: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "America/Chicago" }),
     sample_note: small
       ? `One thing to keep in mind: ${s.city} only has a handful of recent sales and homes under contract, so treat these numbers as a rough guide. One or two homes can move them a lot.`
