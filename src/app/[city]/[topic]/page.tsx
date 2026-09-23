@@ -11,7 +11,6 @@ import { pageMetadata } from "@/lib/seoMeta";
 import { photo } from "@/lib/images";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
-import LocalMap from "@/components/LocalMap";
 import Testimonials from "@/components/Testimonials";
 import AreaShowcase from "@/components/AreaShowcase";
 import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
@@ -128,7 +127,6 @@ export default async function SeoLandingPage({
     .map((s) => s.trim())
     .filter(Boolean);
 
-  const showMap = page.city === site.localSeo.city;
   const seeAll = searchHref(page);
 
   // Neighborhood + ZIP showcases — only on the city hub page.
@@ -306,7 +304,6 @@ export default async function SeoLandingPage({
       )}
 
       {/* Local map (client's Google Business Profile) — local SEO */}
-      {showMap && <LocalMap cityLabel={cityLabel} href={seeAll} ctaLabel={`Browse ${cityLabel} listings`} />}
 
       {/* FAQ — rendered as native disclosures (content in the DOM for AEO) */}
       <section className="faq">

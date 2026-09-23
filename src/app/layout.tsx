@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import SiteLocalBand from "@/components/SiteLocalBand";
 import AuthProvider from "@/components/AuthProvider";
 import { site } from "@/config/site";
 import { SITE_URL } from "@/lib/seoConfig";
@@ -68,6 +69,7 @@ export default async function RootLayout({
         <AuthProvider>
           <SiteHeader cityMenu={cityMenu} />
           {children}
+          <SiteLocalBand cities={cityMenu.map((c) => ({ label: c.label, href: c.href }))} />
           <SiteFooter cityMenu={cityMenu} />
         </AuthProvider>
       </body>

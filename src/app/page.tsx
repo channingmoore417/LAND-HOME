@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import ListingCard from "@/components/ListingCard";
 import AreaShowcase from "@/components/AreaShowcase";
-import LocalMap from "@/components/LocalMap";
 import JsonLd from "@/components/JsonLd";
 import Testimonials from "@/components/Testimonials";
 import BlogCover from "@/components/BlogCover";
@@ -389,7 +388,6 @@ export default async function Home() {
         </div>
       </section>
 
-      <LocalMap cityLabel="Southwest Louisiana" mapOnly />
       <div className="wrap home-cta home-cta--tight">
         <Link className="btn btn--primary" href="/homes-for-sale">Start Your Home Search</Link>
         <a className="btn btn--ghost" href={site.phoneHref}>Call {site.phone}</a>

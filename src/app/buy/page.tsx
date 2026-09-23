@@ -5,7 +5,6 @@ import { usd } from "@/lib/format";
 import { listingStats } from "@/lib/listings";
 import { cityCards } from "@/lib/neighborhoods";
 import AreaShowcase from "@/components/AreaShowcase";
-import LocalMap from "@/components/LocalMap";
 import JsonLd from "@/components/JsonLd";
 import { pageMetadata } from "@/lib/seoMeta";
 
@@ -160,7 +159,6 @@ export default async function BuyPage() {
       </section>
 
       {/* About + map */}
-      <LocalMap href="/homes-for-sale" ctaLabel="Browse all listings" />
 
       {/* Buyer FAQ */}
       <section className="faq">

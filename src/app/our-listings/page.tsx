@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SortSelect from "@/components/SortSelect";
 import ListingCard from "@/components/ListingCard";
-import LocalMap from "@/components/LocalMap";
 import { fetchCards, fetchPhotosMap, type ListingCriteria, type SortKey } from "@/lib/listings";
 import { site } from "@/config/site";
 import { pageMetadata } from "@/lib/seoMeta";
@@ -153,7 +152,6 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
         </div>
       </section>
 
-      <LocalMap cityLabel="Southwest Louisiana" href="/homes-for-sale" ctaLabel="Browse all SWLA listings" />
     </>
   );
 }

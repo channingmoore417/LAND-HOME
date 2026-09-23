@@ -3,7 +3,6 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { cityCards } from "@/lib/neighborhoods";
 import { getTeam } from "@/lib/team";
-import LocalMap from "@/components/LocalMap";
 import TeamGrid from "@/components/TeamGrid";
 import JsonLd from "@/components/JsonLd";
 import { pageMetadata } from "@/lib/seoMeta";
@@ -239,8 +238,6 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Google map (team photo now lives in the hero) */}
-      <LocalMap href="/contact" ctaLabel="Contact the team" showPhoto={false} />
 
       {/* Pre-approval CTA — the referral flywheel */}
       <section className="preapproval">
