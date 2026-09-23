@@ -5,7 +5,7 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
 import { fetchCards, fetchFirstPhotos, fetchPhotosMap, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
-import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
+import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, isIndexablePage, type SeoPage } from "@/lib/seo";
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
 import { getPageMarket, getCityGuides, PRICE_BAND_LABELS } from "@/lib/market";
 import BlogCover from "@/components/BlogCover";
@@ -91,6 +91,9 @@ export async function generateMetadata({
     path: `/${page.slug}`,
     image: ogImage,
     imageAlt: c.h1,
+    // Too few listings to be worth indexing yet — flips back on its own as
+    // inventory grows (listing_count is refreshed hourly).
+    noIndex: !isIndexablePage(page),
   });
 }
 

@@ -36,6 +36,18 @@ export interface SeoPage {
   custom_faqs: { q: string; a: string }[] | null;
 }
 
+/**
+ * Whether a landing page has enough listings to be worth indexing. City hubs
+ * always count (they carry their own FAQs and copy); topic pages need at least
+ * min_listing_count listings. listing_count is refreshed hourly by
+ * refresh_seo_page_counts(); a page not yet counted is treated as indexable.
+ */
+export function isIndexablePage(p: Pick<SeoPage, "page_type" | "listing_count" | "min_listing_count">): boolean {
+  if (p.page_type === "city") return true;
+  if (p.listing_count == null) return true;
+  return p.listing_count >= (p.min_listing_count ?? 3);
+}
+
 export function slugifyCity(city: string): string {
   return city.toLowerCase().replace(/\s+/g, "-");
 }
@@ -126,7 +138,7 @@ export async function getNavCityMenu(): Promise<NavCityEntry[]> {
     const hub = pages.find((p) => p.page_type === "city");
     if (!hub) continue;
     const topics = pages
-      .filter((p) => p.page_type !== "city")
+      .filter((p) => p.page_type !== "city" && isIndexablePage(p))
       .sort((a, b) => topicSortKey(a) - topicSortKey(b))
       .map((p) => ({ label: pageTopicLabel(p), href: `/${p.slug}` }));
     entries.push({ label: city, href: `/${hub.slug}`, topics });
@@ -143,7 +155,7 @@ export async function getCitySiblings(city: string): Promise<SeoPage[]> {
     .eq("city", city)
     .eq("active", true)
     .order("id", { ascending: true });
-  return (data as SeoPage[]) ?? [];
+  return ((data as SeoPage[]) ?? []).filter(isIndexablePage);
 }
 
 // Carlyss has no distinct value in the MLS feed's `city` column — it shares
@@ -210,7 +222,7 @@ export function topicNoun(page: SeoPage): string {
 // Short label for the page within its city (used in breadcrumbs + cluster nav).
 export function pageTopicLabel(page: SeoPage): string {
   if (page.page_type === "city") return "Homes for Sale";
-  if (page.page_type === "land") return "Land for Sale";
+  if (page.page_type === "land") return "Land & Lots for Sale";
   if (page.page_type === "single_family") return "Single-Family Homes";
   if (page.page_type === "mobile") return "Mobile & Manufactured Homes";
   if (page.page_type === "beds") return `${page.beds_min ?? 4}+ Bedroom Homes`;
@@ -224,4 +236,66 @@ export function pageTopicLabel(page: SeoPage): string {
     garage: "Homes with Garages",
   };
   return (page.feature_key && map[page.feature_key]) || "Listings";
+}
+
+
+// Landing pages a single listing belongs to: its area's hub plus every topic
+// page it qualifies for (pool, acreage, 4+ beds, land...). Used for the
+// listing page breadcrumb and "more searches" links so the 3,000+ listing
+// pages feed link equity into the city/topic pages. Only indexable pages.
+export async function getListingLandingPages(l: {
+  city: string | null;
+  postal_code: string | null;
+  latitude: number | null;
+  property_type: string | null;
+  property_sub_type: string | null;
+  bedrooms_total: number | null;
+  has_pool?: boolean | null;
+  is_waterfront?: boolean | null;
+  is_new_construction?: boolean | null;
+  is_single_story?: boolean | null;
+  has_acre_plus?: boolean | null;
+}): Promise<{ hub: SeoPage | null; topics: SeoPage[] }> {
+  const zip = (l.postal_code ?? "").slice(0, 5);
+  const area =
+    zip === CARLYSS_ZIP && l.latitude != null && l.latitude <= CARLYSS_LAT_MAX
+      ? "carlyss"
+      : zip === "70611"
+        ? "moss-bluff"
+        : zip === "70633"
+          ? "dequincy"
+          : l.city
+            ? slugifyCity(l.city)
+            : "";
+  if (!area) return { hub: null, topics: [] };
+
+  const { data } = await getPublicClient()
+    .from("seo_pages")
+    .select("*")
+    .like("slug", `${area}/%`)
+    .eq("active", true);
+  const pages = ((data as SeoPage[]) ?? []).filter(isIndexablePage);
+  const hub = pages.find((p) => p.page_type === "city") ?? null;
+
+  const MOBILE = ["MobileHome", "ManufacturedHome", "ManufacturedOnLand"];
+  const fits = (p: SeoPage): boolean => {
+    switch (p.page_type) {
+      case "land": return l.property_type === "Land";
+      case "mobile": return MOBILE.includes(l.property_sub_type ?? "");
+      case "single_family": return l.property_sub_type === "SingleFamilyResidence";
+      case "beds": return (l.bedrooms_total ?? 0) >= (p.beds_min ?? 4);
+      case "feature": {
+        const k = p.feature_key;
+        if (k === "pool") return !!l.has_pool;
+        if (k === "waterfront") return !!l.is_waterfront;
+        if (k === "new_construction") return !!l.is_new_construction;
+        if (k === "single_story") return !!l.is_single_story;
+        if (k === "acre_plus") return !!l.has_acre_plus;
+        return false;
+      }
+      default: return false;
+    }
+  };
+  const topics = pages.filter((p) => p.page_type !== "city" && fits(p)).sort((a, b) => topicSortKey(a) - topicSortKey(b));
+  return { hub, topics };
 }

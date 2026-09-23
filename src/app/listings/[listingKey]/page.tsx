@@ -7,6 +7,7 @@ import { usd, int, num, titleCase, splitFeatures, estAnnualTax } from "@/lib/for
 import { photo } from "@/lib/images";
 import { pageMetadata } from "@/lib/seoMeta";
 import { SITE_URL } from "@/lib/seoConfig";
+import { getListingLandingPages, pageTopicLabel } from "@/lib/seo";
 import type { Listing, ListingMedia } from "@/lib/types";
 import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
@@ -165,10 +166,14 @@ export default async function ListingPage({
   const listing = await getListing(params.listingKey);
   if (!listing) notFound();
 
-  const [media, similar] = await Promise.all([
+  const [media, similar, landing] = await Promise.all([
     getMedia(listing.listing_key),
     getSimilar(listing),
+    getListingLandingPages(listing),
   ]);
+  // The listing's city page (falls back to the all-listings search).
+  const cityHref = landing.hub ? `/${landing.hub.slug}` : "/homes-for-sale";
+  const cityName = landing.hub?.city ?? titleCase(listing.city);
 
   const showAddress = listing.internet_address_yn !== false;
   const showRemarks = listing.internet_comment_yn !== false;
@@ -241,7 +246,7 @@ export default async function ListingPage({
             <div>
               <div className="hero__crumb">
                 <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}
-                <Link href="/homes-for-sale">{titleCase(listing.city)}</Link>
+                <Link href={cityHref}>{cityName}</Link>
                 {listing.listing_id ? ` · MLS# ${listing.listing_id}` : ""}
               </div>
               <span className="hero__script">welcome home to</span>
@@ -422,14 +427,32 @@ export default async function ListingPage({
         </section>
       )}
 
+      {/* More searches — links into this listing's city + topic pages */}
+      {landing.hub && (
+        <section className="lsearch">
+          <div className="wrap">
+            <span className="script">keep looking</span>
+            <h2 className="section__title">More {cityName} searches</h2>
+            <div className="lsearch__chips">
+              <Link className="lsearch__chip" href={cityHref}>{cityName} Homes for Sale</Link>
+              {landing.topics.map((t) => (
+                <Link key={t.slug} className="lsearch__chip" href={`/${t.slug}`}>
+                  {pageTopicLabel(t)} in {cityName}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* REVIEWS — social proof */}
       <Testimonials max={6} />
 
       {/* FIND US — local team + Google map embed */}
       <LocalMap
-        cityLabel={titleCase(listing.city)}
-        href={`/homes-for-sale?city=${encodeURIComponent(listing.city ?? "")}`}
-        ctaLabel={`More homes in ${titleCase(listing.city)}`}
+        cityLabel={cityName}
+        href={cityHref}
+        ctaLabel={`More homes in ${cityName}`}
       />
     </>
   );

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getPublicClient } from "@/lib/supabase";
 import { getCategories, categorySlug } from "@/lib/blog";
+import { isIndexablePage } from "@/lib/seo";
 
 // Dynamic sitemap so EVERY active property is discoverable/indexable by
 // search engines — not just the ones a visitor happens to click. Regenerated
@@ -63,9 +64,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = getPublicClient();
     const { data } = await supabase
       .from("seo_pages")
-      .select("slug")
+      .select("slug, page_type, listing_count, min_listing_count")
       .eq("active", true);
-    seoPages = ((data as { slug: string }[]) ?? []).map((r) => ({
+    seoPages = ((data as { slug: string; page_type: string; listing_count: number | null; min_listing_count: number | null }[]) ?? [])
+      .filter(isIndexablePage)
+      .map((r) => ({
       url: `${SITE}/${r.slug}`,
       changeFrequency: "daily" as const,
       priority: 0.8,

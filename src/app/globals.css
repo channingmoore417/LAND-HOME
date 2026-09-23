@@ -424,6 +424,11 @@ textarea.input{resize:vertical;min-height:84px;}
 .mkt__band-bar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--aqua),var(--teal));}
 .mkt__band-n{text-align:right;font-weight:700;color:var(--teal-deep);}
 .mkt__fine{color:var(--ink-muted);font-size:.78rem;margin:18px 0 0;}
+.lsearch{background:var(--paper);padding:48px 0;border-top:1px solid var(--line);}
+.lsearch .script{font-size:1.6rem;display:block;margin-bottom:2px;}
+.lsearch__chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+.lsearch__chip{display:inline-flex;align-items:center;padding:10px 16px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--teal);font-weight:700;font-size:.9rem;transition:.15s;}
+.lsearch__chip:hover{border-color:var(--aqua);background:var(--aqua-soft);color:var(--teal-deep);}
 .cityguides{background:var(--paper);padding:56px 0;border-top:1px solid var(--line);}
 .cityguides .script{font-size:1.7rem;display:block;margin-bottom:2px;}
 .cityguides .bgrid{margin-top:18px;}
