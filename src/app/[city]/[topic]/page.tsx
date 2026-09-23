@@ -80,7 +80,7 @@ export async function generateMetadata({
   let description = page.custom_meta_desc || page.gen_meta_desc || "";
   if (!description) {
     const m = await getPageMarket(page.slug);
-    const place = page.page_type === "neighborhood" && page.neighborhood ? `${page.neighborhood}, Lake Charles` : `${page.city ?? "Southwest Louisiana"}, LA`;
+    const place = page.page_type === "neighborhood" && page.neighborhood ? `${page.neighborhood}, ${page.city ?? "Lake Charles"}` : `${page.city ?? "Southwest Louisiana"}, LA`;
     const count = m?.count ?? 0;
     const med = m?.median_price && m.priced_count >= 3 ? `, median asking price ${usd(m.median_price)}` : "";
     description = count
