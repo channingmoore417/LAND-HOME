@@ -32,6 +32,8 @@ export interface SeoPage {
   custom_meta_title: string | null;
   custom_meta_desc: string | null;
   custom_body: string | null;
+  /** Hand-written FAQs; answers may use {tokens} filled from live market data. */
+  custom_faqs: { q: string; a: string }[] | null;
 }
 
 export function slugifyCity(city: string): string {

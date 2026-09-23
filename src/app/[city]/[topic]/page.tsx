@@ -7,6 +7,8 @@ import { usd } from "@/lib/format";
 import { fetchCards, fetchFirstPhotos, fetchPhotosMap, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
 import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
+import { getPageMarket, getCityGuides, PRICE_BAND_LABELS } from "@/lib/market";
+import BlogCover from "@/components/BlogCover";
 import { pageMetadata } from "@/lib/seoMeta";
 import { photo } from "@/lib/images";
 import ListingCard from "@/components/ListingCard";
@@ -102,25 +104,29 @@ export default async function SeoLandingPage({
   if (!page) notFound();
 
   const criteria: ListingCriteria = seoCriteria(page);
-  const [stats, { rows }, siblings] = await Promise.all([
+  const citySlug = page.city ? slugifyCity(page.city) : "";
+  const [stats, { rows }, siblings, market, guides] = await Promise.all([
     listingStats(criteria),
     fetchCards(criteria, { limit: 12, sort: "new" }),
     getCitySiblings(page.city ?? ""),
+    getPageMarket(slug),
+    page.city ? getCityGuides(page.city, citySlug) : Promise.resolve([]),
   ]);
   const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
   for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
   const content = resolveContent(page);
-  const faqs = faqsFor(page, stats);
+  const faqs = faqsFor(page, stats, market);
   const cityLabel = page.city || "Southwest Louisiana";
   const topicLabel = pageTopicLabel(page);
   const noun = topicNoun(page);
-  const citySlug = page.city ? slugifyCity(page.city) : "";
   const cityHubUrl = `${SITE}/${citySlug}/homes-for-sale`;
   const pageUrl = `${SITE}/${page.slug}`;
 
-  const range =
-    stats.priceMin && stats.priceMax ? ` priced from ${usd(stats.priceMin)} to ${usd(stats.priceMax)}` : "";
+  const isLandPage = page.page_type === "land";
+  const hasMedian = !!market?.median_price && market.priced_count >= 3;
+  const typical = hasMedian ? `, with a median asking price of ${usd(market!.median_price!)}` : "";
+  const maxBand = market ? Math.max(1, ...market.bands) : 1;
 
   const bodyParas = (page.custom_body || content.intro || "")
     .split(/\n\n+/)
@@ -155,12 +161,13 @@ export default async function SeoLandingPage({
           <span className="hero__script">{topicLabel.toLowerCase()} in</span>
           <h1>{content.h1}</h1>
           <p className="hero__sub">
-            {stats.count.toLocaleString()} {noun} for sale in {cityLabel}, Louisiana{range}.
+            {stats.count.toLocaleString()} {noun} for sale in {cityLabel}, Louisiana{typical}.
           </p>
           <div className="hero__meta">
             <div><div className="n"><b>{stats.count.toLocaleString()}</b></div><div className="k">Active Listings</div></div>
-            {stats.priceMin ? <div><div className="n">{usd(stats.priceMin)}</div><div className="k">Starting Price</div></div> : null}
-            {stats.priceMax ? <div><div className="n">{usd(stats.priceMax)}</div><div className="k">Up To</div></div> : null}
+            {hasMedian ? <div><div className="n">{usd(market!.median_price!)}</div><div className="k">Median Price</div></div> : null}
+            {!isLandPage && market?.median_ppsf ? <div><div className="n">{usd(market.median_ppsf)}</div><div className="k">Per Sq Ft</div></div> : null}
+            {isLandPage && market?.median_acres ? <div><div className="n">{market.median_acres}</div><div className="k">Median Acres</div></div> : null}
           </div>
           <div className="hero__cta">
             <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
@@ -217,6 +224,42 @@ export default async function SeoLandingPage({
           </div>
         </div>
       </main>
+
+      {/* Live market snapshot — unique, self-updating numbers for this page */}
+      {market && market.priced_count >= 3 && (
+        <section className="mkt">
+          <div className="wrap">
+            <span className="script">by the numbers</span>
+            <h2 className="section__title">{cityLabel} {topicLabel.toLowerCase()} market at a glance</h2>
+            <p className="mkt__lede">
+              Live from the local MLS: {market.count.toLocaleString()} {noun} for sale in {cityLabel} right now
+              {hasMedian ? <>, with a median asking price of <b>{usd(market.median_price!)}</b></> : null}
+              {market.new_7d > 0 ? <>. {market.new_7d.toLocaleString()} came on the market in the last week</> : null}
+              {market.price_cuts > 0 ? <>, and {market.price_cuts.toLocaleString()} have had a price reduction</> : null}.
+            </p>
+            <div className="mkt__tiles">
+              {hasMedian && <div className="mkt__tile"><b>{usd(market.median_price!)}</b><span>Median asking price</span></div>}
+              {!isLandPage && market.median_ppsf ? <div className="mkt__tile"><b>{usd(market.median_ppsf)}</b><span>Median price per sq ft</span></div> : null}
+              {!isLandPage && market.median_sqft ? <div className="mkt__tile"><b>{market.median_sqft.toLocaleString()}</b><span>Median square feet</span></div> : null}
+              {market.median_acres ? <div className="mkt__tile"><b>{market.median_acres}</b><span>Median lot (acres)</span></div> : null}
+              {market.median_dom != null ? <div className="mkt__tile"><b>{market.median_dom}</b><span>Median days on market</span></div> : null}
+              <div className="mkt__tile"><b>{market.new_7d.toLocaleString()}</b><span>New this week</span></div>
+            </div>
+            <div className="mkt__bands" aria-label={`${cityLabel} listings by price range`}>
+              {market.bands.map((n, i) => (
+                <div className="mkt__band" key={PRICE_BAND_LABELS[i]}>
+                  <span className="mkt__band-l">{PRICE_BAND_LABELS[i]}</span>
+                  <span className="mkt__band-bar"><span style={{ width: `${(n / maxBand) * 100}%` }} /></span>
+                  <span className="mkt__band-n">{n.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mkt__fine">
+              {isLandPage ? "Land" : "Home"} medians use {market.priced_count.toLocaleString()} priced {isLandPage ? "land listings" : "homes"}. Updated continuously from the MLS.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Rich body copy */}
       {bodyParas.length > 0 && (
@@ -282,6 +325,27 @@ export default async function SeoLandingPage({
       {/* Reviews — social proof */}
       <Testimonials max={6} />
 
+      {/* Blog guides about this city */}
+      {guides.length > 0 && (
+        <section className="cityguides">
+          <div className="wrap">
+            <span className="script">local guides</span>
+            <h2 className="section__title">Guides for {cityLabel}</h2>
+            <div className="bgrid">
+              {guides.map((g) => (
+                <Link key={g.id} className="bcard" href={`/blog/${g.slug}`}>
+                  <BlogCover slug={g.slug} title={g.title} category={g.category} cover={g.cover_image} />
+                  <div className="bcard__body">
+                    <h3 className="bcard__title">{g.title}</h3>
+                    <span className="bcard__meta">Read the guide &rarr;</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Internal-linking cluster */}
       {siblings.length > 1 && (
         <section className="cluster">
@@ -302,8 +366,6 @@ export default async function SeoLandingPage({
           </div>
         </section>
       )}
-
-      {/* Local map (client's Google Business Profile) — local SEO */}
 
       {/* FAQ — rendered as native disclosures (content in the DOM for AEO) */}
       <section className="faq">
