@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/config/site";
+import AwardList from "@/components/AwardList";
 
 function initials(name: string): string {
   return name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
@@ -25,6 +26,7 @@ export default function AuthorCard() {
           <span className="authorcard__eyebrow">Written by</span>
           <div className="authorcard__name">{a.name}</div>
           <div className="authorcard__title">{a.title}</div>
+          <AwardList compact />
           <p className="authorcard__bio">{a.bio}</p>
           <div className="authorcard__social">
             <a href={a.instagramUrl} target="_blank" rel="noopener" aria-label="Instagram">

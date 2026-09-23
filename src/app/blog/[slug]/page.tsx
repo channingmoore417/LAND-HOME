@@ -12,6 +12,7 @@ import RecentlyViewedBox from "@/components/RecentlyViewedBox";
 import ListingAlertsQuiz, { OpenListingAlertsButton } from "@/components/ListingAlertsQuiz";
 import MobileActionBar from "@/components/MobileActionBar";
 import CtaBand from "@/components/CtaBand";
+import { awardStrings } from "@/components/AwardList";
 import SellStatsBox from "@/components/SellStatsBox";
 import { getSellStats, fillSellTokens } from "@/lib/sellStats";
 import { pageMetadata } from "@/lib/seoMeta";
@@ -69,6 +70,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         url: `${SITE}/about`,
         image: site.blogAuthor.photoUrl,
         sameAs: [site.blogAuthor.gbpUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl],
+        award: awardStrings(),
       },
       publisher: { "@type": "RealEstateAgent", name: site.name },
       mainEntityOfPage: pageUrl,

@@ -1464,3 +1464,16 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .sellbox__tile b{display:block;font-family:"Outfit",sans-serif;font-size:1.3rem;color:var(--teal-deep);line-height:1.2;}
 .sellbox__tile span{font-size:.75rem;color:var(--ink-muted);line-height:1.3;display:block;margin-top:4px;}
 @media(max-width:640px){.sellbox__grid{grid-template-columns:1fr 1fr;}}
+
+/* Lauren's awards (AwardList) */
+.awards{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;}
+.awards__item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;}
+.awards__item svg{flex:0 0 auto;width:30px;height:30px;color:var(--teal);background:var(--aqua-soft);border-radius:50%;padding:6px;}
+.awards__item b{display:block;font-family:"Outfit",sans-serif;font-size:.98rem;color:var(--teal-deep);line-height:1.25;}
+.awards__item small{display:block;font-size:.8rem;color:var(--ink-muted);margin-top:2px;}
+.awards--compact{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:6px 0 12px;}
+.awards--compact .awards__item{padding:8px 10px;border-radius:10px;gap:8px;}
+.awards--compact .awards__item svg{width:22px;height:22px;padding:4px;}
+.awards--compact .awards__item b{font-size:.82rem;}
+.awards--compact .awards__item small{font-size:.72rem;}
+.awards-sec{padding-bottom:0;}

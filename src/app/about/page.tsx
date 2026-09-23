@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AwardList, { awardStrings } from "@/components/AwardList";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { cityCards } from "@/lib/neighborhoods";
@@ -94,6 +95,7 @@ export default async function AboutPage() {
         ...(a.phone ? { telephone: a.phone } : {}),
         ...(a.email ? { email: a.email } : {}),
         ...(a.photo_url ? { image: a.photo_url } : {}),
+        ...(a.full_name === site.blogAuthor.name ? { award: awardStrings() } : {}),
       })),
     },
   ];
@@ -165,6 +167,15 @@ export default async function AboutPage() {
               headed in the region, one of our agents knows it well.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Lauren's awards */}
+      <section className="seo-body awards-sec">
+        <div className="wrap">
+          <span className="script">recognized for results</span>
+          <h2 className="section__title">Lauren Huffman&apos;s Awards</h2>
+          <AwardList />
         </div>
       </section>
 

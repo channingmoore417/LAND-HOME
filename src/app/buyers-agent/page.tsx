@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AwardList from "@/components/AwardList";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { pageMetadata } from "@/lib/seoMeta";
@@ -259,7 +260,7 @@ export default async function BuyersAgentPage() {
           <div>
             <h2 className="ba-h2">Meet The Land &amp; Home Group</h2>
             <p className="ba-p">
-              Lauren Huffman leads The Land &amp; Home Group out of Southwest Louisiana. She works the same markets she lives in, which means when you ask what a street is like, what the schools are like, or whether a price makes sense, you get an answer from someone who has actually been down that road.
+              Lauren Huffman leads The Land &amp; Home Group out of Southwest Louisiana. She was named Realtor of the Year for 2025 and earned EXIT Realty&apos;s Platinum Award for 100+ transactions. She works the same markets she lives in, which means when you ask what a street is like, what the schools are like, or whether a price makes sense, you get an answer from someone who has actually been down that road.
             </p>
             <p className="ba-p">
               The team handles buyers across Calcasieu, Cameron, Beauregard and Jefferson Davis parishes, from first homes in Sulphur to acreage out toward Ragley.
@@ -267,7 +268,9 @@ export default async function BuyersAgentPage() {
             <div className="ba-stats">
               <div className="ba-stat"><b>{site.nap.rating}</b><span>Google Rating</span></div>
               <div className="ba-stat"><b>{site.nap.reviewCount}</b><span>Google Reviews</span></div>
+              <div className="ba-stat"><b>100+</b><span>Transactions (EXIT Platinum)</span></div>
             </div>
+            <AwardList />
             <div className="ba-ctas">
               <a className="ba-btn ba-btn--solid" href="#start">Work With Our Team</a>
               <a className="ba-btn ba-btn--outline" href={site.phoneHref}>Call Lauren Direct</a>
