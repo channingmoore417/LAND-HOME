@@ -9,6 +9,7 @@ import BlogCover from "@/components/BlogCover";
 import AuthorCard from "@/components/AuthorCard";
 import JsonLd from "@/components/JsonLd";
 import RecentlyViewedBox from "@/components/RecentlyViewedBox";
+import ListingAlertsQuiz, { OpenListingAlertsButton } from "@/components/ListingAlertsQuiz";
 import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
@@ -87,6 +88,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   return (
     <>
       <JsonLd data={jsonLd} />
+      <ListingAlertsQuiz city={post.city} source={post.slug} />
       <header className="hero hero--index hero--article">
         <div className="wrap" style={{ maxWidth: 820 }}>
           <nav className="hero__crumb" aria-label="Breadcrumb">
@@ -96,6 +98,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           <h1 className="article__title">{post.title}</h1>
           <div className="article__byline">
             By {site.blogAuthor.name} · {fmtDate(post.published_at)}{post.read_minutes ? ` · ${post.read_minutes} min read` : ""}
+          </div>
+          <div className="article__ctas">
+            <OpenListingAlertsButton className="btn btn--aqua">Get New Listings First</OpenListingAlertsButton>
+            <a className="btn btn--hollow" href={site.phoneHref}>Call {site.phone}</a>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
