@@ -12,7 +12,7 @@ Unlike the LNG projects being built down in Cameron Parish, this site sits right
 
 For many workers, that means looking at places like Carlyss, Sulphur, Westlake, Lake Charles, Moss Bluff, Vinton, or Iowa.
 
-This guide will help you understand the area, the drive, home prices, renting versus buying, and what to think about before you move. If you are new to the area in general, our [guide to moving to Lake Charles](/blog/moving-to-lake-charles) covers the bigger picture.
+This guide will help you understand the area, the drive, home prices, renting versus buying, and what to think about before you move. If you are new to the area in general, our [guide to moving to Lake Charles](/blog/moving-to-lake-charles) covers the bigger picture. And if you are coming off the CP2 job in Cameron Parish (or heading there next), see our [Venture Global CP2 Relocation Guide](/blog/venture-global-cp2-relocation-guide).
 
 ## What Is The Woodside Project?
 
