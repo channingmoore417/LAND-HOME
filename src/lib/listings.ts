@@ -37,6 +37,7 @@ export interface ListingCriteria {
   features?: string[]; // feature keys (see FEATURE_COLUMN)
   postalCode?: string; // ZIP (prefix match, tolerates ZIP+4)
   subdivisionAny?: string[]; // neighborhood: subdivision_name ILIKE keywords (OR'd)
+  highSchool?: string; // school-zone pages: MLS high_school (exact, case-insensitive)
   q?: string; // free-text search
   lhgOnly?: boolean; // only The Land & Home Group's own listings
   // Geographic bounds (map "search this area"): south/north lat, west/east lng.
@@ -116,6 +117,8 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   if (typeof c.lngMax === "number") query = query.lte("longitude", c.lngMax);
 
   if (c.postalCode) query = query.ilike("postal_code", `${c.postalCode}%`);
+
+  if (c.highSchool) query = query.ilike("high_school", c.highSchool.replace(/[%_]/g, ""));
 
   if (c.subdivisionAny?.length) {
     query = query.or(

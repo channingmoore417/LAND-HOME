@@ -163,7 +163,7 @@ function fillTokens(text: string, city: string, m: PageMarket | null, stats: Lis
 
 export function faqsFor(page: SeoPage, stats: ListingStats, market: PageMarket | null = null): Faq[] {
   // Neighborhood pages talk about the neighborhood, not the whole city.
-  const city = page.neighborhood || page.city || "Southwest Louisiana";
+  const city = page.neighborhood || (page.page_type === "school" && page.high_school_district ? `the ${page.high_school_district} school district` : null) || page.city || "Southwest Louisiana";
   const noun = topicNoun(page);
   const m = market;
   const isLand = page.page_type === "land";
@@ -244,7 +244,7 @@ export function faqsFor(page: SeoPage, stats: ListingStats, market: PageMarket |
   }
 
   // Built-in "living in" questions, minus any the hand-written list already asks.
-  if (page.page_type !== "neighborhood") faqs.push(...cityLivingFaqs(page, city).filter((f) => !f.skipIf.some((w) => asked.includes(w))));
+  if (page.page_type !== "neighborhood" && page.page_type !== "school") faqs.push(...cityLivingFaqs(page, city).filter((f) => !f.skipIf.some((w) => asked.includes(w))));
 
   faqs.push({
     q: `How often are these ${city} listings updated?`,

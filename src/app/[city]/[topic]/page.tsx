@@ -140,7 +140,11 @@ export default async function SeoLandingPage({
   // Neighborhood pages speak about the neighborhood ("in Graywood"); city/topic
   // pages about the city.
   const isHood = page.page_type === "neighborhood" && !!page.neighborhood;
-  const place = isHood ? page.neighborhood! : cityLabel;
+  // School-zone pages ("in the Barbe school district") read like neighborhoods.
+  const school = page.page_type === "school" ? page.high_school_district : null;
+  const isArea = isHood || !!school;
+  const place = isHood ? page.neighborhood! : school ? `the ${school} school district` : cityLabel;
+  const placeTitle = isHood ? page.neighborhood! : school ? `${school} School District` : cityLabel;
   const topicLabel = pageTopicLabel(page);
   const noun = topicNoun(page);
   const cityHubUrl = `${SITE}/${citySlug}/homes-for-sale`;
@@ -183,10 +187,10 @@ export default async function SeoLandingPage({
             <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}
             <Link href={`/${citySlug}/homes-for-sale`}>{cityLabel}</Link> &nbsp;/&nbsp; {topicLabel}
           </nav>
-          <span className="hero__script">{isHood ? `a ${cityLabel.toLowerCase()} neighborhood` : `${topicLabel.toLowerCase()} in`}</span>
+          <span className="hero__script">{isHood ? `a ${cityLabel.toLowerCase()} neighborhood` : school ? `${cityLabel.toLowerCase()} homes zoned for` : `${topicLabel.toLowerCase()} in`}</span>
           <h1>{content.h1}</h1>
           <p className="hero__sub">
-            {stats.count.toLocaleString()} {noun} for sale in {isHood ? `${place}, ${cityLabel}` : `${cityLabel}, Louisiana`}{typical}.
+            {stats.count.toLocaleString()} {noun} for sale in {isArea ? `${place}, ${cityLabel}` : `${cityLabel}, Louisiana`}{typical}.
           </p>
           <div className="hero__meta">
             <div><div className="n"><b>{stats.count.toLocaleString()}</b></div><div className="k">Active Listings</div></div>
@@ -237,7 +241,7 @@ export default async function SeoLandingPage({
                     {rows.map((c) => <ListingCard key={c.listing_key} c={c} />)}
                   </div>
                   <CtaBand
-                    text={<>New {isHood ? `homes in ${place}` : `${topicLabel.toLowerCase()} in ${cityLabel}`} go fast. Get them the day they list.</>}
+                    text={<>New {isArea ? `homes in ${place}` : `${topicLabel.toLowerCase()} in ${cityLabel}`} go fast. Get them the day they list.</>}
                     actions={[
                       { kind: "alerts", label: "Get New Listings First", primary: true },
                       { kind: "link", label: "Take the Buyer Quiz", href: "/buyer-quiz" },
@@ -246,7 +250,7 @@ export default async function SeoLandingPage({
                   {stats.count > rows.length && (
                     <div className="seo-cta">
                       <Link className="btn btn--primary" href={seeAll} style={{ maxWidth: 360, margin: "0 auto" }}>
-                        View all {stats.count.toLocaleString()} {isHood ? `homes in ${place}` : `${topicLabel.toLowerCase()} in ${cityLabel}`}
+                        View all {stats.count.toLocaleString()} {isArea ? `homes in ${place}` : `${topicLabel.toLowerCase()} in ${cityLabel}`}
                       </Link>
                     </div>
                   )}
@@ -262,7 +266,7 @@ export default async function SeoLandingPage({
         <section className="mkt">
           <div className="wrap">
             <span className="script">by the numbers</span>
-            <h2 className="section__title">{isHood ? `${place} market` : `${cityLabel} ${topicLabel.toLowerCase()} market`} at a glance</h2>
+            <h2 className="section__title">{isArea ? `${placeTitle} market` : `${cityLabel} ${topicLabel.toLowerCase()} market`} at a glance</h2>
             <p className="mkt__lede">
               Live from the local MLS: {market.count.toLocaleString()} {noun} for sale in {place} right now
               {hasMedian ? <>, with a median asking price of <b>{usd(market.median_price!)}</b></> : null}
@@ -305,7 +309,7 @@ export default async function SeoLandingPage({
         <section className="seo-body">
           <div className="wrap">
             <span className="script">about {place.toLowerCase()}</span>
-            <h2 className="section__title">{isHood ? `Living in ${place}` : `${topicLabel} in ${cityLabel}, Louisiana`}</h2>
+            <h2 className="section__title">{isArea ? `Living in ${place}` : `${topicLabel} in ${cityLabel}, Louisiana`}</h2>
             <div className="prose">
               {bodyParas.map((block, i) => {
                 if (block.startsWith("## ")) {
@@ -417,7 +421,7 @@ export default async function SeoLandingPage({
       <section className="faq">
         <div className="wrap">
           <span className="script">good to know</span>
-          <h2 className="section__title">{isHood ? topicLabel : `${cityLabel} ${topicLabel}`} — FAQ</h2>
+          <h2 className="section__title">{isArea ? topicLabel : `${cityLabel} ${topicLabel}`} — FAQ</h2>
           <div className="faq__list">
             {faqs.map((f, i) => (
               <details key={i} className="faq__item" {...(i === 0 ? { open: true } : {})}>

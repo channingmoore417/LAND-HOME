@@ -10,7 +10,7 @@ import type { ListingCriteria } from "@/lib/listings";
 export interface SeoPage {
   id: number;
   slug: string; // e.g. "lake-charles/homes-for-sale"
-  page_type: string; // city | land | single_family | feature
+  page_type: string; // city | land | single_family | feature | neighborhood | school
   city: string | null;
   property_sub_type: string | null;
   beds_min: number | null;
@@ -185,6 +185,8 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
     priceMax: page.price_max ?? undefined,
     category,
     features: page.feature_key ? [page.feature_key] : undefined,
+    // School-zone pages: listings the MLS tags with this high school.
+    highSchool: page.page_type === "school" ? (page.high_school_district ?? undefined) : undefined,
   } as const;
 
   // Neighborhoods match on the MLS subdivision name, not the (often
@@ -211,7 +213,7 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
 // Clean plural noun (no "for sale") for use inside sentences/FAQs, so we don't
 // produce "homes for sale are for sale".
 export function topicNoun(page: SeoPage): string {
-  if (page.page_type === "city" || page.page_type === "neighborhood") return "homes";
+  if (page.page_type === "city" || page.page_type === "neighborhood" || page.page_type === "school") return "homes";
   if (page.page_type === "land") return "land listings";
   if (page.page_type === "single_family") return "single-family homes";
   if (page.page_type === "mobile") return "mobile & manufactured homes";
@@ -232,6 +234,7 @@ export function topicNoun(page: SeoPage): string {
 export function pageTopicLabel(page: SeoPage): string {
   if (page.page_type === "city") return "Homes for Sale";
   if (page.page_type === "neighborhood") return `${page.neighborhood ?? "Neighborhood"} Homes for Sale`;
+  if (page.page_type === "school") return `${page.high_school_district ?? "School"} School District Homes`;
   if (page.page_type === "land") return "Land & Lots for Sale";
   if (page.page_type === "single_family") return "Single-Family Homes";
   if (page.page_type === "mobile") return "Mobile & Manufactured Homes";
@@ -261,6 +264,7 @@ export async function getListingLandingPages(l: {
   property_sub_type: string | null;
   bedrooms_total: number | null;
   subdivision_name?: string | null;
+  high_school?: string | null;
   has_pool?: boolean | null;
   is_waterfront?: boolean | null;
   is_new_construction?: boolean | null;
@@ -299,6 +303,8 @@ export async function getListingLandingPages(l: {
         const sub = (l.subdivision_name ?? "").toLowerCase();
         return !!sub && (p.subdivision_keywords ?? []).some((k) => sub.includes(k.toLowerCase()));
       }
+      case "school":
+        return !!l.high_school && l.high_school.toLowerCase() === (p.high_school_district ?? "").toLowerCase();
       case "feature": {
         const k = p.feature_key;
         if (k === "pool") return !!l.has_pool;
