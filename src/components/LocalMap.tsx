@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { site } from "@/config/site";
+import NapCard from "@/components/NapCard";
 
-// The "find us" block: team photo + local copy + Google Business Profile map.
+// The "find us" block: team photo + local copy + Google Business Profile map,
+// always paired with the full NAP card (name / address / phone / hours).
 // Reused on the SEO landing pages and the Buy hub.
 export default function LocalMap({
   cityLabel = "Southwest Louisiana",
@@ -19,13 +21,14 @@ export default function LocalMap({
   if (mapOnly) {
     return (
       <section className="localmap localmap--maponly">
-        <div className="wrap">
+        <div className="wrap localmap__napgrid">
+          <NapCard />
           <iframe
             title={`${cityLabel} map — ${site.localSeo.gbpName}`}
             src={site.localSeo.mapEmbedUrl}
             className="localmap__frame"
             loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
+            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
         </div>
@@ -44,20 +47,22 @@ export default function LocalMap({
             <span className="script">find us</span>
             <h2 className="section__title">Your local {cityLabel} real estate team</h2>
             <p className="prose">
-              {site.name}, brokered by {site.brokerage}, serves {cityLabel} and all of Southwest
-              Louisiana. Reach us at <a href={site.phoneHref}><strong>{site.phone}</strong></a> — no
+              {site.name}, brokered by {site.brokerage}, serves {cityLabel === "Southwest Louisiana" ? "all of Southwest Louisiana" : `${cityLabel} and all of Southwest Louisiana`}. Reach us at <a href={site.phoneHref}><strong>{site.phone}</strong></a> — no
               pressure, just local expertise.
             </p>
             <Link className="btn btn--aqua" href={href} style={{ maxWidth: 320 }}>{ctaLabel}</Link>
           </div>
-          <iframe
-            title={`${cityLabel} map — ${site.localSeo.gbpName}`}
-            src={site.localSeo.mapEmbedUrl}
-            className="localmap__frame"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            allowFullScreen
-          />
+          <div className="localmap__mapcol">
+            <iframe
+              title={`${cityLabel} map — ${site.localSeo.gbpName}`}
+              src={site.localSeo.mapEmbedUrl}
+              className="localmap__frame"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+            <NapCard />
+          </div>
         </div>
       </div>
     </section>

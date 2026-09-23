@@ -12,6 +12,7 @@ import { getPosts } from "@/lib/blog";
 import { REVIEWS } from "@/lib/reviews";
 import { site } from "@/config/site";
 import { SITE_URL as SITE } from "@/lib/seoConfig";
+import { napSchema } from "@/lib/nap";
 
 export const dynamic = "force-dynamic";
 
@@ -99,19 +100,13 @@ export default async function Home() {
         { "@type": "City", name: "Lake Charles" },
         ...cities.filter((c) => c.name !== "Lake Charles").map((c) => ({ "@type": "City", name: c.name })),
       ],
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: site.localSeo.city,
-        addressRegion: site.localSeo.region,
-        addressCountry: "US",
-      },
-      geo: { "@type": "GeoCoordinates", latitude: site.localSeo.latitude, longitude: site.localSeo.longitude },
+      ...napSchema(),
       sameAs: [GBP_URL],
       parentOrganization: { "@type": "Organization", name: site.brokerage },
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue: "5.0",
-        reviewCount: String(REVIEWS.length),
+        reviewCount: String(site.nap.reviewCount),
         bestRating: "5",
       },
       review: REVIEWS.map((r) => ({

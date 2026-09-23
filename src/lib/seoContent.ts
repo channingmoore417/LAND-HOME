@@ -9,6 +9,7 @@ import { site } from "@/config/site";
 import { usd } from "@/lib/format";
 import { pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
 import type { Card, ListingStats } from "@/lib/listings";
+import { napSchema } from "@/lib/nap";
 
 export interface ResolvedContent {
   h1: string;
@@ -280,17 +281,7 @@ export function jsonLdGraph(opts: {
     url: siteUrl,
     telephone: site.phone,
     areaServed: { "@type": "City", name: `${cityLabel}, Louisiana` },
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: site.localSeo.city,
-      addressRegion: site.localSeo.region,
-      addressCountry: "US",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: site.localSeo.latitude,
-      longitude: site.localSeo.longitude,
-    },
+    ...napSchema(),
   };
 
   return [breadcrumb, itemList, faqPage, agent];

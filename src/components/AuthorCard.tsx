@@ -45,7 +45,7 @@ export default function AuthorCard() {
       </div>
       <div className="authorcard__map">
         <iframe
-          src={a.mapEmbedUrl}
+          src={site.localSeo.mapEmbedUrl}
           title={`${site.name} office on Google Maps`}
           loading="lazy"
           referrerPolicy="strict-origin-when-cross-origin"

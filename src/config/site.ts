@@ -44,7 +44,6 @@ export const site = {
   footer: {
     blurb:
       "Modern coastal real estate, brokered by EXIT Realty Southern. Serving Sulphur, Lake Charles and Southwest Louisiana with a personal, no-pressure approach.",
-    address: "3701 Maplewood Dr, Sulphur, LA 70663",
     columns: [
       {
         title: "Popular Searches",
@@ -98,9 +97,9 @@ export const site = {
   // Local SEO — the client's Google Business Profile (used for the map embed
   // + RealEstateAgent/LocalBusiness geo coordinates in structured data).
   localSeo: {
-    gbpName: "Lauren Bane Huffman | Lake Charles Realtor",
+    gbpName: "The Land & Home Group | Lake Charles Realtor",
     mapEmbedUrl:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4300.206904046305!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sLauren%20Bane%20Huffman%20%7C%20Lake%20Charles%20Realtor!5e1!3m2!1sen!2sus!4v1781719708228!5m2!1sen!2sus",
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3447.3474971895225!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sThe%20Land%20%26%20Home%20Group%20%7C%20Lake%20Charles%20Realtor!5e0!3m2!1sen!2sus!4v1790188666149!5m2!1sen!2sus",
     latitude: 30.2271655,
     longitude: -93.3336138,
     city: "Lake Charles",
@@ -119,7 +118,30 @@ export const site = {
     gbpUrl: "https://share.google/P0z9MIBZPEnlqMUMh",
     instagramUrl: "https://www.instagram.com/thelandhomegroup",
     facebookUrl: "https://www.facebook.com/landhomerealestategroup",
-    mapEmbedUrl:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3447.3474971895225!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sThe%20Land%20%26%20Home%20Group%20%7C%20Lake%20Charles%20Realtor!5e0!3m2!1sen!2sus!4v1790188666149!5m2!1sen!2sus",
+  },
+
+  // NAP (name / address / phone) — must match the Google Business Profile
+  // exactly. Powers the visible "find us" block, the footer, and every
+  // RealEstateAgent schema address on the site.
+  nap: {
+    name: "The Land & Home Group",
+    street: "3701 Maplewood Dr",
+    city: "Sulphur",
+    region: "LA",
+    postalCode: "70663",
+    website: "https://landhomegroup.com",
+    hours: [
+      { days: "Monday – Friday", time: "8 AM – 8 PM" },
+      { days: "Saturday – Sunday", time: "Closed" },
+    ],
+    // schema.org OpeningHoursSpecification equivalent of `hours`
+    openDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    opens: "08:00",
+    closes: "20:00",
+    rating: "5.0",
+    reviewCount: 50,
+    mapsUrl: "https://maps.google.com/?cid=10404621407182000288",
+    directionsUrl:
+      "https://www.google.com/maps/dir/?api=1&destination=The+Land+%26+Home+Group+3701+Maplewood+Dr+Sulphur+LA+70663",
   },
 } as const;

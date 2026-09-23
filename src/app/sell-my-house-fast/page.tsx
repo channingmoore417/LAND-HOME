@@ -5,6 +5,7 @@ import CashOfferForm from "@/components/CashOfferForm";
 import JsonLd from "@/components/JsonLd";
 import { SITE_URL as SITE } from "@/lib/seoConfig";
 import { pageMetadata } from "@/lib/seoMeta";
+import { napSchema } from "@/lib/nap";
 
 export const metadata: Metadata = pageMetadata({
   title: "Sell My House Fast in Lake Charles, LA | Cash Offer As-Is",
@@ -75,17 +76,7 @@ export default function SellFastPage() {
         name: site.name,
         telephone: site.phone,
         url: SITE,
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: site.localSeo.city,
-          addressRegion: site.localSeo.region,
-          addressCountry: "US",
-        },
-        geo: {
-          "@type": "GeoCoordinates",
-          latitude: site.localSeo.latitude,
-          longitude: site.localSeo.longitude,
-        },
+        ...napSchema(),
       },
     },
     {

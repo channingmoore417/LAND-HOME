@@ -14,11 +14,17 @@ export default function SiteFooter({ cityMenu }: { cityMenu: NavCityEntry[] }) {
             <img className="footer__logo" src={site.logoUrl} alt={site.name} />
             <p>{site.footer.blurb}</p>
             <address className="footer__address">
-              {site.footer.address}
+              <strong>{site.nap.name}</strong>
+              <br />
+              <a href={site.nap.directionsUrl} target="_blank" rel="noopener">
+                {site.nap.street}, {site.nap.city}, {site.nap.region} {site.nap.postalCode}
+              </a>
               <br />
               <a href={site.phoneHref}>{site.phone}</a>
               <br />
               <a href={site.emailHref}>{site.email}</a>
+              <br />
+              {site.nap.hours.map((h) => `${h.days}: ${h.time}`).join(" · ")}
             </address>
           </div>
           {site.footer.columns.map((col) => (

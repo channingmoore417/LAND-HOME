@@ -6,6 +6,8 @@ import JsonLd from "@/components/JsonLd";
 import { pageMetadata } from "@/lib/seoMeta";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
+import { napSchema } from "@/lib/nap";
+import NapCard from "@/components/NapCard";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact Us",
@@ -32,17 +34,7 @@ export default function ContactPage() {
       url: SITE,
       telephone: site.phone,
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: site.localSeo.city,
-        addressRegion: site.localSeo.region,
-        addressCountry: "US",
-      },
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: site.localSeo.latitude,
-        longitude: site.localSeo.longitude,
-      },
+      ...napSchema(),
     },
   ];
 
@@ -130,14 +122,17 @@ export default function ContactPage() {
 
       {/* Google Business Profile map */}
       <section className="contact-map">
-        <iframe
-          title={`Map — ${site.localSeo.gbpName}`}
-          src={site.localSeo.mapEmbedUrl}
-          className="contact-map__frame"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          allowFullScreen
-        />
+        <div className="wrap localmap__napgrid">
+          <NapCard />
+          <iframe
+            title={`Map — ${site.localSeo.gbpName}`}
+            src={site.localSeo.mapEmbedUrl}
+            className="contact-map__frame"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
       </section>
 
       {/* Pre-approval CTA — the referral flywheel */}

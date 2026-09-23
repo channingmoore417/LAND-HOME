@@ -11,6 +11,7 @@ import { pageMetadata } from "@/lib/seoMeta";
 export const dynamic = "force-dynamic";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
+import { napSchema } from "@/lib/nap";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Us",
@@ -86,17 +87,7 @@ export default async function AboutPage() {
       url: SITE,
       telephone: site.phone,
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: site.localSeo.city,
-        addressRegion: site.localSeo.region,
-        addressCountry: "US",
-      },
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: site.localSeo.latitude,
-        longitude: site.localSeo.longitude,
-      },
+      ...napSchema(),
       employee: team.map((a) => ({
         "@type": "RealEstateAgent",
         name: a.full_name,
