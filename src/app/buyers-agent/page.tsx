@@ -6,6 +6,8 @@ import { SITE_URL } from "@/lib/seoConfig";
 import { getLiveClient } from "@/lib/supabase";
 import { cityCards } from "@/lib/neighborhoods";
 import { getPageMarket } from "@/lib/market";
+import { seoCriteria, type SeoPage } from "@/lib/seo";
+import { fetchCards, fetchFirstPhotos } from "@/lib/listings";
 import { photo } from "@/lib/images";
 import { REVIEWS } from "@/lib/reviews";
 import { breadcrumbSchema, agentSchema } from "@/lib/schema";
@@ -57,17 +59,28 @@ const STEPS = [
 async function getCityCards() {
   const [cards, hubs] = await Promise.all([
     cityCards(),
-    getLiveClient()
-      .from("seo_pages")
-      .select("slug, listing_count")
-      .eq("page_type", "city")
-      .eq("active", true),
+    getLiveClient().from("seo_pages").select("*").eq("page_type", "city").eq("active", true),
   ]);
-  const counts = new Map(((hubs.data as { slug: string; listing_count: number | null }[]) ?? []).map((h) => [h.slug, h.listing_count ?? 0]));
+  const hubRows = (hubs.data as SeoPage[]) ?? [];
+  const bySlug = new Map(hubRows.map((h) => [h.slug, h]));
   const photos = new Map(cards.map((c) => [c.slug, c.photoUrl]));
+
+  // cityCards() matches on the MLS city column, which misses towns the feed
+  // files under another name (Moss Bluff, Carlyss). Fall back to the city
+  // page's own filters for a cover photo.
+  const missing = CITIES.filter((c) => !photos.get(`${c.slug}/homes-for-sale`) && bySlug.get(`${c.slug}/homes-for-sale`));
+  await Promise.all(
+    missing.map(async (c) => {
+      const slug = `${c.slug}/homes-for-sale`;
+      const { rows } = await fetchCards(seoCriteria(bySlug.get(slug)!), { limit: 1, sort: "new" });
+      const first = await fetchFirstPhotos(rows.map((r) => r.listing_key));
+      if (rows[0]) photos.set(slug, first.get(rows[0].listing_key) ?? null);
+    }),
+  );
+
   return CITIES.map((c) => {
     const slug = `${c.slug}/homes-for-sale`;
-    return { ...c, href: `/${slug}`, count: counts.get(slug) ?? 0, photoUrl: photos.get(slug) ?? null };
+    return { ...c, href: `/${slug}`, count: bySlug.get(slug)?.listing_count ?? 0, photoUrl: photos.get(slug) ?? null };
   });
 }
 
