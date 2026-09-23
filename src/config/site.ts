@@ -25,7 +25,10 @@ export const site = {
       // fetched live from seo_pages (see getNavCityMenu in lib/seo.ts) and
       // rendered by SiteHeader as a nested Buy > City > Topic menu, so this
       // list never drifts out of sync with which programmatic pages exist.
-      children: [{ label: "All Homes for Sale", href: "/homes-for-sale" }],
+      children: [
+        { label: "All Homes for Sale", href: "/homes-for-sale" },
+        { label: "Work With a Buyer's Agent", href: "/buyers-agent" },
+      ],
     },
     {
       label: "Sell",

@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/homes-for-sale`, changeFrequency: "hourly", priority: 0.9 },
     { url: `${SITE}/our-listings`, changeFrequency: "hourly", priority: 0.8 },
     { url: `${SITE}/buy`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${SITE}/buyers-agent`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE}/sell-my-house-fast`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE}/home-value`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE}/get-pre-approved`, changeFrequency: "monthly", priority: 0.7 },
