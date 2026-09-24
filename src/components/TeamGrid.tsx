@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Agent } from "@/lib/types";
 
 // Renders the team roster as cards. Server component — data comes from the
@@ -22,16 +23,16 @@ export default function TeamGrid({ team }: { team: Agent[] }) {
     <div className="team__grid">
       {team.map((a) => (
         <article className="teamcard" key={a.id}>
-          <div className="teamcard__media">
+          <Link className="teamcard__media" href={`/agents/${a.slug}`} aria-label={`About ${a.full_name}`}>
             {a.photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={a.photo_url} alt={a.full_name} />
             ) : (
               <span className="teamcard__avatar" aria-hidden>{initials(a.full_name)}</span>
             )}
-          </div>
+          </Link>
           <div className="teamcard__body">
-            <h3 className="teamcard__name">{a.full_name}</h3>
+            <h3 className="teamcard__name"><Link href={`/agents/${a.slug}`}>{a.full_name}</Link></h3>
             {a.title && <div className="teamcard__title">{a.title}</div>}
             {a.specialties && a.specialties.length > 0 && (
               <div className="teamcard__tags">
@@ -45,6 +46,9 @@ export default function TeamGrid({ team }: { team: Agent[] }) {
               {a.phone && <a href={telHref(a.phone)}>📞 {a.phone}</a>}
               {a.email && <a href={`mailto:${a.email}`}>✉️ {a.email}</a>}
             </div>
+            <Link className="teamcard__more" href={`/agents/${a.slug}`}>
+              View {a.full_name.split(" ")[0]}&apos;s profile &rarr;
+            </Link>
           </div>
         </article>
       ))}

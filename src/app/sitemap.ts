@@ -28,6 +28,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/blog`, changeFrequency: "weekly", priority: 0.7 },
   ];
 
+  // Agent profile pages.
+  let agents: MetadataRoute.Sitemap = [];
+  try {
+    const { data } = await getPublicClient().from("agents").select("slug").eq("active", true);
+    agents = ((data as { slug: string }[]) ?? []).map((r) => ({
+      url: `${SITE}/agents/${r.slug}`, changeFrequency: "weekly" as const, priority: 0.6,
+    }));
+  } catch { /* sitemap still renders without them */ }
+
   // Blog posts.
   let blog: MetadataRoute.Sitemap = [];
   try {
@@ -99,5 +108,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error("[sitemap] listing fetch failed:", (e as Error).message);
   }
 
-  return [...staticRoutes, ...blog, ...blogCategories, ...seoPages, ...listings];
+  return [...staticRoutes, ...agents, ...blog, ...blogCategories, ...seoPages, ...listings];
 }

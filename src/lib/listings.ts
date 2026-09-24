@@ -45,6 +45,7 @@ export interface ListingCriteria {
   highSchool?: string; // school-zone pages: MLS high_school (exact, case-insensitive)
   q?: string; // free-text search
   lhgOnly?: boolean; // only The Land & Home Group's own listings
+  listAgentMlsId?: string; // one agent's own listings (agent pages)
   // Geographic bounds (map "search this area"): south/north lat, west/east lng.
   latMin?: number;
   latMax?: number;
@@ -90,6 +91,7 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   query = query.not("property_type", "in", "(ResidentialLease,CommercialLease)");
 
   if (c.lhgOnly) query = query.eq("is_lhg_listing", true);
+  if (c.listAgentMlsId) query = query.ilike("list_agent_mls_id", c.listAgentMlsId.replace(/[%_]/g, ""));
   if (c.city) query = query.ilike("city", c.city);
   if (c.bedsMin) query = query.gte("bedrooms_total", c.bedsMin);
   if (c.bathsMin) query = query.gte("bathrooms_total", c.bathsMin);

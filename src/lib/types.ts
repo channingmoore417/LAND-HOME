@@ -112,4 +112,8 @@ export interface Agent {
   bio: string | null;
   specialties: string[] | null;
   active: boolean;
+  /** Client reviews about this agent. */
+  reviews?: { name: string; text: string; when?: string }[] | null;
+  /** "Why work with me" points for the agent page. */
+  why_me?: { title: string; text: string }[] | null;
 }

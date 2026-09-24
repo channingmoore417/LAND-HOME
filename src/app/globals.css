@@ -1477,3 +1477,47 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .awards--compact .awards__item b{font-size:.82rem;}
 .awards--compact .awards__item small{font-size:.72rem;}
 .awards-sec{padding-bottom:0;}
+
+/* Agent profile pages (/agents/[slug]) */
+.agent-hero__grid{display:grid;grid-template-columns:260px 1fr;gap:40px;align-items:center;}
+.agent-hero__photo{width:260px;height:320px;border-radius:24px;overflow:hidden;background:var(--aqua-soft);display:flex;align-items:center;justify-content:center;border:4px solid rgba(255,255,255,.25);}
+.agent-hero__photo img{width:100%;height:100%;object-fit:cover;object-position:top;}
+.agent-hero__photo span{font-family:"Outfit",sans-serif;font-size:4rem;font-weight:700;color:var(--teal-deep);}
+.agent-hero__contact{display:flex;flex-wrap:wrap;gap:10px 20px;margin:14px 0 4px;}
+.agent-hero__contact a{color:#fff;font-weight:600;text-decoration:none;}
+.agent-hero__contact a:hover{text-decoration:underline;}
+@media(max-width:760px){.agent-hero__grid{grid-template-columns:1fr;gap:20px;}.agent-hero__photo{width:180px;height:220px;}}
+.agent-about{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:40px;align-items:start;}
+@media(max-width:860px){.agent-about{grid-template-columns:1fr;}}
+.agent-why{padding:56px 0;background:var(--off);}
+.agent-why__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:20px;}
+.agent-why__card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;}
+.agent-why__card h3{font-family:"Outfit",sans-serif;font-size:1.08rem;color:var(--teal-deep);margin:0 0 8px;}
+.agent-why__card p{margin:0;color:var(--ink-muted);line-height:1.55;}
+.agent-plan{padding:56px 0;}
+.agent-plan__sub{max-width:640px;color:var(--ink-muted);}
+.agent-plan__steps{list-style:none;padding:0;margin:24px 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;}
+@media(max-width:860px){.agent-plan__steps{grid-template-columns:1fr;}}
+.agent-plan__steps li{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;}
+.agent-plan__n{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-family:"Outfit",sans-serif;margin-bottom:10px;}
+.agent-plan__steps h3{font-family:"Outfit",sans-serif;font-size:1.15rem;color:var(--teal-deep);margin:0 0 6px;}
+.agent-plan__steps p{margin:0;color:var(--ink-muted);line-height:1.55;}
+.agent-plan__cta{display:flex;flex-wrap:wrap;gap:12px;}
+.agent-plan__cta .btn{width:auto;margin:0;}
+.agent-empty{color:var(--ink-muted);}
+.agent-contact{padding:56px 0;background:var(--off);scroll-margin-top:80px;}
+.agent-contact__grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start;}
+@media(max-width:860px){.agent-contact__grid{grid-template-columns:1fr;}}
+.agent-contact__list{list-style:none;padding:0;margin:16px 0;display:grid;gap:8px;}
+.agent-contact__list a{font-weight:600;color:var(--teal-deep);text-decoration:none;}
+.agent-contact__links{display:flex;flex-wrap:wrap;gap:10px;}
+.agent-contact__links .btn{width:auto;margin:0;}
+.agentform{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;display:grid;gap:10px;}
+.agentform h3{font-family:"Outfit",sans-serif;margin:0 0 4px;color:var(--teal-deep);}
+.agentform .btn{margin:0;}
+.agentform__chips{display:flex;flex-wrap:wrap;gap:8px;}
+.agentform .chip{border:1px solid var(--line);background:var(--off);border-radius:999px;padding:7px 14px;font:inherit;font-size:.86rem;cursor:pointer;}
+.agentform .chip--on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.agentform__err{color:#b42318;margin:0;}
+.teamcard__more{display:inline-block;margin-top:10px;font-weight:700;color:var(--teal);text-decoration:none;}
+.teamcard__name a{color:inherit;text-decoration:none;}
