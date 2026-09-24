@@ -6,7 +6,7 @@ import { getAgent, firstName } from "@/lib/team";
 import { fetchCards, fetchPhotosMap, type Card } from "@/lib/listings";
 import ListingCard from "@/components/ListingCard";
 import AwardList, { awardStrings } from "@/components/AwardList";
-import AgentContactForm, { AgentIntentButton } from "@/components/AgentContactForm";
+import ContactForm from "@/components/ContactForm";
 import JsonLd from "@/components/JsonLd";
 import { napSchema } from "@/lib/nap";
 import { breadcrumbSchema } from "@/lib/schema";
@@ -121,7 +121,7 @@ export default async function AgentPage({ params }: { params: { slug: string } }
             </div>
             <div className="hero__cta">
               <Link className="btn btn--aqua" href="/homes-for-sale">Search Homes</Link>
-              <AgentIntentButton intent="Selling" className="btn btn--hollow">List My Home With {first}</AgentIntentButton>
+              <a className="btn btn--hollow" href="#contact">List My Home With {first}</a>
             </div>
             {a.mls_id && (
               <div className="hero__meta">
@@ -196,8 +196,8 @@ export default async function AgentPage({ params }: { params: { slug: string } }
             </li>
           </ol>
           <div className="agent-plan__cta">
-            <AgentIntentButton intent="Buying" className="btn btn--primary">Start My Home Search</AgentIntentButton>
-            <AgentIntentButton intent="Selling" className="btn btn--ghost">List My Home</AgentIntentButton>
+            <a className="btn btn--primary" href="#contact">Start My Home Search</a>
+            <a className="btn btn--ghost" href="#contact">List My Home</a>
           </div>
         </div>
       </section>
@@ -272,7 +272,7 @@ export default async function AgentPage({ params }: { params: { slug: string } }
               <Link className="btn btn--ghost" href="/home-value">What&apos;s My Home Worth?</Link>
             </div>
           </div>
-          <AgentContactForm agentName={a.full_name} agentSlug={a.slug} />
+          <ContactForm />
         </div>
       </section>
     </>
