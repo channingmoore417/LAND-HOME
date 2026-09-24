@@ -962,7 +962,7 @@ textarea.input{resize:vertical;min-height:84px;}
 .teamcard__title{color:var(--aqua);font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;margin-top:4px;}
 .teamcard__tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
 .teamcard__tag{background:var(--aqua-soft);border:1px solid var(--aqua-line);color:var(--teal-deep);font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:14px;}
-.teamcard__bio{color:var(--ink-muted);font-size:.92rem;line-height:1.6;font-weight:300;margin:14px 0 0;}
+.teamcard__bio{color:var(--ink-muted);font-size:.92rem;line-height:1.6;font-weight:300;margin:14px 0 0;white-space:pre-line;}
 .teamcard__contact{display:flex;flex-direction:column;gap:6px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
 .teamcard__contact a{color:var(--teal);font-weight:600;font-size:.9rem;transition:.15s;}
 .teamcard__contact a:hover{color:var(--aqua);}
