@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         worksFor: { "@type": "RealEstateAgent", name: site.name },
         url: `${SITE}/about`,
         image: site.blogAuthor.photoUrl,
-        sameAs: [site.blogAuthor.gbpUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl],
+        sameAs: [site.blogAuthor.gbpUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl, site.blogAuthor.zillowUrl],
         award: awardStrings(),
       },
       publisher: { "@type": "RealEstateAgent", name: site.name },

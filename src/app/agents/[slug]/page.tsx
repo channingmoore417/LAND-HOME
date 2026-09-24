@@ -87,7 +87,12 @@ export default async function AgentPage({ params }: { params: { slug: string } }
       ...(a.photo_url ? { image: a.photo_url } : {}),
       worksFor: { "@type": "RealEstateAgent", name: site.name, url: SITE, telephone: site.phone, ...napSchema() },
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
-      ...(isLauren ? { award: awardStrings() } : {}),
+      ...(isLauren
+        ? {
+            award: awardStrings(),
+            sameAs: [site.blogAuthor.zillowUrl, site.blogAuthor.gbpUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl],
+          }
+        : {}),
     },
     breadcrumbSchema([["Home", "/"], ["About", "/about"], [a.full_name, `/agents/${a.slug}`]]),
   ];
@@ -117,6 +122,7 @@ export default async function AgentPage({ params }: { params: { slug: string } }
               <a href={telHref(phone)}>📞 {phone}</a>
               <a href={sms}>💬 Text {first}</a>
               {a.email && <a href={`mailto:${a.email}`}>✉️ {a.email}</a>}
+              {isLauren && <a href={site.blogAuthor.zillowUrl} target="_blank" rel="noopener">Zillow Profile</a>}
             </div>
             <div className="hero__cta">
               <Link className="btn btn--aqua" href="/homes-for-sale">Search Homes</Link>

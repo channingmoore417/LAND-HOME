@@ -95,7 +95,9 @@ export default async function AboutPage() {
         ...(a.phone ? { telephone: a.phone } : {}),
         ...(a.email ? { email: a.email } : {}),
         ...(a.photo_url ? { image: a.photo_url } : {}),
-        ...(a.full_name === site.blogAuthor.name ? { award: awardStrings() } : {}),
+        ...(a.full_name === site.blogAuthor.name
+          ? { award: awardStrings(), url: `${SITE}/agents/${a.slug}`, sameAs: [site.blogAuthor.zillowUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl] }
+          : { url: `${SITE}/agents/${a.slug}` }),
       })),
     },
   ];

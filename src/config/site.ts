@@ -121,6 +121,7 @@ export const site = {
     gbpUrl: "https://share.google/P0z9MIBZPEnlqMUMh",
     instagramUrl: "https://www.instagram.com/thelandhomegroup",
     facebookUrl: "https://www.facebook.com/landhomerealestategroup",
+    zillowUrl: "https://www.zillow.com/profile/laurenbhuffman",
     // Lauren's awards (from Lauren). Shown on the author card, About and
     // buyer's agent pages, and as schema.org `award` on her Person markup.
     awards: [
