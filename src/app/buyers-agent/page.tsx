@@ -154,7 +154,7 @@ export default async function BuyersAgentPage() {
 
       {/* 3. Hero */}
       <header className="ba-hero">
-        <div className="wrap ba-hero__grid">
+        <div className="wrap ba-hero__grid ba-hero__grid--solo">
           <div className="ba-hero__copy">
             <nav className="ba-crumb" aria-label="Breadcrumb">
               <Link href="/">Home</Link> / <Link href="/buy">Buy</Link> / Buyer&apos;s Agent
@@ -170,25 +170,9 @@ export default async function BuyersAgentPage() {
               <li>Showings scheduled around your work week, not ours</li>
             </ul>
             <div className="ba-ctas">
-              <a className="ba-btn ba-btn--solid" href="#cities">Browse Homes By City</a>
+              <OpenListingAlertsButton className="ba-btn ba-btn--solid">Get New Listings First</OpenListingAlertsButton>
               <a className="ba-btn ba-btn--light" href={sms}>Call Or Text Us</a>
             </div>
-          </div>
-          <div id="start" className="ba-hero__form ba-card">
-            <div className="ba-card__top">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="ba-card__photo" src={site.blogAuthor.photoUrl} alt={site.blogAuthor.name} />
-              <div>
-                <div className="ba-card__name">{site.blogAuthor.name}</div>
-                <div className="ba-card__role">SWLAR Realtor of the Year 2025</div>
-                <div className="ba-card__rating"><span aria-hidden>★★★★★</span> {site.nap.rating} on Google · {site.nap.reviewCount} reviews</div>
-              </div>
-            </div>
-            <p className="ba-card__lead">Talk to a buyer&apos;s agent today. No forms to fill out, no pressure.</p>
-            <OpenListingAlertsButton className="ba-btn ba-btn--solid ba-card__btn">Get New Listings First</OpenListingAlertsButton>
-            <a className="ba-btn ba-btn--outline ba-card__btn" href={site.phoneHref}>Call {site.phone}</a>
-            <a className="ba-btn ba-btn--outline ba-card__btn" href={sms}>Text Us</a>
-            <Link className="ba-card__link" href={`/agents/lauren-huffman`}>Meet Lauren &rarr;</Link>
           </div>
         </div>
       </header>
@@ -225,7 +209,7 @@ export default async function BuyersAgentPage() {
             ))}
           </div>
           <div className="ba-ctas ba-ctas--center">
-            <a className="ba-btn ba-btn--solid" href="#start">Start Your Home Search</a>
+            <OpenListingAlertsButton className="ba-btn ba-btn--solid">Start Your Home Search</OpenListingAlertsButton>
             <Link className="ba-btn ba-btn--outline" href="/contact">Ask A Question First</Link>
           </div>
         </div>
@@ -284,7 +268,7 @@ export default async function BuyersAgentPage() {
             </div>
             <AwardList />
             <div className="ba-ctas">
-              <a className="ba-btn ba-btn--solid" href="#start">Work With Our Team</a>
+              <OpenListingAlertsButton className="ba-btn ba-btn--solid">Work With Our Team</OpenListingAlertsButton>
               <a className="ba-btn ba-btn--outline" href={site.phoneHref}>Call Lauren Direct</a>
             </div>
           </div>
@@ -306,7 +290,7 @@ export default async function BuyersAgentPage() {
             ))}
           </ol>
           <div className="ba-ctas ba-ctas--center">
-            <a className="ba-btn ba-btn--solid" href="#start">Start At Step One</a>
+            <OpenListingAlertsButton className="ba-btn ba-btn--solid">Start At Step One</OpenListingAlertsButton>
             <a className="ba-btn ba-btn--light" href="#faq">Read Common Questions</a>
           </div>
         </div>
@@ -329,7 +313,7 @@ export default async function BuyersAgentPage() {
             ))}
           </div>
           <div className="ba-ctas ba-ctas--center">
-            <a className="ba-btn ba-btn--solid" href="#start">Start Your Home Search</a>
+            <OpenListingAlertsButton className="ba-btn ba-btn--solid">Start Your Home Search</OpenListingAlertsButton>
             <a className="ba-btn ba-btn--outline" href={site.nap.mapsUrl} target="_blank" rel="noopener">Read All Google Reviews</a>
           </div>
         </div>
@@ -373,7 +357,7 @@ export default async function BuyersAgentPage() {
           <h2 className="ba-h2">Ready To See What Is Out There?</h2>
           <p>Send us what you are looking for and we will have matching homes in your inbox today, including listings that have not hit the search sites yet.</p>
           <div className="ba-ctas ba-ctas--center">
-            <a className="ba-btn ba-btn--solid" href="#start">Start Your Home Search</a>
+            <OpenListingAlertsButton className="ba-btn ba-btn--solid">Start Your Home Search</OpenListingAlertsButton>
             <a className="ba-btn ba-btn--light" href={sms}>Call Or Text {site.phone}</a>
           </div>
         </div>
