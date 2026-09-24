@@ -6,7 +6,6 @@ import { getAgent, firstName } from "@/lib/team";
 import { fetchCards, fetchPhotosMap, type Card } from "@/lib/listings";
 import ListingCard from "@/components/ListingCard";
 import AwardList, { awardStrings } from "@/components/AwardList";
-import ContactForm from "@/components/ContactForm";
 import JsonLd from "@/components/JsonLd";
 import { napSchema } from "@/lib/nap";
 import { breadcrumbSchema } from "@/lib/schema";
@@ -121,7 +120,7 @@ export default async function AgentPage({ params }: { params: { slug: string } }
             </div>
             <div className="hero__cta">
               <Link className="btn btn--aqua" href="/homes-for-sale">Search Homes</Link>
-              <a className="btn btn--hollow" href="#contact">List My Home With {first}</a>
+              <Link className="btn btn--hollow" href="/home-value">List My Home With {first}</Link>
             </div>
             {a.mls_id && (
               <div className="hero__meta">
@@ -196,8 +195,8 @@ export default async function AgentPage({ params }: { params: { slug: string } }
             </li>
           </ol>
           <div className="agent-plan__cta">
-            <a className="btn btn--primary" href="#contact">Start My Home Search</a>
-            <a className="btn btn--ghost" href="#contact">List My Home</a>
+            <Link className="btn btn--primary" href="/buyer-quiz">Start My Home Search</Link>
+            <Link className="btn btn--ghost" href="/home-value">List My Home</Link>
           </div>
         </div>
       </section>
@@ -257,7 +256,7 @@ export default async function AgentPage({ params }: { params: { slug: string } }
 
       {/* Contact */}
       <section className="agent-contact" id="contact">
-        <div className="wrap agent-contact__grid">
+        <div className="wrap">
           <div>
             <span className="script">let&apos;s talk</span>
             <h2 className="section__title">Reach {first} Directly</h2>
@@ -272,7 +271,6 @@ export default async function AgentPage({ params }: { params: { slug: string } }
               <Link className="btn btn--ghost" href="/home-value">What&apos;s My Home Worth?</Link>
             </div>
           </div>
-          <ContactForm />
         </div>
       </section>
     </>
