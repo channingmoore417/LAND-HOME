@@ -299,19 +299,6 @@ export default async function BuyersAgentPage() {
         </div>
       </section>
 
-      {/* 11. City chips (the NAP + Google map band follows from the site layout) */}
-      <section className="ba-sec ba-sec--tint ba-chipsec">
-        <div className="wrap">
-          <h2 className="ba-h2">Where We Help Buyers</h2>
-          <div className="ba-chips">
-            {cities.map((c) => <Link key={c.slug} className="ba-chip" href={c.href}>{c.name}</Link>)}
-          </div>
-          <div className="ba-ctas ba-ctas--center">
-            <Link className="ba-btn ba-btn--solid" href="/contact">Set Up A Time To Talk</Link>
-          </div>
-        </div>
-      </section>
-
       {/* 12. CTA banner */}
       <section className="ba-banner">
         <div className="wrap">
