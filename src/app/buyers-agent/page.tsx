@@ -13,7 +13,6 @@ import { photo } from "@/lib/images";
 import { REVIEWS } from "@/lib/reviews";
 import { breadcrumbSchema, agentSchema } from "@/lib/schema";
 import JsonLd from "@/components/JsonLd";
-import BuyerAgentForm from "@/components/BuyerAgentForm";
 import ListingAlertsQuiz, { OpenListingAlertsButton } from "@/components/ListingAlertsQuiz";
 import MobileActionBar from "@/components/MobileActionBar";
 
@@ -175,8 +174,21 @@ export default async function BuyersAgentPage() {
               <a className="ba-btn ba-btn--light" href={sms}>Call Or Text Us</a>
             </div>
           </div>
-          <div id="start" className="ba-hero__form">
-            <BuyerAgentForm />
+          <div id="start" className="ba-hero__form ba-card">
+            <div className="ba-card__top">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="ba-card__photo" src={site.blogAuthor.photoUrl} alt={site.blogAuthor.name} />
+              <div>
+                <div className="ba-card__name">{site.blogAuthor.name}</div>
+                <div className="ba-card__role">SWLAR Realtor of the Year 2025</div>
+                <div className="ba-card__rating"><span aria-hidden>★★★★★</span> {site.nap.rating} on Google · {site.nap.reviewCount} reviews</div>
+              </div>
+            </div>
+            <p className="ba-card__lead">Talk to a buyer&apos;s agent today. No forms to fill out, no pressure.</p>
+            <OpenListingAlertsButton className="ba-btn ba-btn--solid ba-card__btn">Get New Listings First</OpenListingAlertsButton>
+            <a className="ba-btn ba-btn--outline ba-card__btn" href={site.phoneHref}>Call {site.phone}</a>
+            <a className="ba-btn ba-btn--outline ba-card__btn" href={sms}>Text Us</a>
+            <Link className="ba-card__link" href={`/agents/lauren-huffman`}>Meet Lauren &rarr;</Link>
           </div>
         </div>
       </header>
