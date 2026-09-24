@@ -116,7 +116,7 @@ export const site = {
     title: "Team Leader · Lake Charles Realtor",
     photoUrl: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab41ce8ec718870e13e4db2.jpg",
     bio:
-      "Lauren Huffman leads The Land & Home Group, brokered by EXIT Realty Southern. A Southwest Louisiana local and one of the area's most-reviewed agents, Lauren was named Realtor of the Year for 2025, earned EXIT Realty's Platinum Award for 100+ transactions, and has helped hundreds of families buy and sell across Lake Charles, Sulphur, Moss Bluff, Westlake and the surrounding communities — with honest, no-pressure guidance and deep local market knowledge.",
+      "Lauren Huffman leads The Land & Home Group, brokered by EXIT Realty Southern. A Southwest Louisiana local and one of the area's most-reviewed agents, Lauren was named the Southwest Louisiana Association of REALTORS® 2025 Realtor of the Year, earned EXIT Realty's Platinum Award for 100+ transactions, and has helped hundreds of families buy and sell across Lake Charles, Sulphur, Moss Bluff, Westlake and the surrounding communities — with honest, no-pressure guidance and deep local market knowledge.",
     url: "/about",
     gbpUrl: "https://share.google/P0z9MIBZPEnlqMUMh",
     instagramUrl: "https://www.instagram.com/thelandhomegroup",
@@ -124,7 +124,7 @@ export const site = {
     // Lauren's awards (from Lauren). Shown on the author card, About and
     // buyer's agent pages, and as schema.org `award` on her Person markup.
     awards: [
-      { title: "Realtor of the Year", year: "2025" },
+      { title: "SWLAR Realtor of the Year", year: "2025", detail: "Southwest Louisiana Association of REALTORS®" },
       { title: "EXIT Realty Platinum Award", year: "2026", detail: "100+ transactions" },
       { title: "EXIT Realty Gold Award", year: "2025", detail: "75+ transactions" },
       { title: "Trusted Advisor Award, EXIT Louisiana", year: "2025" },

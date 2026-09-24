@@ -260,7 +260,7 @@ export default async function BuyersAgentPage() {
           <div>
             <h2 className="ba-h2">Meet The Land &amp; Home Group</h2>
             <p className="ba-p">
-              Lauren Huffman leads The Land &amp; Home Group out of Southwest Louisiana. She was named Realtor of the Year for 2025 and earned EXIT Realty&apos;s Platinum Award for 100+ transactions. She works the same markets she lives in, which means when you ask what a street is like, what the schools are like, or whether a price makes sense, you get an answer from someone who has actually been down that road.
+              Lauren Huffman leads The Land &amp; Home Group out of Southwest Louisiana. She was named the Southwest Louisiana Association of REALTORS® 2025 Realtor of the Year and earned EXIT Realty&apos;s Platinum Award for 100+ transactions. She works the same markets she lives in, which means when you ask what a street is like, what the schools are like, or whether a price makes sense, you get an answer from someone who has actually been down that road.
             </p>
             <p className="ba-p">
               The team handles buyers across Calcasieu, Cameron, Beauregard and Jefferson Davis parishes, from first homes in Sulphur to acreage out toward Ragley.
