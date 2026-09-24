@@ -4,7 +4,7 @@ import { getPosts, categorySlug, type BlogPost } from "@/lib/blog";
 import BlogCover from "@/components/BlogCover";
 import { pageMetadata } from "@/lib/seoMeta";
 import JsonLd from "@/components/JsonLd";
-import { breadcrumbSchema } from "@/lib/schema";
+import { breadcrumbSchema, businessRef } from "@/lib/schema";
 import { SITE_URL } from "@/lib/seoConfig";
 import { site } from "@/config/site";
 
@@ -45,7 +45,7 @@ export default async function BlogIndex() {
             "@type": "Blog",
             name: "Southwest Louisiana Real Estate Guides",
             url: `${SITE_URL}/blog`,
-            publisher: { "@type": "RealEstateAgent", name: site.name, url: SITE_URL },
+            publisher: businessRef(),
             blogPost: posts.slice(0, 20).map((p) => ({
               "@type": "BlogPosting",
               headline: p.title,

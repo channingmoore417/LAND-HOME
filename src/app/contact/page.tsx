@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BUSINESS_ID } from "@/lib/schema";
 import Link from "next/link";
 import { site } from "@/config/site";
 import ContactForm from "@/components/ContactForm";
@@ -29,6 +30,7 @@ export default function ContactPage() {
     {
       "@context": "https://schema.org",
       "@type": "RealEstateAgent",
+      "@id": BUSINESS_ID,
       name: site.name,
       description: `${site.name}, brokered by ${site.brokerage} — local real estate help across Southwest Louisiana.`,
       url: SITE,

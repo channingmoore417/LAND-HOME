@@ -13,6 +13,7 @@ import ListingAlertsQuiz, { OpenListingAlertsButton } from "@/components/Listing
 import MobileActionBar from "@/components/MobileActionBar";
 import CtaBand from "@/components/CtaBand";
 import { awardStrings } from "@/components/AwardList";
+import { businessRef, personId } from "@/lib/schema";
 import SellStatsBox from "@/components/SellStatsBox";
 import { getSellStats, fillSellTokens } from "@/lib/sellStats";
 import { pageMetadata } from "@/lib/seoMeta";
@@ -64,15 +65,16 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       datePublished: post.published_at,
       author: {
         "@type": "Person",
+        "@id": personId("lauren-huffman"),
         name: site.blogAuthor.name,
         jobTitle: "Team Leader, " + site.name,
-        worksFor: { "@type": "RealEstateAgent", name: site.name },
-        url: `${SITE}/about`,
+        worksFor: businessRef(),
+        url: `${SITE}/agents/lauren-huffman`,
         image: site.blogAuthor.photoUrl,
         sameAs: [site.blogAuthor.gbpUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl, site.blogAuthor.zillowUrl],
         award: awardStrings(),
       },
-      publisher: { "@type": "RealEstateAgent", name: site.name },
+      publisher: { ...businessRef(), logo: { "@type": "ImageObject", url: site.logoUrl } },
       mainEntityOfPage: pageUrl,
       ...(post.cover_image ? { image: post.cover_image } : {}),
     },

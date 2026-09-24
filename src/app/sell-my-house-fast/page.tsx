@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BUSINESS_ID } from "@/lib/schema";
 import Link from "next/link";
 import { site } from "@/config/site";
 import CashOfferForm from "@/components/CashOfferForm";
@@ -73,6 +74,7 @@ export default function SellFastPage() {
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
       provider: {
         "@type": "RealEstateAgent",
+        "@id": BUSINESS_ID,
         name: site.name,
         telephone: site.phone,
         url: SITE,

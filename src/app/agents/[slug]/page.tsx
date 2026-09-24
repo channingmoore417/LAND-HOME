@@ -7,8 +7,8 @@ import { fetchCards, fetchPhotosMap, type Card } from "@/lib/listings";
 import ListingCard from "@/components/ListingCard";
 import AwardList, { awardStrings } from "@/components/AwardList";
 import JsonLd from "@/components/JsonLd";
-import { napSchema } from "@/lib/nap";
-import { breadcrumbSchema } from "@/lib/schema";
+import { napAddress } from "@/lib/nap";
+import { breadcrumbSchema, businessRef, personId } from "@/lib/schema";
 import { pageMetadata } from "@/lib/seoMeta";
 import { SITE_URL as SITE } from "@/lib/seoConfig";
 
@@ -79,13 +79,15 @@ export default async function AgentPage({ params }: { params: { slug: string } }
     {
       "@context": "https://schema.org",
       "@type": ["Person", "RealEstateAgent"],
+      "@id": personId(a.slug),
       name: a.full_name,
       jobTitle: a.title ?? "REALTOR®",
       url: pageUrl,
       telephone: phone,
       ...(a.email ? { email: a.email } : {}),
       ...(a.photo_url ? { image: a.photo_url } : {}),
-      worksFor: { "@type": "RealEstateAgent", name: site.name, url: SITE, telephone: site.phone, ...napSchema() },
+      worksFor: businessRef(),
+      address: napAddress(),
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
       ...(isLauren
         ? {

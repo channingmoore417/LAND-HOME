@@ -1,4 +1,5 @@
 // ============================================================
+import { BUSINESS_ID } from "@/lib/schema";
 // Content + structured-data generation for the SEO/AEO landing pages.
 // Resolves on-page copy (custom override → generated → computed fallback),
 // builds a data-driven FAQ, and emits JSON-LD (BreadcrumbList, ItemList,
@@ -391,6 +392,7 @@ export function jsonLdGraph(opts: {
   const agent = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
+    "@id": BUSINESS_ID,
     name: site.name,
     description: `${site.name}, brokered by ${site.brokerage}, serving ${cityLabel} and Southwest Louisiana.`,
     url: siteUrl,

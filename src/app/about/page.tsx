@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BUSINESS_ID, personId } from "@/lib/schema";
 import AwardList, { awardStrings } from "@/components/AwardList";
 import Link from "next/link";
 import { site } from "@/config/site";
@@ -82,6 +83,7 @@ export default async function AboutPage() {
     {
       "@context": "https://schema.org",
       "@type": "RealEstateAgent",
+      "@id": BUSINESS_ID,
       name: site.name,
       description: `${site.name}, brokered by ${site.brokerage}, helping buyers and sellers across Southwest Louisiana.`,
       url: SITE,
@@ -89,7 +91,8 @@ export default async function AboutPage() {
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
       ...napSchema(),
       employee: team.map((a) => ({
-        "@type": "RealEstateAgent",
+        "@type": ["Person", "RealEstateAgent"],
+        "@id": personId(a.slug),
         name: a.full_name,
         ...(a.title ? { jobTitle: a.title } : {}),
         ...(a.phone ? { telephone: a.phone } : {}),

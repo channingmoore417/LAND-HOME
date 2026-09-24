@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BUSINESS_ID } from "@/lib/schema";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
@@ -67,6 +68,7 @@ export default async function BuyPage() {
     {
       "@context": "https://schema.org",
       "@type": "RealEstateAgent",
+      "@id": BUSINESS_ID,
       name: site.name,
       description: `${site.name}, brokered by ${site.brokerage}, helping buyers across Southwest Louisiana.`,
       url: SITE,

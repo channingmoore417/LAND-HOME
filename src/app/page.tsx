@@ -9,9 +9,9 @@ import { fetchCards, fetchPhotosMap } from "@/lib/listings";
 import { cityCards } from "@/lib/neighborhoods";
 import { getPosts } from "@/lib/blog";
 import { REVIEWS } from "@/lib/reviews";
+import { agentSchema } from "@/lib/schema";
 import { site } from "@/config/site";
 import { SITE_URL as SITE } from "@/lib/seoConfig";
-import { napSchema } from "@/lib/nap";
 
 export const dynamic = "force-dynamic";
 
@@ -86,22 +86,13 @@ export default async function Home() {
   const jsonLd = [
     {
       "@context": "https://schema.org",
-      "@type": "RealEstateAgent",
-      name: site.name,
+      ...agentSchema(),
       description:
         "Lake Charles realtor and Southwest Louisiana real estate team helping buyers and sellers across Calcasieu Parish — homes for sale, free home valuations, and local guidance.",
-      url: SITE,
-      image: site.teamPhotoUrl,
-      logo: site.logoUrl,
-      telephone: site.phoneHref.replace("tel:", ""),
-      priceRange: "$$",
       areaServed: [
         { "@type": "City", name: "Lake Charles" },
         ...cities.filter((c) => c.name !== "Lake Charles").map((c) => ({ "@type": "City", name: c.name })),
       ],
-      ...napSchema(),
-      sameAs: [GBP_URL],
-      parentOrganization: { "@type": "Organization", name: site.brokerage },
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue: "5.0",
