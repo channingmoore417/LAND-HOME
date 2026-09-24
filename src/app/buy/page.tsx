@@ -4,8 +4,8 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
 import { listingStats } from "@/lib/listings";
-import { cityCards } from "@/lib/neighborhoods";
-import AreaShowcase from "@/components/AreaShowcase";
+import { cityShowcase } from "@/lib/cityShowcase";
+import CityShowcase from "@/components/CityShowcase";
 import JsonLd from "@/components/JsonLd";
 import { pageMetadata } from "@/lib/seoMeta";
 
@@ -45,7 +45,7 @@ const FAQS = [
 ];
 
 export default async function BuyPage() {
-  const [stats, cities] = await Promise.all([listingStats({}), cityCards()]);
+  const [stats, cities] = await Promise.all([listingStats({}), cityShowcase()]);
 
   const jsonLd = [
     {
@@ -108,12 +108,7 @@ export default async function BuyPage() {
       </header>
 
       {/* City photo cards */}
-      <AreaShowcase
-        eyebrow="by community"
-        title="Browse homes by city"
-        cards={cities}
-        hrefFor={(slug) => `/${slug}`}
-      />
+      <CityShowcase eyebrow="by community" title="Browse homes by city" cards={cities} />
 
       {/* Informational content */}
       <section className="seo-body">

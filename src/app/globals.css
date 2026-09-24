@@ -1516,3 +1516,27 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .teamcard__name a{color:inherit;text-decoration:none;}
 
 .ba-hero__grid--solo{grid-template-columns:minmax(0,760px);}
+
+/* City showcase cards (CityShowcase) */
+.cityx-sec{padding:56px 0;}
+.cityx__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:18px;}
+@media(max-width:1000px){.cityx__grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:620px){.cityx__grid{grid-template-columns:1fr;}}
+.cityx{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 24px rgba(10,40,50,.06);transition:transform .2s,box-shadow .2s;}
+.cityx:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(10,40,50,.12);}
+.cityx__media{position:relative;display:block;aspect-ratio:4/3;background:var(--aqua-soft);overflow:hidden;}
+.cityx__media img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+.cityx:hover .cityx__media img{transform:scale(1.04);}
+.cityx__ph{width:100%;height:100%;background:linear-gradient(150deg,var(--teal),var(--teal-deep));}
+.cityx__shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.6));}
+.cityx__count{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.94);color:var(--teal-deep);font-weight:700;font-size:.8rem;padding:6px 11px;border-radius:999px;}
+.cityx__name{position:absolute;left:18px;bottom:14px;margin:0;color:#fff;font-family:"Outfit",sans-serif;font-weight:700;font-size:1.6rem;text-shadow:0 2px 10px rgba(0,0,0,.35);}
+.cityx__body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1;}
+.cityx__blurb{margin:0;color:var(--ink);line-height:1.55;font-size:.95rem;}
+.cityx__stats{display:flex;gap:10px;}
+.cityx__stats div{flex:1;background:var(--off);border-radius:12px;padding:10px 12px;}
+.cityx__stats b{display:block;font-family:"Outfit",sans-serif;font-size:1.15rem;color:var(--teal-deep);}
+.cityx__stats span{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted);}
+.cityx__feat{margin:0;font-size:.82rem;color:var(--ink-muted);}
+.cityx__courtesy{display:block;font-size:.72rem;margin-top:2px;}
+.cityx__btn{margin-top:auto;width:100%;justify-content:center;text-align:center;}

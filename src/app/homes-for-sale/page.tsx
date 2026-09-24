@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { cityCards } from "@/lib/neighborhoods";
+import { cityShowcase } from "@/lib/cityShowcase";
 import { getTeam } from "@/lib/team";
-import AreaShowcase from "@/components/AreaShowcase";
+import CityShowcase from "@/components/CityShowcase";
 import TeamGrid from "@/components/TeamGrid";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema, agentSchema } from "@/lib/schema";
@@ -301,7 +301,7 @@ function Box({
 // City cards + the team, below the results. The Google map + NAP band comes
 // from the root layout (SiteLocalBand), so it isn't repeated here.
 async function HubExtras({ showCities }: { showCities: boolean }) {
-  const [cities, team] = await Promise.all([showCities ? cityCards() : Promise.resolve([]), getTeam()]);
+  const [cities, team] = await Promise.all([showCities ? cityShowcase() : Promise.resolve([]), getTeam()]);
   return (
     <>
       <JsonLd
@@ -318,12 +318,7 @@ async function HubExtras({ showCities }: { showCities: boolean }) {
         ]}
       />
       {cities.length > 0 && (
-        <AreaShowcase
-          eyebrow="by community"
-          title="Browse homes by city"
-          cards={cities}
-          hrefFor={(slug) => `/${slug}`}
-        />
+        <CityShowcase eyebrow="by community" title="Browse homes by city" cards={cities} />
       )}
       {team.length > 0 && (
         <section className="team">

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import ListingCard from "@/components/ListingCard";
-import AreaShowcase from "@/components/AreaShowcase";
+import CityShowcase from "@/components/CityShowcase";
 import JsonLd from "@/components/JsonLd";
 import Testimonials from "@/components/Testimonials";
 import BlogCover from "@/components/BlogCover";
 import { fetchCards, fetchPhotosMap } from "@/lib/listings";
-import { cityCards } from "@/lib/neighborhoods";
+import { cityShowcase } from "@/lib/cityShowcase";
 import { getPosts } from "@/lib/blog";
 import { REVIEWS } from "@/lib/reviews";
 import { agentSchema } from "@/lib/schema";
@@ -77,7 +77,7 @@ const FAQS = [
 export default async function Home() {
   const [{ rows: team }, cities, posts] = await Promise.all([
     fetchCards({ lhgOnly: true }, { limit: 6, sort: "new" }),
-    cityCards(),
+    cityShowcase(),
     getPosts({ limit: 3 }),
   ]);
   const photos = await fetchPhotosMap(team.map((r) => r.listing_key));
@@ -236,11 +236,10 @@ export default async function Home() {
       <Testimonials reviewsUrl={GBP_URL} />
 
       {/* BROWSE BY CITY — homes for sale in each community */}
-      <AreaShowcase
+      <CityShowcase
         eyebrow="by community"
-        title="Lake Charles &amp; Southwest Louisiana Homes for Sale"
+        title="Lake Charles & Southwest Louisiana Homes for Sale"
         cards={cities}
-        hrefFor={(slug) => `/${slug}`}
       />
       <div className="wrap home-cta home-cta--tight">
         <Link className="btn btn--primary" href="/homes-for-sale">Search All Homes for Sale</Link>

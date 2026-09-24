@@ -5,7 +5,8 @@ import { site } from "@/config/site";
 import { pageMetadata } from "@/lib/seoMeta";
 import { SITE_URL } from "@/lib/seoConfig";
 import { getLiveClient } from "@/lib/supabase";
-import { cityCards } from "@/lib/neighborhoods";
+import { cityShowcase } from "@/lib/cityShowcase";
+import { CityGrid } from "@/components/CityShowcase";
 import { getPageMarket } from "@/lib/market";
 import { seoCriteria, type SeoPage } from "@/lib/seo";
 import { fetchCards, fetchFirstPhotos } from "@/lib/listings";
@@ -57,31 +58,9 @@ const STEPS = [
 ];
 
 async function getCityCards() {
-  const [cards, hubs] = await Promise.all([
-    cityCards(),
-    getLiveClient().from("seo_pages").select("*").eq("page_type", "city").eq("active", true),
-  ]);
-  const hubRows = (hubs.data as SeoPage[]) ?? [];
-  const bySlug = new Map(hubRows.map((h) => [h.slug, h]));
-  const photos = new Map(cards.map((c) => [c.slug, c.photoUrl]));
-
-  // cityCards() matches on the MLS city column, which misses towns the feed
-  // files under another name (Moss Bluff, Carlyss). Fall back to the city
-  // page's own filters for a cover photo.
-  const missing = CITIES.filter((c) => !photos.get(`${c.slug}/homes-for-sale`) && bySlug.get(`${c.slug}/homes-for-sale`));
-  await Promise.all(
-    missing.map(async (c) => {
-      const slug = `${c.slug}/homes-for-sale`;
-      const { rows } = await fetchCards(seoCriteria(bySlug.get(slug)!), { limit: 1, sort: "new" });
-      const first = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-      if (rows[0]) photos.set(slug, first.get(rows[0].listing_key) ?? null);
-    }),
-  );
-
-  return CITIES.map((c) => {
-    const slug = `${c.slug}/homes-for-sale`;
-    return { ...c, href: `/${slug}`, count: bySlug.get(slug)?.listing_count ?? 0, photoUrl: photos.get(slug) ?? null };
-  });
+  const cards = await cityShowcase();
+  const want = new Set(CITIES.map((c) => `${c.slug}/homes-for-sale`));
+  return cards.filter((c) => want.has(c.slug));
 }
 
 export default async function BuyersAgentPage() {
@@ -220,25 +199,7 @@ export default async function BuyersAgentPage() {
         <div className="wrap">
           <h2 className="ba-h2">Search Homes For Sale By City</h2>
           <p className="ba-intro">Every active listing in Southwest Louisiana, sorted by the town you actually want to live in. Pick a market to see what is available right now.</p>
-          <div className="ba-cities">
-            {cities.map((c) => (
-              <Link className="ba-city" key={c.slug} href={c.href}>
-                <div className="ba-city__media">
-                  {c.photoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo(c.photoUrl, 600)} alt={`Homes for sale in ${c.name}, LA`} loading="lazy" />
-                  ) : (
-                    <div className="ba-city__ph" />
-                  )}
-                  <span className="ba-city__name">{c.name}</span>
-                </div>
-                <div className="ba-city__meta">
-                  <span>{c.count.toLocaleString()} active {c.count === 1 ? "listing" : "listings"}</span>
-                  <span className="ba-city__link">View homes</span>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <CityGrid cards={cities} />
           <div className="ba-ctas ba-ctas--center">
             <OpenListingAlertsButton className="ba-btn ba-btn--solid">Get New Listings Emailed To You</OpenListingAlertsButton>
           </div>
