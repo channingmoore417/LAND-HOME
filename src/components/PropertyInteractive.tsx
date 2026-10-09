@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { namePayload } from "@/lib/formName";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 
 // All the lead-capture UI for a listing: sidebar lead card + message form,
@@ -81,7 +82,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     const ok = await msgGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
       message: withAddress(f.get("message")),
@@ -97,7 +98,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     const ok = await tourGuard.submit({
       form_id: "showing_request",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
       preferred_times: `${tourMode} · ${dates[dateIdx].label}`,
@@ -114,7 +115,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     const ok = await askGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
       message: withAddress(f.get("message")),
@@ -156,7 +157,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
           ) : (
             <form onSubmit={handleMessage}>
               <HoneypotField inputRef={msgGuard.hpRef} />
-              <input className="input" name="name" type="text" placeholder="Full name" required />
+              <div className="namerow">
+                  <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
+                  <input className="input" name="last_name" type="text" placeholder="Last name" autoComplete="family-name" required />
+                </div>
               {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
               <input className="input" name="email" type="email" placeholder="Email" required />
               <textarea
@@ -237,7 +241,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                     </div>
                   ))}
                 </div>
-                <input className="input" name="name" type="text" placeholder="First & last name" required />
+                <div className="namerow">
+                  <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
+                  <input className="input" name="last_name" type="text" placeholder="Last name" autoComplete="family-name" required />
+                </div>
                 {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" required />}
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <button className="btn btn--aqua" disabled={busy}>
@@ -274,7 +281,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
             ) : (
               <form onSubmit={handleAsk}>
                 <HoneypotField inputRef={askGuard.hpRef} />
-                <input className="input" name="name" type="text" placeholder="First & last name" required />
+                <div className="namerow">
+                  <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
+                  <input className="input" name="last_name" type="text" placeholder="Last name" autoComplete="family-name" required />
+                </div>
                 {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <textarea

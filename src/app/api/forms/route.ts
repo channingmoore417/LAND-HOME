@@ -33,6 +33,8 @@ interface FormPayload {
   source_url?: string;
   listing_key?: string;
   name?: string;
+  first_name?: string;
+  last_name?: string;
   email?: string;
   phone?: string;
   message?: string;
@@ -169,6 +171,8 @@ export async function POST(req: Request) {
   let boldtrailOk: boolean | null = null;
   const bt = await syncLeadToBoldTrail({
     name: payload.name,
+    firstName: payload.first_name,
+    lastName: payload.last_name,
     email: payload.email,
     phone: payload.phone,
     source: "landhomegroup.com",

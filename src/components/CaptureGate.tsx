@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { site, getAdPage } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { namePayload } from "@/lib/formName";
 
 const KEY = "lhg_captured";
 const AD_KEY = "lhg_ad_visit";
@@ -71,7 +72,7 @@ export default function CaptureGate() {
         form_id: "listing_inquiry",
         listing_key: listingKey,
         source_url: landing.current || window.location.pathname,
-        name: f.get("name"),
+        ...namePayload(f),
         phone: f.get("phone"),
         email: f.get("email"),
         message: `Inquiry about listing ${listingKey} (Google Ads visitor)`,
@@ -109,7 +110,10 @@ export default function CaptureGate() {
           Tell us where to reach you and we&apos;ll show you the full details.
         </p>
         <HoneypotField inputRef={guard.hpRef} />
-        <input className="input" name="name" type="text" placeholder="Full name" required autoComplete="name" />
+        <div className="namerow">
+          <input className="input" name="first_name" type="text" placeholder="First name" required autoComplete="given-name" />
+          <input className="input" name="last_name" type="text" placeholder="Last name" required autoComplete="family-name" />
+        </div>
         {!A2P_REVIEW_MODE && (
           <input className="input" name="phone" type="tel" placeholder="Phone" required autoComplete="tel" />
         )}
