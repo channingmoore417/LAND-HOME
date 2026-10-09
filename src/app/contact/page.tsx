@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
+import { BUSINESS_ID } from "@/lib/schema";
 import Link from "next/link";
 import { site } from "@/config/site";
 import ContactForm from "@/components/ContactForm";
 import JsonLd from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/seoMeta";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
+import { napSchema } from "@/lib/nap";
+import NapCard from "@/components/NapCard";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact Us",
   description:
-    "Get in touch with The Land & Home Group, brokered by EXIT Realty Southern. Call (337) 245-0909 or send a message — local, no-pressure real estate help across Lake Charles, Sulphur and Southwest Louisiana.",
-  alternates: { canonical: `${SITE}/contact` },
-};
+    `Contact The Land & Home Group in Sulphur, LA. Call ${site.phone} or send a message for local, no-pressure real estate help in Lake Charles and Sulphur.`,
+  path: "/contact",
+});
 
 export default function ContactPage() {
   const jsonLd = [
@@ -26,22 +30,13 @@ export default function ContactPage() {
     {
       "@context": "https://schema.org",
       "@type": "RealEstateAgent",
+      "@id": BUSINESS_ID,
       name: site.name,
       description: `${site.name}, brokered by ${site.brokerage} — local real estate help across Southwest Louisiana.`,
       url: SITE,
       telephone: site.phone,
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: site.localSeo.city,
-        addressRegion: site.localSeo.region,
-        addressCountry: "US",
-      },
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: site.localSeo.latitude,
-        longitude: site.localSeo.longitude,
-      },
+      ...napSchema(),
     },
   ];
 
@@ -62,7 +57,7 @@ export default function ContactPage() {
           </p>
           <div className="hero__cta">
             <a className="btn btn--aqua" href={site.phoneHref}>Call {site.phone}</a>
-            <a className="btn btn--hollow" href="sms:+13372450909">Text Us</a>
+            <a className="btn btn--hollow" href={site.phoneHref.replace("tel:", "sms:")}>Text Us</a>
           </div>
         </div>
         <svg className="hero__wave" viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -129,14 +124,17 @@ export default function ContactPage() {
 
       {/* Google Business Profile map */}
       <section className="contact-map">
-        <iframe
-          title={`Map — ${site.localSeo.gbpName}`}
-          src={site.localSeo.mapEmbedUrl}
-          className="contact-map__frame"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          allowFullScreen
-        />
+        <div className="wrap localmap__napgrid">
+          <NapCard />
+          <iframe
+            title={`Map — ${site.localSeo.gbpName}`}
+            src={site.localSeo.mapEmbedUrl}
+            className="contact-map__frame"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
       </section>
 
       {/* Pre-approval CTA — the referral flywheel */}

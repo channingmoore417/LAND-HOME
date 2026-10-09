@@ -2,20 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SortSelect from "@/components/SortSelect";
 import ListingCard from "@/components/ListingCard";
-import LocalMap from "@/components/LocalMap";
-import { fetchCards, fetchFirstPhotos, type ListingCriteria, type SortKey } from "@/lib/listings";
+import { fetchCards, fetchPhotosMap, type ListingCriteria, type SortKey } from "@/lib/listings";
 import { site } from "@/config/site";
+import { pageMetadata } from "@/lib/seoMeta";
 
 // The team's OWN listings (is_lhg_listing = true). Live, server-rendered.
 export const dynamic = "force-dynamic";
 
 const PER = 12;
 
-export const metadata: Metadata = {
-  title: `Our Listings | ${site.name}`,
+export const metadata: Metadata = pageMetadata({
+  title: "Our Listings in Lake Charles & Southwest Louisiana",
   description:
     "Homes for sale listed by The Land & Home Group across Lake Charles, Sulphur and Southwest Louisiana. Browse our current listings.",
-};
+  path: "/our-listings",
+});
 
 type SP = Record<string, string | string[] | undefined>;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -30,8 +31,8 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
     offset: (page - 1) * PER,
     sort,
   });
-  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
+  for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
   const pages = Math.max(1, Math.ceil(total / PER));
   const startIdx = (page - 1) * PER;
@@ -103,7 +104,7 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
                   Our team&apos;s next listings will appear here automatically. In the meantime,
                   browse every home for sale across Southwest Louisiana.
                 </p>
-                <Link href="/listings">Browse all listings</Link>
+                <Link href="/homes-for-sale">Browse all listings</Link>
               </div>
             ) : (
               rows.map((c) => <ListingCard key={c.listing_key} c={c} />)
@@ -151,7 +152,6 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
         </div>
       </section>
 
-      <LocalMap cityLabel="Southwest Louisiana" href="/listings" ctaLabel="Browse all SWLA listings" />
     </>
   );
 }

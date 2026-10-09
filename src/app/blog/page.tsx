@@ -2,14 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPosts, categorySlug, type BlogPost } from "@/lib/blog";
 import BlogCover from "@/components/BlogCover";
+import { pageMetadata } from "@/lib/seoMeta";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema, businessRef } from "@/lib/schema";
+import { SITE_URL } from "@/lib/seoConfig";
+import { site } from "@/config/site";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Southwest Louisiana Real Estate Blog",
   description:
-    "Local guides for buying and selling in Lake Charles and Southwest Louisiana — neighborhoods, moving tips, the buying process, first-time buyer help, and market know-how from The Land & Home Group.",
-};
+    "Local guides to buying, selling and moving to Lake Charles and Southwest Louisiana: neighborhoods, relocation, first-time buyers and the buying process.",
+  path: "/blog",
+});
 
 function PostCard({ p, big }: { p: BlogPost; big?: boolean }) {
   return (
@@ -32,6 +38,24 @@ export default async function BlogIndex() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Blog",
+            name: "Southwest Louisiana Real Estate Guides",
+            url: `${SITE_URL}/blog`,
+            publisher: businessRef(),
+            blogPost: posts.slice(0, 20).map((p) => ({
+              "@type": "BlogPosting",
+              headline: p.title,
+              url: `${SITE_URL}/blog/${p.slug}`,
+              datePublished: p.published_at,
+            })),
+          },
+          breadcrumbSchema([["Home", "/"], ["Blog", "/blog"]]),
+        ]}
+      />
       <header className="hero hero--index">
         <div className="wrap">
           <nav className="hero__crumb" aria-label="Breadcrumb">

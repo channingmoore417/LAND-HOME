@@ -5,6 +5,11 @@ import { getPublicClient } from "@/lib/supabase";
 import { site } from "@/config/site";
 import { usd, int, num, titleCase, splitFeatures, estAnnualTax } from "@/lib/format";
 import { photo } from "@/lib/images";
+import { pageMetadata } from "@/lib/seoMeta";
+import { SITE_URL } from "@/lib/seoConfig";
+import { getListingLandingPages, pageTopicLabel } from "@/lib/seo";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbSchema } from "@/lib/schema";
 import type { Listing, ListingMedia } from "@/lib/types";
 import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
@@ -130,12 +135,27 @@ export async function generateMetadata({
   const showAddr = listing.internet_address_yn !== false;
   const addr = showAddr ? listing.unparsed_address ?? "" : titleCase(listing.city);
   const title = `${addr}${addr ? ", " : ""}${titleCase(listing.city)}, ${listing.state_or_province ?? "LA"}`;
-  return {
+  const description = listingSummary(listing);
+
+  const media = await getMedia(listing.listing_key);
+  const heroPhoto = media[0]?.media_url ? photo(media[0].media_url, 1200) : undefined;
+
+  // Branded cover image (photo + logo + title overlay) for the link-preview
+  // card — see /api/og. Falls back to the raw photo if there's no hero shot.
+  let ogImage = heroPhoto;
+  if (heroPhoto) {
+    const qs = new URLSearchParams({ title, photo: heroPhoto });
+    ogImage = `${SITE_URL}/api/og?${qs.toString()}`;
+  }
+
+  return pageMetadata({
     title,
-    description: `${listing.bedrooms_total ?? "—"} bed, ${listing.bathrooms_total ?? "—"} bath, ${int(
-      listing.living_area,
-    )} sq ft home in ${titleCase(listing.city)}. Offered at ${usd(listing.list_price)} by ${site.name}.`,
-  };
+    description,
+    path: `/listings/${listing.listing_key}`,
+    image: ogImage,
+    imageAlt: title,
+    noIndex: listing.internet_display_yn === false,
+  });
 }
 
 export default async function ListingPage({
@@ -146,10 +166,14 @@ export default async function ListingPage({
   const listing = await getListing(params.listingKey);
   if (!listing) notFound();
 
-  const [media, similar] = await Promise.all([
+  const [media, similar, landing] = await Promise.all([
     getMedia(listing.listing_key),
     getSimilar(listing),
+    getListingLandingPages(listing),
   ]);
+  // The listing's city page (falls back to the all-listings search).
+  const cityHref = landing.hub ? `/${landing.hub.slug}` : "/homes-for-sale";
+  const cityName = landing.hub?.city ?? titleCase(listing.city);
 
   const showAddress = listing.internet_address_yn !== false;
   const showRemarks = listing.internet_comment_yn !== false;
@@ -215,6 +239,48 @@ export default async function ListingPage({
   return (
     <>
       <TrackView listingKey={listing.listing_key} />
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "RealEstateListing",
+            name: showAddress ? addressLine : `Home for sale in ${cityName}`,
+            url: `${SITE_URL}/listings/${listing.listing_key}`,
+            description: listingSummary(listing),
+            ...(photos.length ? { image: photos.slice(0, 6).map((p) => p.url) } : {}),
+            offers: {
+              "@type": "Offer",
+              price: listing.list_price ?? undefined,
+              priceCurrency: "USD",
+              availability:
+                listing.standard_status === "Active" ? "https://schema.org/InStock" : "https://schema.org/LimitedAvailability",
+              ...(listing.list_office_name ? { offeredBy: { "@type": "Organization", name: titleCase(listing.list_office_name) } } : {}),
+            },
+            about: {
+              "@type": listing.property_type === "Land" ? "Place" : "SingleFamilyResidence",
+              ...(listing.bedrooms_total ? { numberOfBedrooms: listing.bedrooms_total } : {}),
+              ...(listing.bathrooms_total ? { numberOfBathroomsTotal: listing.bathrooms_total } : {}),
+              ...(listing.living_area ? { floorSize: { "@type": "QuantitativeValue", value: listing.living_area, unitCode: "FTK" } } : {}),
+              address: {
+                "@type": "PostalAddress",
+                ...(showAddress && listing.unparsed_address ? { streetAddress: listing.unparsed_address } : {}),
+                addressLocality: titleCase(listing.city),
+                addressRegion: listing.state_or_province ?? "LA",
+                ...(listing.postal_code ? { postalCode: listing.postal_code.slice(0, 5) } : {}),
+                addressCountry: "US",
+              },
+              ...(showAddress && listing.latitude && listing.longitude
+                ? { geo: { "@type": "GeoCoordinates", latitude: listing.latitude, longitude: listing.longitude } }
+                : {}),
+            },
+          },
+          breadcrumbSchema([
+            ["Home", "/"],
+            [`${cityName} Homes for Sale`, cityHref],
+            [showAddress ? addressLine : "Listing", `/listings/${listing.listing_key}`],
+          ]),
+        ]}
+      />
       {/* HERO */}
       <header className="hero">
         <div className="wrap">
@@ -222,7 +288,7 @@ export default async function ListingPage({
             <div>
               <div className="hero__crumb">
                 <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}
-                <Link href="/listings">{titleCase(listing.city)}</Link>
+                <Link href={cityHref}>{cityName}</Link>
                 {listing.listing_id ? ` · MLS# ${listing.listing_id}` : ""}
               </div>
               <span className="hero__script">welcome home to</span>
@@ -403,15 +469,61 @@ export default async function ListingPage({
         </section>
       )}
 
+      {/* More searches — links into this listing's city + topic pages */}
+      {landing.hub && (
+        <section className="lsearch">
+          <div className="wrap">
+            <span className="script">keep looking</span>
+            <h2 className="section__title">More {cityName} searches</h2>
+            <div className="lsearch__chips">
+              <Link className="lsearch__chip" href={cityHref}>{cityName} Homes for Sale</Link>
+              {landing.topics.map((t) => (
+                <Link key={t.slug} className="lsearch__chip" href={`/${t.slug}`}>
+                  {pageTopicLabel(t)} in {cityName}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* REVIEWS — social proof */}
       <Testimonials max={6} />
 
       {/* FIND US — local team + Google map embed */}
       <LocalMap
-        cityLabel={titleCase(listing.city)}
-        href={`/listings?city=${encodeURIComponent(listing.city ?? "")}`}
-        ctaLabel={`More homes in ${titleCase(listing.city)}`}
+        cityLabel={cityName}
+        href={cityHref}
+        ctaLabel={`More homes in ${cityName}`}
       />
     </>
   );
+}
+
+
+// One-line summary used for the meta description and schema. Wording follows
+// the property type (land, rental, home) and credits the listing brokerage —
+// only the team's own listings say "Listed by The Land & Home Group" (IDX).
+function listingSummary(l: Listing): string {
+  const city = `${titleCase(l.city)}, ${l.state_or_province ?? "LA"}`;
+  const isLand = l.property_type === "Land";
+  const isLease = /Lease/i.test(l.property_type ?? "");
+  const price = l.list_price ? `${usd(l.list_price)}${isLease ? "/mo" : ""}` : "";
+  const credit = l.is_lhg_listing
+    ? `Listed by ${site.name}.`
+    : l.list_office_name
+      ? `Listing courtesy of ${titleCase(l.list_office_name)}.`
+      : "";
+  let what: string;
+  if (isLand) {
+    what = `${l.lot_size_acres ? `${Number(l.lot_size_acres).toLocaleString()} acres of ` : ""}land for sale in ${city}`;
+  } else {
+    const parts = [
+      l.bedrooms_total ? `${l.bedrooms_total} bed` : "",
+      l.bathrooms_total ? `${l.bathrooms_total} bath` : "",
+      l.living_area ? `${int(l.living_area)} sq ft` : "",
+    ].filter(Boolean);
+    what = `${parts.length ? `${parts.join(", ")} ` : ""}${isLease ? "home for rent" : "home for sale"} in ${city}`;
+  }
+  return `${what}${price ? ` at ${price}` : ""}. See photos and details. ${credit}`.trim();
 }

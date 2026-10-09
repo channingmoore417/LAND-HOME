@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CaptureGate from "@/components/CaptureGate";
+import SiteLocalBand from "@/components/SiteLocalBand";
 import AuthProvider from "@/components/AuthProvider";
 import { site } from "@/config/site";
 import { SITE_URL } from "@/lib/seoConfig";
+import { getNavCityMenu } from "@/lib/seo";
 import "./globals.css";
 
 const DESC =
@@ -14,6 +16,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${site.name} | Lake Charles Real Estate`, template: `%s | ${site.name}` },
   description: DESC,
+  icons: {
+    icon: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab43fb08d8128ee4cb38e1b.jpg",
+    apple: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab43fb08d8128ee4cb38e1b.jpg",
+  },
+  verification: {
+    google: "UMH1v38QMsah0vOpy-uV5lPTIij5xk9Q_RLKQm4-SxI",
+  },
   openGraph: {
     type: "website",
     siteName: site.name,
@@ -31,11 +40,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+// City/topic nav data changes rarely (new programmatic pages added
+// occasionally, not per-request) — revalidate hourly rather than on every
+// request, so pages that don't otherwise need dynamic rendering can still
+// be statically generated.
+export const revalidate = 3600;
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Cities + their topic pages (mobile homes, new construction, 4+ bedroom,
+  // etc.), fetched fresh from seo_pages so the nav/footer never drift out of
+  // sync with which programmatic pages actually exist.
+  const cityMenu = await getNavCityMenu();
+
   return (
     <html lang="en">
       <head>
@@ -52,9 +72,10 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <SiteHeader />
+          <SiteHeader cityMenu={cityMenu} />
           {children}
-          <SiteFooter />
+          <SiteLocalBand cities={cityMenu.map((c) => ({ label: c.label, href: c.href }))} />
+          <SiteFooter cityMenu={cityMenu} />
           <CaptureGate />
         </AuthProvider>
       </body>

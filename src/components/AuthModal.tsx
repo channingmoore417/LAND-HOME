@@ -112,7 +112,10 @@ export default function AuthModal({
               By registering on {site.name.toLowerCase().includes("the") ? "" : "the "}{site.name} website, you consent to receive
               calls, texts, and emails from {site.name}, brokered by {site.brokerage}, regarding real estate matters.
               This consent allows us to contact you in compliance with the Telephone Consumer Protection Act (TCPA) and
-              Do Not Call (DNC) guidelines. Consent is not a condition of purchase; you can opt out anytime.
+              Do Not Call (DNC) guidelines. Consent is not a condition of purchase. Message frequency varies; message
+              and data rates may apply. Reply STOP to opt out or HELP for help. See our{" "}
+              <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> and{" "}
+              <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>.
             </p>
           </>
         ) : (

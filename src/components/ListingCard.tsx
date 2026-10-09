@@ -3,6 +3,7 @@ import { usd, int, titleCase } from "@/lib/format";
 import { photo } from "@/lib/images";
 import type { Card } from "@/lib/listings";
 import FavButton from "@/components/FavButton";
+import ListingCardMedia from "@/components/ListingCardMedia";
 
 // One property card. Server component (the heart toggle is its own client
 // component). Shared by /listings and the SEO landing pages.
@@ -30,18 +31,16 @@ export default function ListingCard({ c }: { c: Card }) {
   const isNew = c.days_on_market != null && c.days_on_market <= 14;
   const badge = isNew ? { label: "New", cls: " is-new" } : { label: titleCase(c.standard_status) || "For Sale", cls: "" };
   const showAddr = c.internet_address_yn !== false;
-  const src = c.photo_url ? photo(c.photo_url, 800) : "";
+  const photoUrls = (c.photos && c.photos.length > 0 ? c.photos : c.photo_url ? [c.photo_url] : []).map((u) =>
+    photo(u, 800),
+  );
+  const alt = showAddr ? c.unparsed_address ?? "Listing" : "Listing";
   const cityState = `${titleCase(c.city)}, ${c.state_or_province ?? "LA"} ${c.postal_code ?? ""}`.trim();
 
   return (
     <Link className="pcard" href={`/listings/${c.listing_key}`}>
       <div className="pcard__media">
-        {src ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt={showAddr ? c.unparsed_address ?? "Listing" : "Listing"} loading="lazy" />
-        ) : (
-          <div style={{ width: "100%", height: "100%", background: "#cfe0e4" }} />
-        )}
+        <ListingCardMedia photos={photoUrls} alt={alt} />
         <span className={`pcard__status${badge.cls}`}>{badge.label}</span>
         <FavButton listingKey={c.listing_key} />
         {c.photos_count ? <span className="pcard__photos">&#9634; {c.photos_count}</span> : null}

@@ -93,7 +93,7 @@ export default function AccountPage() {
           <h1>Hi {firstName}, here&apos;s your home search</h1>
           <p className="hero__sub">{favCount} saved {favCount === 1 ? "home" : "homes"} · everything in one place.</p>
           <div className="hero__cta">
-            <Link className="btn btn--aqua" href="/listings">Browse more homes</Link>
+            <Link className="btn btn--aqua" href="/homes-for-sale">Browse more homes</Link>
             <button className="btn btn--hollow" onClick={signOut}>Sign out</button>
           </div>
         </div>

@@ -69,7 +69,7 @@ export default function MapSearch({
   return (
     <div className={`mapsearch mapsearch--${mobilePane}`}>
       <div className="mapsearch__bar">
-        <form className="hsearch hsearch--bar" action="/listings" method="get">
+        <form className="hsearch hsearch--bar" action="/homes-for-sale" method="get">
           <input type="hidden" name="view" value="split" />
           <input className="hsearch__input" type="text" name="q" defaultValue={qText}
             placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
@@ -100,7 +100,7 @@ export default function MapSearch({
               <span className="script">no matches</span>
               <h3>No homes in this view</h3>
               <p>Zoom out or pan the map, or clear a filter.</p>
-              <Link href="/listings">Reset all filters</Link>
+              <Link href="/homes-for-sale">Reset all filters</Link>
             </div>
           ) : (
             <div className="mapsearch__grid">

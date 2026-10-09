@@ -4,12 +4,18 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
-import { fetchCards, fetchFirstPhotos, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
-import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
+import { fetchCards, fetchFirstPhotos, fetchPhotosMap, listingStats, PRICE_MAX, SQFT_MAX, type ListingCriteria } from "@/lib/listings";
+import { getSeoPage, getCitySiblings, seoCriteria, slugifyCity, pageTopicLabel, topicNoun, isIndexablePage, type SeoPage } from "@/lib/seo";
 import { resolveContent, faqsFor, jsonLdGraph } from "@/lib/seoContent";
+import { getPageMarket, getCityGuides, PRICE_BAND_LABELS } from "@/lib/market";
+import BlogCover from "@/components/BlogCover";
+import CtaBand from "@/components/CtaBand";
+import MobileActionBar from "@/components/MobileActionBar";
+import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
+import { pageMetadata } from "@/lib/seoMeta";
+import { photo } from "@/lib/images";
 import ListingCard from "@/components/ListingCard";
 import JsonLd from "@/components/JsonLd";
-import LocalMap from "@/components/LocalMap";
 import Testimonials from "@/components/Testimonials";
 import AreaShowcase from "@/components/AreaShowcase";
 import ListingsControls, { type ListingFilters } from "@/components/ListingsControls";
@@ -57,7 +63,7 @@ function searchHref(page: SeoPage): string {
   else if (page.page_type === "mobile") p.set("type", "Mobile / Manufactured");
   if (page.page_type === "beds" && page.beds_min) p.set("beds", String(page.beds_min));
   if (page.feature_key) p.append("feature", page.feature_key);
-  return `/listings${p.toString() ? `?${p}` : ""}`;
+  return `/homes-for-sale${p.toString() ? `?${p}` : ""}`;
 }
 
 export async function generateMetadata({
@@ -68,13 +74,43 @@ export async function generateMetadata({
   const page = await getSeoPage(`${params.city}/${params.topic}`);
   if (!page) return { title: "Page not found" };
   const c = resolveContent(page);
-  const url = `${SITE}/${page.slug}`;
-  return {
+
+  // Unless someone wrote one, build the meta description from this page's
+  // live numbers so each of the 130+ landing pages reads differently.
+  let description = page.custom_meta_desc || page.gen_meta_desc || "";
+  if (!description) {
+    const m = await getPageMarket(page.slug);
+    const place = page.page_type === "neighborhood" && page.neighborhood ? `${page.neighborhood}, ${page.city ?? "Lake Charles"}` : `${page.city ?? "Southwest Louisiana"}, LA`;
+    const count = m?.count ?? 0;
+    const med = m?.median_price && m.priced_count >= 3 ? `, median asking price ${usd(m.median_price)}` : "";
+    description = count
+      ? `${count.toLocaleString()} ${topicNoun(page)} for sale in ${place}${med}. See photos, prices and new listings daily, with local agents ready to help.`
+      : c.metaDesc;
+  }
+
+  // Grab one representative listing photo for the link-preview image.
+  const { rows } = await fetchCards(seoCriteria(page), { limit: 1, sort: "new" });
+  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
+  const heroPhoto = rows[0] ? photos.get(rows[0].listing_key) : undefined;
+
+  // Branded cover image (photo + logo + title overlay) for the link-preview
+  // card — see /api/og. Falls back to the raw photo if there's no hero shot.
+  let ogImage = heroPhoto ? photo(heroPhoto, 1200) : undefined;
+  if (heroPhoto) {
+    const qs = new URLSearchParams({ title: c.h1, photo: photo(heroPhoto, 1200) });
+    ogImage = `${SITE}/api/og?${qs.toString()}`;
+  }
+
+  return pageMetadata({
     title: c.title,
-    description: c.metaDesc,
-    alternates: { canonical: url },
-    openGraph: { title: c.title, description: c.metaDesc, url, type: "website" },
-  };
+    description,
+    path: `/${page.slug}`,
+    image: ogImage,
+    imageAlt: c.h1,
+    // Too few listings to be worth indexing yet — flips back on its own as
+    // inventory grows (listing_count is refreshed hourly).
+    noIndex: !isIndexablePage(page),
+  });
 }
 
 export default async function SeoLandingPage({
@@ -87,32 +123,44 @@ export default async function SeoLandingPage({
   if (!page) notFound();
 
   const criteria: ListingCriteria = seoCriteria(page);
-  const [stats, { rows }, siblings] = await Promise.all([
+  const citySlug = page.city ? slugifyCity(page.city) : "";
+  const [stats, { rows }, siblings, market, guides] = await Promise.all([
     listingStats(criteria),
     fetchCards(criteria, { limit: 12, sort: "new" }),
     getCitySiblings(page.city ?? ""),
+    getPageMarket(slug),
+    page.city ? getCityGuides(page.city, citySlug) : Promise.resolve([]),
   ]);
-  const photos = await fetchFirstPhotos(rows.map((r) => r.listing_key));
-  for (const r of rows) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(rows.map((r) => r.listing_key));
+  for (const r of rows) r.photos = photos.get(r.listing_key) ?? [];
 
   const content = resolveContent(page);
-  const faqs = faqsFor(page, stats);
+  const faqs = faqsFor(page, stats, market);
   const cityLabel = page.city || "Southwest Louisiana";
+  // Neighborhood pages speak about the neighborhood ("in Graywood"); city/topic
+  // pages about the city.
+  const isHood = page.page_type === "neighborhood" && !!page.neighborhood;
+  // School-zone pages ("in the Barbe school district") read like neighborhoods.
+  const school = page.page_type === "school" ? page.high_school_district : null;
+  const zip = page.page_type === "zip" ? page.postal_code : null;
+  const isArea = isHood || !!school || !!zip;
+  const place = isHood ? page.neighborhood! : school ? `the ${school} school district` : zip ? zip : cityLabel;
+  const placeTitle = isHood ? page.neighborhood! : school ? `${school} School District` : zip ? zip : cityLabel;
   const topicLabel = pageTopicLabel(page);
   const noun = topicNoun(page);
-  const citySlug = page.city ? slugifyCity(page.city) : "";
   const cityHubUrl = `${SITE}/${citySlug}/homes-for-sale`;
   const pageUrl = `${SITE}/${page.slug}`;
 
-  const range =
-    stats.priceMin && stats.priceMax ? ` priced from ${usd(stats.priceMin)} to ${usd(stats.priceMax)}` : "";
+  const isLandPage = page.page_type === "land";
+  const hasMedian = !!market?.median_price && market.priced_count >= 3;
+  const typical = hasMedian ? `, with a median asking price of ${usd(market!.median_price!)}` : "";
+  const maxBand = market ? Math.max(1, ...market.bands) : 1;
 
   const bodyParas = (page.custom_body || content.intro || "")
     .split(/\n\n+/)
     .map((s) => s.trim())
     .filter(Boolean);
 
-  const showMap = page.city === site.localSeo.city;
   const seeAll = searchHref(page);
 
   // Neighborhood + ZIP showcases — only on the city hub page.
@@ -121,8 +169,8 @@ export default async function SeoLandingPage({
     isHub && page.city
       ? await Promise.all([neighborhoodCards(page.city), zipCards(page.city)])
       : [[], []];
-  const hoodHref = (slug: string) => `/listings?city=${encodeURIComponent(cityLabel)}&neighborhood=${slug}`;
-  const zipHref = (slug: string) => `/listings?city=${encodeURIComponent(cityLabel)}&zip=${slug}`;
+  const hoodHref = (slug: string) => `/homes-for-sale?city=${encodeURIComponent(cityLabel)}&neighborhood=${slug}`;
+  const zipHref = (slug: string) => `/homes-for-sale?city=${encodeURIComponent(cityLabel)}&zip=${slug}`;
 
   const jsonLd = jsonLdGraph({
     content, stats, cards: rows, faqs, siteUrl: SITE, pageUrl, cityHubUrl, cityLabel, topicLabel,
@@ -131,6 +179,8 @@ export default async function SeoLandingPage({
   return (
     <>
       <JsonLd data={jsonLd} />
+      <ListingAlertsQuiz city={page.city} source={page.slug} />
+      <MobileActionBar />
 
       <header className="hero hero--index">
         <div className="wrap">
@@ -138,15 +188,16 @@ export default async function SeoLandingPage({
             <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}
             <Link href={`/${citySlug}/homes-for-sale`}>{cityLabel}</Link> &nbsp;/&nbsp; {topicLabel}
           </nav>
-          <span className="hero__script">{topicLabel.toLowerCase()} in</span>
+          <span className="hero__script">{isHood ? `a ${cityLabel.toLowerCase()} neighborhood` : school ? `${cityLabel.toLowerCase()} homes zoned for` : zip ? `${cityLabel.toLowerCase()} zip code` : `${topicLabel.toLowerCase()} in`}</span>
           <h1>{content.h1}</h1>
           <p className="hero__sub">
-            {stats.count.toLocaleString()} {noun} for sale in {cityLabel}, Louisiana{range}.
+            {stats.count.toLocaleString()} {noun} for sale in {isArea ? `${place}, ${cityLabel}` : `${cityLabel}, Louisiana`}{typical}.
           </p>
           <div className="hero__meta">
             <div><div className="n"><b>{stats.count.toLocaleString()}</b></div><div className="k">Active Listings</div></div>
-            {stats.priceMin ? <div><div className="n">{usd(stats.priceMin)}</div><div className="k">Starting Price</div></div> : null}
-            {stats.priceMax ? <div><div className="n">{usd(stats.priceMax)}</div><div className="k">Up To</div></div> : null}
+            {hasMedian ? <div><div className="n">{usd(market!.median_price!)}</div><div className="k">Median Price</div></div> : null}
+            {!isLandPage && market?.median_ppsf ? <div><div className="n">{usd(market.median_ppsf)}</div><div className="k">Per Sq Ft</div></div> : null}
+            {isLandPage && market?.median_acres ? <div><div className="n">{market.median_acres}</div><div className="k">Median Acres</div></div> : null}
           </div>
           <div className="hero__cta">
             <Link className="btn btn--aqua" href="/buyer-quiz">Take the Buyer Quiz</Link>
@@ -183,17 +234,24 @@ export default async function SeoLandingPage({
                   <span className="script">nothing active</span>
                   <h3>No {topicLabel.toLowerCase()} are active right now</h3>
                   <p>Inventory changes daily — check back soon or browse all listings.</p>
-                  <Link href="/listings">Browse all listings</Link>
+                  <Link href="/homes-for-sale">Browse all listings</Link>
                 </div>
               ) : (
                 <>
                   <div className="listings__grid">
                     {rows.map((c) => <ListingCard key={c.listing_key} c={c} />)}
                   </div>
+                  <CtaBand
+                    text={<>New {isArea ? `homes in ${place}` : `${topicLabel.toLowerCase()} in ${cityLabel}`} go fast. Get them the day they list.</>}
+                    actions={[
+                      { kind: "alerts", label: "Get New Listings First", primary: true },
+                      { kind: "link", label: "Take the Buyer Quiz", href: "/buyer-quiz" },
+                    ]}
+                  />
                   {stats.count > rows.length && (
                     <div className="seo-cta">
                       <Link className="btn btn--primary" href={seeAll} style={{ maxWidth: 360, margin: "0 auto" }}>
-                        View all {stats.count.toLocaleString()} {topicLabel.toLowerCase()} in {cityLabel}
+                        View all {stats.count.toLocaleString()} {isArea ? `homes in ${place}` : `${topicLabel.toLowerCase()} in ${cityLabel}`}
                       </Link>
                     </div>
                   )}
@@ -204,12 +262,55 @@ export default async function SeoLandingPage({
         </div>
       </main>
 
+      {/* Live market snapshot — unique, self-updating numbers for this page */}
+      {market && market.priced_count >= 3 && (
+        <section className="mkt">
+          <div className="wrap">
+            <span className="script">by the numbers</span>
+            <h2 className="section__title">{isArea ? `${placeTitle} market` : `${cityLabel} ${topicLabel.toLowerCase()} market`} at a glance</h2>
+            <p className="mkt__lede">
+              Live from the local MLS: {market.count.toLocaleString()} {noun} for sale in {place} right now
+              {hasMedian ? <>, with a median asking price of <b>{usd(market.median_price!)}</b></> : null}
+              {market.new_7d > 0 ? <>. {market.new_7d.toLocaleString()} came on the market in the last week</> : null}
+              {market.price_cuts > 0 ? <>, and {market.price_cuts.toLocaleString()} have had a price reduction</> : null}.
+            </p>
+            <div className="mkt__tiles">
+              {hasMedian && <div className="mkt__tile"><b>{usd(market.median_price!)}</b><span>Median asking price</span></div>}
+              {!isLandPage && market.median_ppsf ? <div className="mkt__tile"><b>{usd(market.median_ppsf)}</b><span>Median price per sq ft</span></div> : null}
+              {!isLandPage && market.median_sqft ? <div className="mkt__tile"><b>{market.median_sqft.toLocaleString()}</b><span>Median square feet</span></div> : null}
+              {market.median_acres ? <div className="mkt__tile"><b>{market.median_acres}</b><span>Median lot (acres)</span></div> : null}
+              {market.median_dom != null ? <div className="mkt__tile"><b>{market.median_dom}</b><span>Median days on market</span></div> : null}
+              <div className="mkt__tile"><b>{market.new_7d.toLocaleString()}</b><span>New this week</span></div>
+            </div>
+            <div className="mkt__bands" aria-label={`${place} listings by price range`}>
+              {market.bands.map((n, i) => (
+                <div className="mkt__band" key={PRICE_BAND_LABELS[i]}>
+                  <span className="mkt__band-l">{PRICE_BAND_LABELS[i]}</span>
+                  <span className="mkt__band-bar"><span style={{ width: `${(n / maxBand) * 100}%` }} /></span>
+                  <span className="mkt__band-n">{n.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mkt__fine">
+              {isLandPage ? "Land" : "Home"} medians use {market.priced_count.toLocaleString()} priced {isLandPage ? "land listings" : "homes"}. Updated continuously from the MLS.
+            </p>
+            <CtaBand
+              text={<>Own a home in {place}? See what it would sell for in this market.</>}
+              actions={[
+                { kind: "link", label: "What's My Home Worth?", href: "/home-value", primary: true },
+                { kind: "link", label: "Sell My House Fast", href: "/sell-my-house-fast" },
+              ]}
+            />
+          </div>
+        </section>
+      )}
+
       {/* Rich body copy */}
       {bodyParas.length > 0 && (
         <section className="seo-body">
           <div className="wrap">
-            <span className="script">about {cityLabel.toLowerCase()}</span>
-            <h2 className="section__title">{topicLabel} in {cityLabel}, Louisiana</h2>
+            <span className="script">about {place.toLowerCase()}</span>
+            <h2 className="section__title">{isArea ? `Living in ${place}` : `${topicLabel} in ${cityLabel}, Louisiana`}</h2>
             <div className="prose">
               {bodyParas.map((block, i) => {
                 if (block.startsWith("## ")) {
@@ -248,7 +349,7 @@ export default async function SeoLandingPage({
         />
       )}
 
-      {/* Pre-approval CTA → Bayou Mortgage quote page */}
+      {/* Pre-approval CTA → mortgage pre-approval quiz page */}
       <section className="preapproval">
         <div className="wrap preapproval__inner">
           <div className="preapproval__txt">
@@ -267,6 +368,34 @@ export default async function SeoLandingPage({
 
       {/* Reviews — social proof */}
       <Testimonials max={6} />
+
+      {/* Blog guides about this city */}
+      {guides.length > 0 && (
+        <section className="cityguides">
+          <div className="wrap">
+            <span className="script">local guides</span>
+            <h2 className="section__title">Guides for {cityLabel}</h2>
+            <div className="bgrid">
+              {guides.map((g) => (
+                <Link key={g.id} className="bcard" href={`/blog/${g.slug}`}>
+                  <BlogCover slug={g.slug} title={g.title} category={g.category} cover={g.cover_image} />
+                  <div className="bcard__body">
+                    <h3 className="bcard__title">{g.title}</h3>
+                    <span className="bcard__meta">Read the guide &rarr;</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <CtaBand
+              text={<>Moving to {cityLabel}? Tell us where you'll work and what you need, and we'll narrow it down for you.</>}
+              actions={[
+                { kind: "link", label: "Talk to a Local Agent", href: "/contact", primary: true },
+                { kind: "tel", label: `Call ${site.phone}`, href: site.phoneHref },
+              ]}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Internal-linking cluster */}
       {siblings.length > 1 && (
@@ -289,14 +418,11 @@ export default async function SeoLandingPage({
         </section>
       )}
 
-      {/* Local map (client's Google Business Profile) — local SEO */}
-      {showMap && <LocalMap cityLabel={cityLabel} href={seeAll} ctaLabel={`Browse ${cityLabel} listings`} />}
-
       {/* FAQ — rendered as native disclosures (content in the DOM for AEO) */}
       <section className="faq">
         <div className="wrap">
           <span className="script">good to know</span>
-          <h2 className="section__title">{cityLabel} {topicLabel} — FAQ</h2>
+          <h2 className="section__title">{isArea ? topicLabel : `${cityLabel} ${topicLabel}`} — FAQ</h2>
           <div className="faq__list">
             {faqs.map((f, i) => (
               <details key={i} className="faq__item" {...(i === 0 ? { open: true } : {})}>
@@ -305,6 +431,14 @@ export default async function SeoLandingPage({
               </details>
             ))}
           </div>
+          <CtaBand
+            text={<>Still have a question about {place}? Ask a local. We answer fast.</>}
+            actions={[
+              { kind: "sms", label: "Text Us", href: site.phoneHref.replace("tel:", "sms:"), primary: true },
+              { kind: "tel", label: `Call ${site.phone}`, href: site.phoneHref },
+              { kind: "link", label: "Send a Message", href: "/contact" },
+            ]}
+          />
         </div>
       </section>
     </>

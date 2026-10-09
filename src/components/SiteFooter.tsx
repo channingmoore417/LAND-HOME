@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { site } from "@/config/site";
+import type { NavCityEntry } from "@/lib/seo";
 
 // Global footer — rendered once in app/layout.tsx, site-wide.
 // Holds the MLS disclaimer required on every page.
-export default function SiteFooter() {
+export default function SiteFooter({ cityMenu }: { cityMenu: NavCityEntry[] }) {
   return (
     <footer className="footer">
       <div className="wrap">
@@ -12,6 +13,19 @@ export default function SiteFooter() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="footer__logo" src={site.logoUrl} alt={site.name} />
             <p>{site.footer.blurb}</p>
+            <address className="footer__address">
+              <strong>{site.nap.name}</strong>
+              <br />
+              <a href={site.nap.directionsUrl} target="_blank" rel="noopener">
+                {site.nap.street}, {site.nap.city}, {site.nap.region} {site.nap.postalCode}
+              </a>
+              <br />
+              <a href={site.phoneHref}>{site.phone}</a>
+              <br />
+              <a href={site.emailHref}>{site.email}</a>
+              <br />
+              {site.nap.hours.map((h) => `${h.days}: ${h.time}`).join(" · ")}
+            </address>
           </div>
           {site.footer.columns.map((col) => (
             <div key={col.title}>
@@ -25,10 +39,28 @@ export default function SiteFooter() {
               </ul>
             </div>
           ))}
+          {cityMenu.length > 0 && (
+            <div>
+              <h4>Browse by City</h4>
+              <ul className="cities">
+                {cityMenu.map((c) => (
+                  <li key={c.href}>
+                    <Link href={c.href}>{c.label} Homes for Sale</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
         <div className="footer__bottom">
           <div>
             &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
+            {site.footer.legalLinks.map((l) => (
+              <span key={l.href}>
+                {" · "}
+                <Link href={l.href}>{l.label}</Link>
+              </span>
+            ))}
           </div>
           <div className="eh">{site.footer.legal}</div>
         </div>

@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { logActivity } from "@/lib/activity";
 import AuthModal from "@/components/AuthModal";
+import CompletePhoneModal from "@/components/CompletePhoneModal";
 
 interface OpenOpts { intent?: string; onAuthed?: () => void }
 
@@ -32,6 +33,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState(false);
   const [intent, setIntent] = useState<string | undefined>();
+  const [needsPhone, setNeedsPhone] = useState(false);
   const pending = useRef<null | (() => void)>(null);
 
   useEffect(() => {
@@ -63,6 +65,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       }
       if (typeof window !== "undefined") window.localStorage.removeItem("lhg_pending_fav");
       setFavs(set);
+    });
+    return () => { mounted = false; };
+  }, [user, supabase]);
+
+  // Phone is required on every account. The email sign-up form enforces it
+  // (the phone doubles as the password), but Google OAuth sign-ups skip that
+  // form entirely — so any signed-in user without a phone on their profile
+  // gets a blocking "add your phone" prompt.
+  useEffect(() => {
+    if (!user) { setNeedsPhone(false); return; }
+    let mounted = true;
+    supabase.from("profiles").select("phone").eq("id", user.id).maybeSingle().then(({ data }) => {
+      if (!mounted) return;
+      const digits = ((data?.phone as string | null) ?? "").replace(/\D/g, "");
+      setNeedsPhone(digits.length < 7);
     });
     return () => { mounted = false; };
   }, [user, supabase]);
@@ -110,6 +127,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     <Ctx.Provider value={{ user, ready, openAuth, signOut, isFav, toggleFav, favCount: favs.size }}>
       {children}
       {open && <AuthModal intent={intent} onClose={closeAuth} onAuthed={onAuthed} />}
+      {!open && user && needsPhone && <CompletePhoneModal onDone={() => setNeedsPhone(false)} />}
     </Ctx.Provider>
   );
 }
