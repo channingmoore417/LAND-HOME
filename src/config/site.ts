@@ -164,8 +164,10 @@ export const site = {
 // normal header and has no capture gate. Add a path to turn it on,
 // remove it to turn it off (then redeploy).
 //   hideHeader: drop the global header on that page
-//   capture:    full-screen name/phone/email gate (hard — no dismiss);
-//               visitors who already submitted once skip it
+//   capture:    marks the visit as an ad visit; the full-screen name/phone/
+//               email gate (hard — no dismiss) then appears when the visitor
+//               opens a property (/listings/…), not on the landing page.
+//               Visitors who already submitted once skip it
 // Trailing "/*" matches everything under that path.
 // ============================================================
 export interface AdPage {
@@ -180,7 +182,7 @@ export const adPages: AdPage[] = [
 ];
 
 // Add this as the LAST segment of any URL to switch that page into ad mode
-// (header hidden + capture gate) with no code change, e.g.
+// (header hidden; capture gate on property click) with no code change, e.g.
 //   /lake-charles/homes-for-sale/GA   ·   /listings/1146589207/GA   ·   /GA
 // src/middleware.ts serves the normal page for the URL minus the suffix.
 export const adSuffix = "ga";
