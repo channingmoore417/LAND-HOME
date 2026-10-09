@@ -1542,3 +1542,4 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .cityx__btn{margin-top:auto;width:100%;justify-content:center;text-align:center;}
 
 .namerow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}

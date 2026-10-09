@@ -190,6 +190,11 @@ export const adPages: AdPage[] = [
 // src/middleware.ts serves the normal page for the URL minus the suffix.
 export const adSuffix = "ga";
 
+// sessionStorage key flagging an ad visit. Set when a /GA page loads; while set,
+// the header and index hero stay hidden on every page (filters, searches and
+// property clicks all navigate away from the /GA URL).
+export const AD_VISIT_KEY = "lhg_ad_visit";
+
 export function hasAdSuffix(pathname: string): boolean {
   const last = pathname.replace(/\/+$/, "").split("/").pop() ?? "";
   return last.toLowerCase() === adSuffix;
