@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CaptureGate from "@/components/CaptureGate";
@@ -74,6 +75,14 @@ export default async function RootLayout({
         />
       </head>
       <body>
+        {/* Google tag (GA4 / Google Ads). Loads after the page is interactive; GA4 tracks client-side page changes on its own. */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-J59TGYC1RT" strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-J59TGYC1RT');`}
+        </Script>
         <AuthProvider>
           <SiteHeader cityMenu={cityMenu} />
           {children}
