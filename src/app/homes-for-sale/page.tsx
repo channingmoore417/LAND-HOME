@@ -211,7 +211,7 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
 
 function Hero({ areaName, city }: { areaName: string; city: string }) {
   return (
-    <header className="hero hero--index hero--listings">
+    <header className="hero hero--index hero--listings hero--compact">
       <div className="wrap">
         <div className="hero__crumb">
           <Link href="/">Home</Link> &nbsp;/&nbsp; <Link href="/homes-for-sale">Homes for Sale</Link>

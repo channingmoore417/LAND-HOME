@@ -182,7 +182,7 @@ export default async function SeoLandingPage({
       <ListingAlertsQuiz city={page.city} source={page.slug} />
       <MobileActionBar />
 
-      <header className="hero hero--index">
+      <header className="hero hero--index hero--compact">
         <div className="wrap">
           <nav className="hero__crumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link> &nbsp;/&nbsp;{" "}

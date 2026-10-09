@@ -1542,4 +1542,13 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .cityx__btn{margin-top:auto;width:100%;justify-content:center;text-align:center;}
 
 .namerow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* Compact hero: browse pages (city/topic, homes-for-sale, our-listings). Just the
+   breadcrumb, H1 and one-line subheadline, so listings sit above the fold. */
+.hero--compact{padding:22px 0 20px;overflow:visible;}
+.hero--compact .hero__crumb{margin-bottom:8px;font-size:.78rem;}
+.hero--compact .hero__script,.hero--compact .hero__meta,.hero--compact .hero__cta,.hero--compact .hero__wave{display:none;}
+.hero--compact h1{font-size:clamp(1.55rem,3vw,2.3rem);line-height:1.12;}
+.hero--compact h1 .hero__script{display:none;}
+.hero--compact .hero__sub{font-size:.98rem;margin-top:8px;max-width:78ch;}
+@media(max-width:1080px){.hero--compact{padding:18px 0 16px;}}
 html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
