@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef } from "react";
+import { AD_VISIT_KEY } from "@/config/site";
 
 // ============================================================
 // Client half of the spam filter. Every form on the site uses this so the
@@ -47,6 +48,19 @@ export interface GuardSignals {
   human_interactions: number;
 }
 
+// Where a lead came from. Normally the page path. During a Google Ads visit
+// (arrived via a /GA link) it is the ad landing URL instead, so UTMs and gclid
+// reach every form's lead, not just the capture gate. Visitors who did not
+// arrive from an ad never have the flag, so nothing changes for them.
+function sourceUrl(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const landing = window.sessionStorage.getItem(AD_VISIT_KEY);
+    if (landing) return landing;
+  } catch { /* storage blocked */ }
+  return window.location.pathname;
+}
+
 export function useFormGuard() {
   const loadedAt = useRef<number>(Date.now());
   const hpRef = useRef<HTMLInputElement | null>(null);
@@ -69,7 +83,7 @@ export function useFormGuard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
+          source_url: sourceUrl(),
           ...payload,
           ...signals(),
         }),
