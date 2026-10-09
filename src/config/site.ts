@@ -157,3 +157,46 @@ export const site = {
       "https://www.google.com/maps/dir/?api=1&destination=The+Land+%26+Home+Group+3701+Maplewood+Dr+Sulphur+LA+70663",
   },
 } as const;
+
+// ============================================================
+// Google Ads landing pages — OPT-IN, per page.
+// Only the paths listed here change. Every other page keeps the
+// normal header and has no capture gate. Add a path to turn it on,
+// remove it to turn it off (then redeploy).
+//   hideHeader: drop the global header on that page
+//   capture:    full-screen name/phone/email gate (hard — no dismiss);
+//               visitors who already submitted once skip it
+// Trailing "/*" matches everything under that path.
+// ============================================================
+export interface AdPage {
+  path: string;
+  hideHeader?: boolean;
+  capture?: boolean;
+}
+
+export const adPages: AdPage[] = [
+  // { path: "/get-pre-approved", hideHeader: true, capture: true },
+  // { path: "/lp/*", hideHeader: true, capture: true },
+];
+
+// Add this as the LAST segment of any URL to switch that page into ad mode
+// (header hidden + capture gate) with no code change, e.g.
+//   /lake-charles/homes-for-sale/GA   ·   /listings/1146589207/GA   ·   /GA
+// src/middleware.ts serves the normal page for the URL minus the suffix.
+export const adSuffix = "ga";
+
+export function hasAdSuffix(pathname: string): boolean {
+  const last = pathname.replace(/\/+$/, "").split("/").pop() ?? "";
+  return last.toLowerCase() === adSuffix;
+}
+
+export function getAdPage(pathname: string | null): AdPage | undefined {
+  if (!pathname) return undefined;
+  if (hasAdSuffix(pathname)) return { path: pathname, hideHeader: true, capture: true };
+  const clean = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return adPages.find((a) =>
+    a.path.endsWith("/*")
+      ? clean === a.path.slice(0, -2) || clean.startsWith(a.path.slice(0, -1))
+      : clean === a.path,
+  );
+}

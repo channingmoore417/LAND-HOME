@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { site } from "@/config/site";
+import { usePathname } from "next/navigation";
+import { site, getAdPage } from "@/config/site";
 import { useAuth } from "@/components/AuthProvider";
 import type { NavCityEntry } from "@/lib/seo";
 
@@ -20,6 +21,10 @@ export default function SiteHeader({ cityMenu }: { cityMenu: NavCityEntry[] }) {
   const close = () => { setOpen(false); setExpandedCity(null); };
   const nav = site.nav as readonly NavItem[];
   const { user, ready, openAuth } = useAuth();
+  const pathname = usePathname();
+
+  // Opt-in Google Ads landing pages (see adPages in config/site.ts).
+  if (getAdPage(pathname)?.hideHeader) return null;
 
   return (
     <nav className="nav">
