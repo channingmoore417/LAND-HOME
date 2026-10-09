@@ -6,6 +6,8 @@ import { site, getAdPage, AD_VISIT_KEY as AD_KEY } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { namePayload } from "@/lib/formName";
+import { useAuth } from "@/components/AuthProvider";
+import { getBrowserClient } from "@/lib/supabaseBrowser";
 
 const KEY = "lhg_captured";
 const PROPERTY = /^\/listings\/[^/]+/;
@@ -14,10 +16,14 @@ const PROPERTY = /^\/listings\/[^/]+/;
 // config/site.ts). The ad landing page itself is NOT gated: the visit is just
 // flagged (sessionStorage), and the gate appears once they open a property
 // (/listings/<key>). Renders nothing for everyone else.
+// Submitting also creates the visitor's free account (same scheme as the
+// Register modal: the phone number is the password), which unlocks saved
+// homes and alerts. A visitor who is already signed in never sees the gate.
 // Same lead form as the listing page ("Get more details"): shared spam guard,
 // form_id "listing_inquiry" + listing_key, so it flows through the normal pipeline.
 export default function CaptureGate() {
   const pathname = usePathname();
+  const { user, ready } = useAuth();
   const onAdPage = !!getAdPage(pathname)?.capture;
   const [adVisit, setAdVisit] = useState(false);
   const [captured, setCaptured] = useState(false);
@@ -50,7 +56,7 @@ export default function CaptureGate() {
   // Gate only on a property page, for ad visitors (strip a trailing /GA first).
   const base = (pathname ?? "").replace(/\/ga\/?$/i, "");
   const enabled = (onAdPage || adVisit) && PROPERTY.test(base);
-  const locked = enabled && !captured;
+  const locked = enabled && !captured && !user;
 
   useEffect(() => {
     if (!locked) return;
@@ -59,7 +65,27 @@ export default function CaptureGate() {
     return () => { document.body.style.overflow = prev; };
   }, [locked]);
 
-  if (!enabled || (checked && captured)) return null;
+  if (!enabled || (checked && ready && (captured || user))) return null;
+
+  async function createAccount(f: FormData) {
+    const email = String(f.get("email") ?? "").trim();
+    const phone = String(f.get("phone") ?? "");
+    const password = phone.replace(/\D/g, "");
+    if (!email || password.length < 6) return;
+    const { name: full_name } = namePayload(f);
+    try {
+      const supabase = getBrowserClient();
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name, phone } } });
+      if (error) {
+        // Already registered: sign them in with their phone (if it matches).
+        await supabase.auth.signInWithPassword({ email, password });
+        return;
+      }
+      if (!data.session) await supabase.auth.signInWithPassword({ email, password });
+      const uid = (await supabase.auth.getUser()).data.user?.id;
+      if (uid) await supabase.from("profiles").update({ full_name, phone }).eq("id", uid);
+    } catch { /* lead already saved */ }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -78,6 +104,9 @@ export default function CaptureGate() {
         message: `Inquiry about listing ${listingKey} (Google Ads visitor) · wants new-listing alerts`,
       });
       if (!ok) throw new Error("bad");
+      // Lead is captured; now create the account. Best effort — a failure here
+      // (e.g. email already registered with a different phone) never blocks them.
+      await createAccount(f);
       try { window.localStorage.setItem(KEY, "1"); } catch { /* ignore */ }
       setCaptured(true);
     } catch {
@@ -96,7 +125,7 @@ export default function CaptureGate() {
         alignItems: "center", justifyContent: "center", padding: 16,
         background: "rgba(22,56,72,.82)", backdropFilter: "blur(8px)",
         // Hidden until we know the visitor hasn't already submitted (no flash).
-        visibility: checked ? "visible" : "hidden",
+        visibility: checked && ready ? "visible" : "hidden",
       }}
     >
       <form
@@ -104,10 +133,13 @@ export default function CaptureGate() {
         style={{ background: "#fff", borderRadius: 16, padding: 28, width: "100%", maxWidth: 440 }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={site.logoUrl} alt={site.name} style={{ height: 44, marginBottom: 14 }} />
+        {/* The logo is white, so it sits on the brand teal. */}
+        <div style={{ background: "var(--teal)", borderRadius: 12, padding: "10px 16px", display: "inline-block", marginBottom: 14 }}>
+          <img src={site.logoUrl} alt={site.name} style={{ height: 36, display: "block" }} />
+        </div>
         <h2 id="capture-title" style={{ margin: "0 0 6px" }}>Sign In To Get All The Details On This Home</h2>
         <p style={{ margin: "0 0 18px", color: "var(--ink-muted)" }}>
-          Get alerted when new homes hit the market. It takes 10 seconds.
+          Create your free account to see everything and get alerted when new homes hit the market. Your phone number is your password.
         </p>
         <HoneypotField inputRef={guard.hpRef} />
         <div className="namerow">
@@ -115,15 +147,15 @@ export default function CaptureGate() {
           <input className="input" name="last_name" type="text" placeholder="Last name" required autoComplete="family-name" />
         </div>
         {!A2P_REVIEW_MODE && (
-          <input className="input" name="phone" type="tel" placeholder="Phone" required autoComplete="tel" />
+          <input className="input" name="phone" type="tel" placeholder="Phone (this is your password)" required autoComplete="tel" />
         )}
         <input className="input" name="email" type="email" placeholder="Email" required autoComplete="email" />
         {err && <p className="hv-err">{err}</p>}
         <button className="btn btn--primary" disabled={busy} style={{ width: "100%" }}>
-          {busy ? "One moment…" : "Show Me The Details"}
+          {busy ? "One moment…" : "Create Free Account"}
         </button>
         <p className="hv-fine">
-          By continuing you agree to be contacted by The Land &amp; Home Group, including new-listing alerts. Consent is not a
+          By creating an account you agree to be contacted by The Land &amp; Home Group, including new-listing alerts. Consent is not a
           condition of any purchase or sale.
         </p>
       </form>
