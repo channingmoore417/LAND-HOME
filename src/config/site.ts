@@ -164,6 +164,8 @@ export const site = {
 // normal header and has no capture gate. Add a path to turn it on,
 // remove it to turn it off (then redeploy).
 //   hideHeader: drop the global header on that page
+//   hideHero:   drop the big hero banner (the property page's own address +
+//               photo header is never hidden)
 //   capture:    marks the visit as an ad visit; the full-screen name/phone/
 //               email gate (hard — no dismiss) then appears when the visitor
 //               opens a property (/listings/…), not on the landing page.
@@ -173,6 +175,7 @@ export const site = {
 export interface AdPage {
   path: string;
   hideHeader?: boolean;
+  hideHero?: boolean; // drop the big banner at the top of index-style pages
   capture?: boolean;
 }
 
@@ -182,7 +185,7 @@ export const adPages: AdPage[] = [
 ];
 
 // Add this as the LAST segment of any URL to switch that page into ad mode
-// (header hidden; capture gate on property click) with no code change, e.g.
+// (header + hero hidden; capture gate on property click) with no code change, e.g.
 //   /lake-charles/homes-for-sale/GA   ·   /listings/1146589207/GA   ·   /GA
 // src/middleware.ts serves the normal page for the URL minus the suffix.
 export const adSuffix = "ga";
@@ -194,7 +197,7 @@ export function hasAdSuffix(pathname: string): boolean {
 
 export function getAdPage(pathname: string | null): AdPage | undefined {
   if (!pathname) return undefined;
-  if (hasAdSuffix(pathname)) return { path: pathname, hideHeader: true, capture: true };
+  if (hasAdSuffix(pathname)) return { path: pathname, hideHeader: true, hideHero: true, capture: true };
   const clean = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   return adPages.find((a) =>
     a.path.endsWith("/*")

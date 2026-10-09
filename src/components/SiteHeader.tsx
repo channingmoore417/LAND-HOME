@@ -24,7 +24,11 @@ export default function SiteHeader({ cityMenu }: { cityMenu: NavCityEntry[] }) {
   const pathname = usePathname();
 
   // Opt-in Google Ads landing pages (see adPages in config/site.ts).
-  if (getAdPage(pathname)?.hideHeader) return null;
+  const ad = getAdPage(pathname);
+  if (ad?.hideHeader) {
+    // Rendered in the server HTML, so the hero never flashes before hiding.
+    return ad.hideHero ? <style>{".hero--index{display:none !important}"}</style> : null;
+  }
 
   return (
     <nav className="nav">
