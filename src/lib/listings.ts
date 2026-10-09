@@ -154,7 +154,12 @@ export function applySort(query: any, sort: SortKey) {
     case "phigh": return query.order("list_price", { ascending: false, nullsFirst: false });
     case "beds": return query.order("bedrooms_total", { ascending: false, nullsFirst: false });
     case "sqft": return query.order("living_area", { ascending: false, nullsFirst: false });
-    default: return query.order("modification_timestamp", { ascending: false, nullsFirst: false });
+    // "Newest" = most recently LISTED. modification_timestamp only says when a
+    // listing was last edited, which resurfaces old homes after a price tweak.
+    default:
+      return query
+        .order("on_market_date", { ascending: false, nullsFirst: false })
+        .order("modification_timestamp", { ascending: false, nullsFirst: false });
   }
 }
 

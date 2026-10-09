@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { site, getAdPage } from "@/config/site";
+import { site, getAdPage, AD_VISIT_KEY as AD_KEY } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { namePayload } from "@/lib/formName";
 
 const KEY = "lhg_captured";
-const AD_KEY = "lhg_ad_visit";
 const PROPERTY = /^\/listings\/[^/]+/;
 
 // Hard lead-capture gate for Google Ads visitors (/GA suffix or adPages in
@@ -44,6 +43,7 @@ export default function CaptureGate() {
     setAdVisit(true);
     // Remember the ad landing URL (incl. /GA, gclid/UTMs) for lead attribution.
     landing.current = window.location.pathname + window.location.search;
+    document.documentElement.dataset.ad = "1";
     try { window.sessionStorage.setItem(AD_KEY, landing.current); } catch { /* ignore */ }
   }, [onAdPage]);
 
