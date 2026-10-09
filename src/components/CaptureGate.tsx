@@ -139,7 +139,7 @@ export default function CaptureGate() {
         </div>
         <h2 id="capture-title" style={{ margin: "0 0 6px" }}>Sign In To Get All The Details On This Home</h2>
         <p style={{ margin: "0 0 18px", color: "var(--ink-muted)" }}>
-          Create your free account to see everything and get alerted when new homes hit the market. Your phone number is your password.
+          Create your free account to see everything and get alerted when new homes hit the market.
         </p>
         <HoneypotField inputRef={guard.hpRef} />
         <div className="namerow">
@@ -147,7 +147,7 @@ export default function CaptureGate() {
           <input className="input" name="last_name" type="text" placeholder="Last name" required autoComplete="family-name" />
         </div>
         {!A2P_REVIEW_MODE && (
-          <input className="input" name="phone" type="tel" placeholder="Phone (this is your password)" required autoComplete="tel" />
+          <input className="input" name="phone" type="tel" placeholder="Enter your phone for your password" required autoComplete="tel" />
         )}
         <input className="input" name="email" type="email" placeholder="Email" required autoComplete="email" />
         {err && <p className="hv-err">{err}</p>}
