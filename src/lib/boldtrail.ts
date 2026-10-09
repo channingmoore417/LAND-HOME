@@ -12,6 +12,8 @@ const BASE = process.env.BOLDTRAIL_BASE_URL || "https://api.kvcore.com";
 
 export interface BoldTrailLead {
   name?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
   email?: string | null;
   phone?: string | null;
   source?: string | null; // where the lead came from, e.g. "landhomegroup.com"
@@ -46,8 +48,9 @@ export async function syncLeadToBoldTrail(lead: BoldTrailLead): Promise<BoldTrai
   if (!email && !phone) return null; // nothing BoldTrail can key a contact on
 
   const nameParts = (lead.name ?? "").trim().split(/\s+/).filter(Boolean);
-  const firstName = nameParts[0] || (email ? email.split("@")[0] : "Website");
-  const lastName = nameParts.slice(1).join(" ") || "Lead";
+  // Prefer the separately-collected first/last name; fall back to splitting `name`.
+  const firstName = lead.firstName?.trim() || nameParts[0] || (email ? email.split("@")[0] : "Website");
+  const lastName = lead.lastName?.trim() || nameParts.slice(1).join(" ") || "Lead";
 
   try {
     // 1) Search-then-create (docs recommend this to avoid duplicates).

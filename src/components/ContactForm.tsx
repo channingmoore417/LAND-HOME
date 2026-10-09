@@ -4,6 +4,7 @@ import { useState } from "react";
 import { site } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { namePayload } from "@/lib/formName";
 
 // Standalone contact form for the /contact page. Posts to the single
 // /api/forms endpoint with the stable `contact` form_id.
@@ -24,7 +25,7 @@ export default function ContactForm() {
     try {
       const ok = await guard.submit({
         form_id: "contact",
-        name: f.get("name"),
+        ...namePayload(f),
         email: f.get("email"),
         phone: f.get("phone"),
         message: `[${f.get("topic") || "General"}] ${f.get("message") || ""}`,
@@ -55,8 +56,12 @@ export default function ContactForm() {
       <HoneypotField inputRef={guard.hpRef} />
       <div className="hv-grid hv-grid--2">
         <div className="field">
-          <label>Full Name</label>
-          <input className="input" type="text" name="name" required />
+          <label>First Name</label>
+          <input className="input" type="text" name="first_name" autoComplete="given-name" required />
+        </div>
+        <div className="field">
+          <label>Last Name</label>
+          <input className="input" type="text" name="last_name" autoComplete="family-name" required />
         </div>
         {!A2P_REVIEW_MODE && (
           <div className="field">

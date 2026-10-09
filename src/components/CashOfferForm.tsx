@@ -4,6 +4,7 @@ import { useState } from "react";
 import { site } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { namePayload } from "@/lib/formName";
 
 // Cash-offer request form for /sell-my-house-fast. Posts to the single
 // /api/forms endpoint with the stable `cash_offer` form_id.
@@ -31,7 +32,7 @@ export default function CashOfferForm() {
     try {
       const ok = await guard.submit({
         form_id: "cash_offer",
-        name: f.get("name"),
+        ...namePayload(f),
         email: f.get("email"),
         phone: f.get("phone"),
         message: `Cash offer request for ${address}${city ? `, ${city}` : ""}. Condition: ${f.get("condition") || "—"}. Timeframe: ${f.get("timeframe") || "—"}. ${f.get("notes") || ""}`,
@@ -112,8 +113,12 @@ export default function CashOfferForm() {
       </div>
       <div className="hv-grid hv-grid--2">
         <div className="field">
-          <label>Full Name</label>
-          <input className="input" type="text" name="name" autoComplete="name" required />
+          <label>First Name</label>
+          <input className="input" type="text" name="first_name" autoComplete="given-name" required />
+        </div>
+        <div className="field">
+          <label>Last Name</label>
+          <input className="input" type="text" name="last_name" autoComplete="family-name" required />
         </div>
         {!A2P_REVIEW_MODE && (
           <div className="field">
