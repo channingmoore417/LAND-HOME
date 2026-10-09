@@ -75,7 +75,7 @@ export default function CaptureGate() {
         ...namePayload(f),
         phone: f.get("phone"),
         email: f.get("email"),
-        message: `Inquiry about listing ${listingKey} (Google Ads visitor)`,
+        message: `Inquiry about listing ${listingKey} (Google Ads visitor) · wants new-listing alerts`,
       });
       if (!ok) throw new Error("bad");
       try { window.localStorage.setItem(KEY, "1"); } catch { /* ignore */ }
@@ -105,9 +105,9 @@ export default function CaptureGate() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={site.logoUrl} alt={site.name} style={{ height: 44, marginBottom: 14 }} />
-        <h2 id="capture-title" style={{ margin: "0 0 6px" }}>View this home</h2>
+        <h2 id="capture-title" style={{ margin: "0 0 6px" }}>Sign In To Get All The Details On This Home</h2>
         <p style={{ margin: "0 0 18px", color: "var(--ink-muted)" }}>
-          Tell us where to reach you and we&apos;ll show you the full details.
+          Get alerted when new homes hit the market. It takes 10 seconds.
         </p>
         <HoneypotField inputRef={guard.hpRef} />
         <div className="namerow">
@@ -120,10 +120,10 @@ export default function CaptureGate() {
         <input className="input" name="email" type="email" placeholder="Email" required autoComplete="email" />
         {err && <p className="hv-err">{err}</p>}
         <button className="btn btn--primary" disabled={busy} style={{ width: "100%" }}>
-          {busy ? "One moment…" : "Continue"}
+          {busy ? "One moment…" : "Show Me The Details"}
         </button>
         <p className="hv-fine">
-          By continuing you agree to be contacted by The Land &amp; Home Group. Consent is not a
+          By continuing you agree to be contacted by The Land &amp; Home Group, including new-listing alerts. Consent is not a
           condition of any purchase or sale.
         </p>
       </form>
