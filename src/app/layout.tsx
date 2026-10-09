@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CaptureGate from "@/components/CaptureGate";
+import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
 import SiteLocalBand from "@/components/SiteLocalBand";
 import AuthProvider from "@/components/AuthProvider";
 import { site } from "@/config/site";
@@ -77,6 +78,7 @@ export default async function RootLayout({
           <SiteLocalBand cities={cityMenu.map((c) => ({ label: c.label, href: c.href }))} />
           <SiteFooter cityMenu={cityMenu} />
           <CaptureGate />
+          <ListingAlertsQuiz global source="site" />
         </AuthProvider>
       </body>
     </html>

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
@@ -17,7 +18,19 @@ import { COMMUNITIES, FEATURES, PRICE_BANDS, BEDS, BATHS, matchHref } from "@/li
 // comes first.
 // A dismissal snoozes the automatic open for a week; a submission ends it.
 
+// Exit intent: when the visitor moves to leave (cursor leaves through the top of
+// the window on desktop; a fast flick back to the top on phones) the quiz opens
+// as a "WAIT! Don't Miss Out On New Homes" popup. Mounted once site-wide from
+// layout.tsx (global) AND on pages that carry their own copy; a page-level copy
+// wins, so the visitor never sees two.
 export const OPEN_EVENT = "lhg:open-listing-alerts";
+
+// Pages where a second lead prompt would be noise or already IS the capture.
+const NO_EXIT_PATHS = [
+  "/buyer-quiz", "/get-pre-approved", "/contact", "/home-value", "/home-buying-guide",
+  "/cash-offer", "/account", "/admin",
+];
+let localInstances = 0; // page-level copies currently mounted
 
 const SNOOZE_KEY = "lhg_alerts_snoozed_at";
 const DONE_KEY = "lhg_alerts_done";
@@ -47,9 +60,11 @@ function autoOpenAllowed(): boolean {
   return !snoozed || Date.now() - snoozed > SNOOZE_MS;
 }
 
-export default function ListingAlertsQuiz({ city, source }: { city?: string | null; source: string }) {
+export default function ListingAlertsQuiz({ city, source, global }: { city?: string | null; source: string; global?: boolean }) {
+  const pathname = usePathname() ?? "";
   const startCity = city && COMMUNITIES.includes(city) ? [city] : [];
   const [open, setOpen] = useState(false);
+  const [exit, setExit] = useState(false);
   const [step, setStep] = useState(0);
   const [a, setA] = useState<Answers>({
     communities: startCity, price: "", beds: "", baths: "", features: [],
@@ -80,8 +95,42 @@ export default function ListingAlertsQuiz({ city, source }: { city?: string | nu
 
   const close = useCallback(() => {
     setOpen(false);
+    setExit(false);
     if (!readStore(DONE_KEY)) writeStore(SNOOZE_KEY, String(Date.now()));
   }, []);
+
+  useEffect(() => {
+    if (global) return;
+    localInstances += 1;
+    return () => { localInstances -= 1; };
+  }, [global]);
+
+  // Exit intent (desktop: cursor leaves via the top edge; phones: fast flick
+  // back toward the top after reading down the page).
+  useEffect(() => {
+    if (global && NO_EXIT_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) return;
+    const allowed = () =>
+      autoOpenAllowed() &&
+      !(global && localInstances > 0) && // a page-level copy handles this page
+      !document.querySelector('[aria-labelledby="capture-title"]'); // ad-mode gate is up
+    const fire = () => { if (allowed()) { setExit(true); setOpen(true); } };
+    const onOut = (e: MouseEvent) => {
+      if (!e.relatedTarget && e.clientY <= 0) fire();
+    };
+    let lastY = window.scrollY, lastT = Date.now();
+    const onScroll = () => {
+      if (!window.matchMedia(MOBILE_QUERY).matches) return;
+      const y = window.scrollY, t = Date.now();
+      if (lastY > 900 && lastY - y > 350 && t - lastT < 450) fire();
+      if (t - lastT > 450 || Math.abs(y - lastY) > 350) { lastY = y; lastT = t; }
+    };
+    document.addEventListener("mouseout", onOut);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      document.removeEventListener("mouseout", onOut);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [global, pathname]);
 
   // Hero button (and anything else) can open it.
   useEffect(() => {
@@ -91,7 +140,7 @@ export default function ListingAlertsQuiz({ city, source }: { city?: string | nu
 
   // Automatic open: halfway down the post (desktop) or after a delay.
   useEffect(() => {
-    if (!autoOpenAllowed()) return;
+    if (global || !autoOpenAllowed()) return;
     let fired = false;
     const fire = () => {
       if (fired) return;
@@ -111,7 +160,7 @@ export default function ListingAlertsQuiz({ city, source }: { city?: string | nu
       window.removeEventListener("scroll", onScroll);
     }
     return cleanup;
-  }, []);
+  }, [global]);
 
   // Esc to close, lock page scroll, focus the dialog while open.
   useEffect(() => {
@@ -137,10 +186,10 @@ export default function ListingAlertsQuiz({ city, source }: { city?: string | nu
         form_id: "buyer_quiz",
         name: `${a.firstName.trim()} ${a.lastName.trim()}`.trim(),
         first_name: a.firstName, last_name: a.lastName, email: a.email, phone: a.phone,
-        message: `New-listing alerts (blog: ${source}) · ${a.communities.join(", ") || "any area"} · ${a.price || "any price"} · ${a.beds || "any"} bed / ${a.baths || "any"} bath`,
+        message: `New-listing alerts (${global || exit ? "exit popup" : "blog"}: ${source}) · ${a.communities.join(", ") || "any area"} · ${a.price || "any price"} · ${a.beds || "any"} bed / ${a.baths || "any"} bath`,
         criteria: {
           communities: a.communities, price: a.price, features: a.features,
-          beds: a.beds, baths: a.baths, listing_alerts: true, quiz_source: "blog_popup",
+          beds: a.beds, baths: a.baths, listing_alerts: true, quiz_source: global || exit ? "exit_popup" : "blog_popup",
         },
       });
     } catch { /* still thank them */ }
@@ -161,8 +210,8 @@ export default function ListingAlertsQuiz({ city, source }: { city?: string | nu
 
         {name !== "done" && (
           <div className="lqz__head">
-            <span className="script">new homes, first</span>
-            <h2 id="lqz-title">Be first in line for new homes</h2>
+            <span className="script">{exit ? "before you go" : "new homes, first"}</span>
+            <h2 id="lqz-title">{exit ? "WAIT! Don\u2019t Miss Out On New Homes" : "Be first in line for new homes"}</h2>
             <p>Answer a few quick questions and we&apos;ll send you new listings that fit, as soon as they hit the market.</p>
             <div className="wiz__bar"><div className="wiz__fill" style={{ width: `${fillPct}%` }} /></div>
           </div>
