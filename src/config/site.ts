@@ -105,3 +105,34 @@ export const site = {
     gbpUrl: "https://share.google/P0z9MIBZPEnlqMUMh",
   },
 } as const;
+
+// ============================================================
+// Google Ads landing pages — OPT-IN, per page.
+// Only the paths listed here change. Every other page keeps the
+// normal header and has no capture gate. Add a path to turn it on,
+// remove it to turn it off (then redeploy).
+//   hideHeader: drop the global header on that page
+//   capture:    full-screen name/phone/email gate (hard — no dismiss);
+//               visitors who already submitted once skip it
+// Trailing "/*" matches everything under that path.
+// ============================================================
+export interface AdPage {
+  path: string;
+  hideHeader?: boolean;
+  capture?: boolean;
+}
+
+export const adPages: AdPage[] = [
+  // { path: "/get-pre-approved", hideHeader: true, capture: true },
+  // { path: "/lp/*", hideHeader: true, capture: true },
+];
+
+export function getAdPage(pathname: string | null): AdPage | undefined {
+  if (!pathname) return undefined;
+  const clean = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return adPages.find((a) =>
+    a.path.endsWith("/*")
+      ? clean === a.path.slice(0, -2) || clean.startsWith(a.path.slice(0, -1))
+      : clean === a.path,
+  );
+}

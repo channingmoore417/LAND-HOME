@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import CaptureGate from "@/components/CaptureGate";
 import AuthProvider from "@/components/AuthProvider";
 import { site } from "@/config/site";
 import { SITE_URL } from "@/lib/seoConfig";
@@ -54,6 +55,7 @@ export default function RootLayout({
           <SiteHeader />
           {children}
           <SiteFooter />
+          <CaptureGate />
         </AuthProvider>
       </body>
     </html>
