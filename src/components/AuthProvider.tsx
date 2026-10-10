@@ -5,8 +5,10 @@ import type { User } from "@supabase/supabase-js";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { logActivity } from "@/lib/activity";
 import AuthModal from "@/components/AuthModal";
+import QuizGate from "@/components/QuizGate";
+import { captureAdVisit } from "@/lib/adVisit";
 
-interface OpenOpts { intent?: string; onAuthed?: () => void }
+interface OpenOpts { intent?: string; listingKey?: string; onAuthed?: () => void }
 
 interface AuthCtx {
   user: User | null;
@@ -32,7 +34,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState(false);
   const [intent, setIntent] = useState<string | undefined>();
+  const [listingKey, setListingKey] = useState<string | undefined>();
+  const [loginView, setLoginView] = useState(false);
   const pending = useRef<null | (() => void)>(null);
+
+  useEffect(() => { captureAdVisit(); }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -69,6 +75,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   const openAuth = useCallback((o?: OpenOpts) => {
     setIntent(o?.intent);
+    setListingKey(o?.listingKey);
+    setLoginView(false);
     pending.current = o?.onAuthed ?? null;
     setOpen(true);
   }, []);
@@ -109,7 +117,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   return (
     <Ctx.Provider value={{ user, ready, openAuth, signOut, isFav, toggleFav, favCount: favs.size }}>
       {children}
-      {open && <AuthModal intent={intent} onClose={closeAuth} onAuthed={onAuthed} />}
+      {open && intent === "view" && !loginView && (
+        <QuizGate
+          listingKey={listingKey}
+          onClose={closeAuth}
+          onLogin={() => setLoginView(true)}
+          onDone={() => {
+            try { window.localStorage.setItem("lhg_gate_pass", "1"); } catch { /* ignore */ }
+            onAuthed();
+          }}
+        />
+      )}
+      {open && !(intent === "view" && !loginView) && (
+        <AuthModal intent={intent} startMode={loginView ? "login" : "signup"} onClose={closeAuth}
+          onAuthed={() => { if (intent === "view") { try { window.localStorage.setItem("lhg_gate_pass", "1"); } catch { /* ignore */ } } onAuthed(); }} />
+      )}
     </Ctx.Provider>
   );
 }

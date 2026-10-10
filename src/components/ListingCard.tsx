@@ -1,4 +1,4 @@
-import Link from "next/link";
+import ListingLink from "@/components/ListingLink";
 import { usd, int, titleCase } from "@/lib/format";
 import { photo } from "@/lib/images";
 import type { Card } from "@/lib/listings";
@@ -34,7 +34,7 @@ export default function ListingCard({ c }: { c: Card }) {
   const cityState = `${titleCase(c.city)}, ${c.state_or_province ?? "LA"} ${c.postal_code ?? ""}`.trim();
 
   return (
-    <Link className="pcard" href={`/listings/${c.listing_key}`}>
+    <ListingLink className="pcard" href={`/listings/${c.listing_key}`} listingKey={c.listing_key}>
       <div className="pcard__media">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -61,6 +61,6 @@ export default function ListingCard({ c }: { c: Card }) {
           <div className="pcard__courtesy">Listing provided courtesy of {c.list_office_name}</div>
         )}
       </div>
-    </Link>
+    </ListingLink>
   );
 }

@@ -93,6 +93,12 @@ export const site = {
     region: "LA",
   },
 
+  // Lead capture: signed-out visitors who open a listing see the quiz first.
+  // adsOnly = gate only visitors who arrived from a paid ad (gclid / paid UTM);
+  // organic visitors browse freely. freeViews = listings they can open before
+  // the gate appears (0 = always gate).
+  leadGate: { enabled: true, adsOnly: true, freeViews: 0 },
+
   // Blog author (team leader) — powers the author bio card + Person structured
   // data for Google E-E-A-T. Drop a headshot URL in photoUrl when available.
   blogAuthor: {

@@ -7,15 +7,17 @@ import { site } from "@/config/site";
 // Sign-up / login modal. Instant registration with NO separate password — the
 // phone number is used as the password. Plus Google / Apple OAuth.
 export default function AuthModal({
+  startMode = "signup",
   onClose,
   onAuthed,
 }: {
   intent?: string;
+  startMode?: "signup" | "login";
   onClose: () => void;
   onAuthed: () => void;
 }) {
   const supabase = getBrowserClient();
-  const [mode, setMode] = useState<"signup" | "login">("signup");
+  const [mode, setMode] = useState<"signup" | "login">(startMode);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
