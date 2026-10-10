@@ -22,7 +22,8 @@ const OWNERSHIP = [
   { key: "own_selling", label: "Yes, and I may sell it" },
 ];
 
-const QUESTIONS = ["communities", "price", "size", "style", "owns"] as const;
+// Easy single-tap questions first; the 13-town list comes after they are invested.
+const QUESTIONS = ["price", "size", "communities", "style", "owns"] as const;
 const CONTACT = A2P_REVIEW_MODE ? (["firstName", "lastName", "email"] as const) : (["firstName", "lastName", "email", "phone"] as const);
 const STEPS = [...QUESTIONS, ...CONTACT] as const;
 type Step = (typeof STEPS)[number];
@@ -205,11 +206,12 @@ export default function CaptureGate() {
       className="qg"
       role="dialog"
       aria-modal="true"
-      aria-label="Find your match"
+      aria-labelledby="capture-title" // the exit-intent popup watches for this id and stays hidden while the gate is up
       // Hidden until we know the visitor hasn't already submitted (no flash).
       style={{ visibility: checked && ready ? "visible" : "hidden" }}
     >
       <form className="qg__sheet" onSubmit={(e) => { e.preventDefault(); go(); }}>
+        <span id="capture-title" className="qg__sr">Find your match</span>
         <header className="qg__top">
           {step > 0 ? <button type="button" className="qg__icon" onClick={() => setStep(step - 1)} aria-label="Back">←</button> : <span className="qg__icon" />}
           <div className="qg__bar" aria-hidden="true"><div style={{ width: `${pct}%` }} /></div>
@@ -220,7 +222,6 @@ export default function CaptureGate() {
           <HoneypotField inputRef={guard.hpRef} />
 
           {name === "communities" && (<>
-            <p className="qg__eyebrow">Unlock this home + every listing</p>
             <h2 className="qg__q">Where are you looking?</h2>
             <p className="qg__hint">Pick every area you&apos;d consider.</p>
             <div className="qg__grid">
@@ -231,6 +232,7 @@ export default function CaptureGate() {
           </>)}
 
           {name === "price" && (<>
+            <p className="qg__eyebrow">Unlock this home + every listing</p>
             <h2 className="qg__q">What&apos;s your price range?</h2>
             <p className="qg__hint">A rough band is fine.</p>
             <div className="qg__grid qg__grid--1">
