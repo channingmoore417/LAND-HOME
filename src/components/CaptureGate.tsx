@@ -29,10 +29,10 @@ const STEPS = [...QUESTIONS, ...CONTACT] as const;
 type Step = (typeof STEPS)[number];
 
 const COPY = {
-  firstName: { h: "What's your first name?", p: "", label: "First name", type: "text", auto: "given-name", mode: "text" },
-  lastName: { h: "And your last name?", p: "", label: "Last name", type: "text", auto: "family-name", mode: "text" },
-  email: { h: "Where should we send your matches?", p: "We'll email you homes that match.", label: "Email", type: "email", auto: "email", mode: "email" },
-  phone: { h: "Last step: your phone number", p: "This is also your password to log back in.", label: "Phone number", type: "tel", auto: "tel", mode: "tel" },
+  firstName: { h: "What's your first name?", p: "Your agent will use it when they follow up on this home.", label: "First name", type: "text", auto: "given-name", mode: "text" },
+  lastName: { h: "And your last name?", p: "This sets up your free account, so your saved homes and alerts are all in one place.", label: "Last name", type: "text", auto: "family-name", mode: "text" },
+  email: { h: "Where should we send your matches?", p: "Your matches and every new listing land here the day they're listed.", label: "Email", type: "email", auto: "email", mode: "email" },
+  phone: { h: "Last step: your phone number", p: "It's also your password, so there's nothing extra to remember. Then you're straight into this home.", label: "Phone number", type: "tel", auto: "tel", mode: "tel" },
 } as const;
 
 interface Answers {
@@ -211,8 +211,15 @@ export default function CaptureGate() {
   const isContact = (CONTACT as readonly string[]).includes(name);
   const c = isContact ? COPY[name as keyof typeof COPY] : null;
   const autoAdvance = name === "price" || name === "owns";
-  const btnLabel = isLast ? (busy ? "One moment…" : "Show me the home →")
-    : name === "style" && a.features.length === 0 ? "Skip" : "Continue";
+  const NEXT: Partial<Record<Step, string>> = {
+    size: "Next: choose your areas →",
+    communities: "Next: your must-haves →",
+    style: a.features.length ? "Next →" : "Skip, I'm flexible →",
+    firstName: "Next →",
+    lastName: "Next →",
+    email: "Next: last step →",
+  };
+  const btnLabel = isLast ? (busy ? "One moment…" : "Show me this home →") : NEXT[name] ?? "Continue";
   const pct = Math.round(((step + 1) / STEPS.length) * 100);
   const cta = <button type="submit" className="qg__cta" disabled={!canNext || busy}>{btnLabel}</button>;
 
@@ -237,8 +244,8 @@ export default function CaptureGate() {
           <HoneypotField inputRef={guard.hpRef} />
 
           {name === "communities" && (<>
-            <h2 className="qg__q">Where are you looking?</h2>
-            <p className="qg__hint">Select all that apply.</p>
+            <h2 className="qg__q">Which areas do you want?</h2>
+            <p className="qg__hint">Pick every town you&apos;d consider. You&apos;ll get an email the day a new home lists there.</p>
             <div className="qg__grid">
               {COMMUNITIES.map((x) => (
                 <button type="button" key={x} className={`qg__chip${a.communities.includes(x) ? " is-on" : ""}`} aria-pressed={a.communities.includes(x)} onClick={() => toggle("communities", x)}>{x}</button>
@@ -249,6 +256,7 @@ export default function CaptureGate() {
           {name === "price" && (<>
             <p className="qg__eyebrow">Unlock this home + every listing</p>
             <h2 className="qg__q">What&apos;s your price range?</h2>
+            <p className="qg__hint">We&apos;ll show you homes you can actually afford and alert you the day one drops in your range.</p>
             <div className="qg__grid qg__grid--1">
               {PRICE_BANDS.map((p) => (
                 <button type="button" key={p.label} className={`qg__chip${a.price === p.label ? " is-on" : ""}`} onClick={() => pick({ price: p.label })}>{p.label}</button>
@@ -257,7 +265,8 @@ export default function CaptureGate() {
           </>)}
 
           {name === "size" && (<>
-            <h2 className="qg__q">How much space?</h2>
+            <h2 className="qg__q">How much space do you need?</h2>
+            <p className="qg__hint">So you never waste time on a 2-bedroom when you need 4.</p>
             <p className="qg__label">Bedrooms</p>
             <div className="qg__row">
               {BEDS.map((b) => <button type="button" key={b} className={`qg__chip${a.beds === b ? " is-on" : ""}`} onClick={() => set({ beds: b })}>{b}</button>)}
@@ -270,7 +279,7 @@ export default function CaptureGate() {
 
           {name === "style" && (<>
             <h2 className="qg__q">Any must-haves?</h2>
-            <p className="qg__hint">Select all that apply, or skip.</p>
+            <p className="qg__hint">Tell us your deal-breakers and we&apos;ll skip every home without them.</p>
             <div className="qg__grid">
               {FEATURES.map((f) => (
                 <button type="button" key={f.key} className={`qg__chip${a.features.includes(f.key) ? " is-on" : ""}`} aria-pressed={a.features.includes(f.key)} onClick={() => toggle("features", f.key)}>{SHORT[f.key] ?? f.label}</button>
@@ -280,6 +289,7 @@ export default function CaptureGate() {
 
           {name === "owns" && (<>
             <h2 className="qg__q">Do you currently own a home?</h2>
+            <p className="qg__hint">Owners also get a free estimate of what their home could sell for, so you know your buying power.</p>
             <div className="qg__grid qg__grid--1">
               {OWNERSHIP.map((o) => (
                 <button type="button" key={o.key} className={`qg__chip${a.owns === o.key ? " is-on" : ""}`} onClick={() => pick({ owns: o.key })}>{o.label}</button>
