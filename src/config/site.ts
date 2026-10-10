@@ -194,6 +194,8 @@ export const adSuffix = "ga";
 // the header and index hero stay hidden on every page (filters, searches and
 // property clicks all navigate away from the /GA URL).
 export const AD_VISIT_KEY = "lhg_ad_visit";
+// Same flag as a cookie, set by middleware on any ad click (survives new tabs).
+export const AD_VISIT_COOKIE = "lhg_ad_visit";
 
 export function hasAdSuffix(pathname: string): boolean {
   const last = pathname.replace(/\/+$/, "").split("/").pop() ?? "";
