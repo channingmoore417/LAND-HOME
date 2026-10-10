@@ -6,7 +6,7 @@ import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { logActivity } from "@/lib/activity";
 import AuthModal from "@/components/AuthModal";
 
-interface OpenOpts { intent?: string; onAuthed?: () => void; forced?: boolean }
+interface OpenOpts { intent?: string; onAuthed?: () => void }
 
 interface AuthCtx {
   user: User | null;
@@ -32,7 +32,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState(false);
   const [intent, setIntent] = useState<string | undefined>();
-  const [forced, setForced] = useState(false);
   const pending = useRef<null | (() => void)>(null);
 
   useEffect(() => {
@@ -70,12 +69,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   const openAuth = useCallback((o?: OpenOpts) => {
     setIntent(o?.intent);
-    setForced(!!o?.forced);
     pending.current = o?.onAuthed ?? null;
     setOpen(true);
   }, []);
-  const closeAuth = useCallback(() => { setOpen(false); setForced(false); pending.current = null; }, []);
-  const onAuthed = useCallback(() => { setOpen(false); setForced(false); const cb = pending.current; pending.current = null; cb?.(); }, []);
+  const closeAuth = useCallback(() => { setOpen(false); pending.current = null; }, []);
+  const onAuthed = useCallback(() => { setOpen(false); const cb = pending.current; pending.current = null; cb?.(); }, []);
 
   const signOut = useCallback(async () => { await supabase.auth.signOut(); setUser(null); }, [supabase]);
 
@@ -111,7 +109,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   return (
     <Ctx.Provider value={{ user, ready, openAuth, signOut, isFav, toggleFav, favCount: favs.size }}>
       {children}
-      {open && <AuthModal intent={intent} forced={forced} onClose={closeAuth} onAuthed={onAuthed} />}
+      {open && <AuthModal intent={intent} onClose={closeAuth} onAuthed={onAuthed} />}
     </Ctx.Provider>
   );
 }

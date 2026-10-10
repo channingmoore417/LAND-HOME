@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import AuthProvider from "@/components/AuthProvider";
-import TrafficSource from "@/components/TrafficSource";
 import { site } from "@/config/site";
 import { SITE_URL } from "@/lib/seoConfig";
 import "./globals.css";
@@ -52,7 +51,6 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <TrafficSource />
           <SiteHeader />
           {children}
           <SiteFooter />

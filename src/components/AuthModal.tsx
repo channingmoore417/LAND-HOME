@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { site } from "@/config/site";
 
 // Sign-up / login modal. Instant registration with NO separate password — the
 // phone number is used as the password. Plus Google / Apple OAuth.
 export default function AuthModal({
-  forced = false,
   onClose,
   onAuthed,
 }: {
   intent?: string;
-  // Registration wall: no close button, backdrop click does nothing.
-  forced?: boolean;
   onClose: () => void;
   onAuthed: () => void;
 }) {
@@ -25,14 +22,6 @@ export default function AuthModal({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
-
-  // A forced wall also locks page scroll behind it.
-  useEffect(() => {
-    if (!forced) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [forced]);
 
   const digits = (s: string) => s.replace(/\D/g, "");
 
@@ -91,15 +80,10 @@ export default function AuthModal({
   }
 
   return (
-    <div className="authm" role="dialog" aria-modal="true" onClick={forced ? undefined : onClose}>
+    <div className="authm" role="dialog" aria-modal="true" onClick={onClose}>
       <div className="authm__card" onClick={(e) => e.stopPropagation()}>
-        {!forced && <button className="authm__close" aria-label="Close" onClick={onClose}>×</button>}
+        <button className="authm__close" aria-label="Close" onClick={onClose}>×</button>
         <h2 className="authm__title">{mode === "signup" ? "Continue Your Home Search." : "Welcome back."}</h2>
-        {forced && mode === "signup" && (
-          <p className="authm__sub" style={{ textAlign: "center" }}>
-            Create your free account to view full property details, photos, and price history — and get alerts on new homes.
-          </p>
-        )}
 
         <div className="authm__oauth">
           <button className="oauthbtn oauthbtn--google" onClick={() => oauth("google")}>
