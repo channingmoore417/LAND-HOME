@@ -1563,14 +1563,15 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 @media(min-width:901px){.listbar .filterbtn{display:none;}}
 
 /* ---- listing-gate quiz (mobile-first sheet) ---- */
-.qg{position:fixed;inset:0;z-index:1000;background:rgba(22,56,72,.82);backdrop-filter:blur(8px);display:flex;align-items:stretch;justify-content:center;animation:fadeIn .2s ease;}
-.qg__sheet{background:var(--paper);width:100%;height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
-.qg__top{display:flex;align-items:center;gap:10px;padding:max(12px,env(safe-area-inset-top)) 12px 8px;}
+/* Light dim, no blur: the listing they clicked stays visible behind the quiz. */
+.qg{position:fixed;inset:0;z-index:1000;background:rgba(10,20,28,.32);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease;}
+.qg__sheet{background:var(--paper);width:100%;max-height:min(88dvh,700px);display:flex;flex-direction:column;overflow:hidden;border-radius:22px 22px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.28);}
+.qg__top{display:flex;align-items:center;gap:10px;padding:10px 12px 4px;}
 .qg__icon{flex:none;width:44px;height:44px;border:0;background:none;font-size:1.7rem;line-height:1;color:var(--ink-muted);cursor:pointer;border-radius:50%;}
 .qg__icon:active{background:var(--aqua-soft);}
 .qg__bar{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden;}
 .qg__bar div{height:100%;background:var(--aqua);border-radius:99px;transition:width .25s ease;}
-.qg__body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px 20px;animation:wizIn .25s ease;}
+.qg__body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px 20px;animation:wizIn .25s ease;}
 .qg__eyebrow{color:var(--aqua);font-weight:700;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;margin:6px 0 0;}
 .qg__q{font-family:"Outfit",sans-serif;font-weight:800;font-size:1.65rem;line-height:1.12;color:var(--teal-deep);letter-spacing:-.01em;margin:6px 0 6px;}
 .qg__hint{color:var(--ink-muted);font-size:.95rem;margin:0 0 16px;line-height:1.45;}
@@ -1593,6 +1594,10 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 .qg__legal{color:var(--ink-muted);font-size:.7rem;line-height:1.5;margin:14px 0 0;}
 @media(min-width:640px){
   .qg{align-items:center;padding:20px;}
-  .qg__sheet{max-width:480px;height:auto;max-height:min(720px,92dvh);border-radius:22px;box-shadow:0 30px 70px rgba(11,32,44,.4);}
+  .qg__sheet{max-width:480px;max-height:min(720px,92dvh);border-radius:22px;box-shadow:0 30px 70px rgba(11,32,44,.4);}
   .qg__grid{grid-template-columns:1fr 1fr 1fr;}.qg__grid--1{grid-template-columns:1fr;}
 }
+
+/* ---- infinite scroll on landing pages ---- */
+.inflist__status{text-align:center;color:var(--ink-muted);font-size:.95rem;margin:28px 0 8px;}
+.inflist__status a,.inflist__retry{color:var(--teal);font-weight:700;background:none;border:0;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;}

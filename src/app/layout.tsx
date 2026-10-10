@@ -62,7 +62,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Ad visit (came in via a /GA link): flag <html> before first paint so the header and hero stay hidden on every later page. */}
-        <script dangerouslySetInnerHTML={{ __html: `try{var k=${JSON.stringify(AD_VISIT_KEY)};if(!sessionStorage.getItem(k)){var m=document.cookie.match(/(?:^|; )${AD_VISIT_COOKIE}=([^;]*)/);if(m)sessionStorage.setItem(k,decodeURIComponent(m[1]))}if(sessionStorage.getItem(k))document.documentElement.dataset.ad="1"}catch(e){}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `try{var k=${JSON.stringify(AD_VISIT_KEY)};if(!sessionStorage.getItem(k)){var m=document.cookie.match(/(?:^|; )${AD_VISIT_COOKIE}=([^;]*)/);if(m)sessionStorage.setItem(k,decodeURIComponent(m[1]))}if(sessionStorage.getItem(k)&&!localStorage.getItem("lhg_captured"))document.documentElement.dataset.ad="1"}catch(e){}` }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

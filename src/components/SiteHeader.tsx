@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { site, getAdPage } from "@/config/site";
@@ -23,9 +23,20 @@ export default function SiteHeader({ cityMenu }: { cityMenu: NavCityEntry[] }) {
   const { user, ready, openAuth } = useAuth();
   const pathname = usePathname();
 
+  // Someone who registered (or finished the capture quiz) gets the full header
+  // and hero back, even on a /GA ad URL.
+  const [captured, setCaptured] = useState(false);
+  useEffect(() => {
+    const read = () => { try { setCaptured(window.localStorage.getItem("lhg_captured") === "1"); } catch { /* private mode */ } };
+    read();
+    window.addEventListener("lhg:captured", read);
+    return () => window.removeEventListener("lhg:captured", read);
+  }, []);
+  const registered = !!user || captured;
+
   // Opt-in Google Ads landing pages (see adPages in config/site.ts).
   const ad = getAdPage(pathname);
-  if (ad?.hideHeader) {
+  if (ad?.hideHeader && !registered) {
     // Rendered in the server HTML, so the hero never flashes before hiding.
     return ad.hideHero ? <style>{".hero--index{display:none !important}"}</style> : null;
   }

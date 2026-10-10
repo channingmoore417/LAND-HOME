@@ -99,7 +99,10 @@ export default function CaptureGate() {
     if (!onAdPage) return;
     setAdVisit(true);
     landing.current = window.location.pathname + window.location.search;
-    document.documentElement.dataset.ad = "1";
+    // Ad mode hides the header and hero; skip it for anyone who already registered.
+    let registered = false;
+    try { registered = window.localStorage.getItem(KEY) === "1"; } catch { /* private mode */ }
+    if (!registered) document.documentElement.dataset.ad = "1";
     try { window.sessionStorage.setItem(AD_KEY, landing.current); } catch { /* ignore */ }
   }, [onAdPage]);
 
@@ -111,6 +114,11 @@ export default function CaptureGate() {
     } catch { /* ignore */ }
   }, [a, step]);
   useEffect(() => { bodyRef.current?.scrollTo({ top: 0 }); }, [step]);
+
+  // Registered (or signed in): leave ad mode so the header and hero come back.
+  useEffect(() => {
+    if (captured || user) delete document.documentElement.dataset.ad;
+  }, [captured, user]);
 
   // Gate only on a property page (strip a trailing /GA first).
   const base = (pathname ?? "").replace(/\/ga\/?$/i, "");
@@ -202,6 +210,7 @@ export default function CaptureGate() {
       // (e.g. email already registered with a different phone) never blocks them.
       await createAccount();
       try { window.localStorage.setItem(KEY, "1"); window.sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+      window.dispatchEvent(new Event("lhg:captured")); // header + hero come back
       setCaptured(true);
     } catch {
       setErr(`Something went wrong. Please call us at ${site.phone}.`);
