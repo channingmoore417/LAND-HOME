@@ -8,6 +8,14 @@ const UTMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_conte
 export function captureAdVisit(): void {
   try {
     const q = new URLSearchParams(window.location.search);
+    // Test hook: ?gate=test behaves like a fresh paid-ad visit (clears "already completed").
+    if (q.get("gate") === "test") {
+      localStorage.removeItem("lhg_gate_pass");
+      localStorage.removeItem("lhg_gate_views");
+      sessionStorage.removeItem("lhg_quiz");
+      sessionStorage.setItem(KEY, JSON.stringify({ utm_source: "gate-test", landing_page: window.location.pathname }));
+      return;
+    }
     const medium = (q.get("utm_medium") || "").toLowerCase();
     const paid = CLICK_IDS.some((k) => q.get(k)) || ["cpc", "ppc", "paid", "paidsearch"].includes(medium);
     if (!paid) return;
