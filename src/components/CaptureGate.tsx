@@ -29,10 +29,10 @@ const STEPS = [...QUESTIONS, ...CONTACT] as const;
 type Step = (typeof STEPS)[number];
 
 const COPY = {
-  firstName: { h: "What's your first name?", p: "So we know who we're helping.", label: "First name", type: "text", auto: "given-name", mode: "text" },
-  lastName: { h: "And your last name?", p: "Almost there.", label: "Last name", type: "text", auto: "family-name", mode: "text" },
-  email: { h: "Where should we send your matches?", p: "We'll email homes that fit as soon as they hit the market.", label: "Email", type: "email", auto: "email", mode: "email" },
-  phone: { h: "Last step: your phone number", p: "This is also your password. Use it with your email to log back in anytime.", label: "Phone number", type: "tel", auto: "tel", mode: "tel" },
+  firstName: { h: "What's your first name?", p: "", label: "First name", type: "text", auto: "given-name", mode: "text" },
+  lastName: { h: "And your last name?", p: "", label: "Last name", type: "text", auto: "family-name", mode: "text" },
+  email: { h: "Where should we send your matches?", p: "We'll email you homes that match.", label: "Email", type: "email", auto: "email", mode: "email" },
+  phone: { h: "Last step: your phone number", p: "This is also your password to log back in.", label: "Phone number", type: "tel", auto: "tel", mode: "tel" },
 } as const;
 
 interface Answers {
@@ -238,7 +238,7 @@ export default function CaptureGate() {
 
           {name === "communities" && (<>
             <h2 className="qg__q">Where are you looking?</h2>
-            <p className="qg__hint">Pick every area you&apos;d consider.</p>
+            <p className="qg__hint">Select all that apply.</p>
             <div className="qg__grid">
               {COMMUNITIES.map((x) => (
                 <button type="button" key={x} className={`qg__chip${a.communities.includes(x) ? " is-on" : ""}`} aria-pressed={a.communities.includes(x)} onClick={() => toggle("communities", x)}>{x}</button>
@@ -249,7 +249,6 @@ export default function CaptureGate() {
           {name === "price" && (<>
             <p className="qg__eyebrow">Unlock this home + every listing</p>
             <h2 className="qg__q">What&apos;s your price range?</h2>
-            <p className="qg__hint">A rough band is fine.</p>
             <div className="qg__grid qg__grid--1">
               {PRICE_BANDS.map((p) => (
                 <button type="button" key={p.label} className={`qg__chip${a.price === p.label ? " is-on" : ""}`} onClick={() => pick({ price: p.label })}>{p.label}</button>
@@ -271,7 +270,7 @@ export default function CaptureGate() {
 
           {name === "style" && (<>
             <h2 className="qg__q">Any must-haves?</h2>
-            <p className="qg__hint">Pick any that matter, or skip.</p>
+            <p className="qg__hint">Select all that apply, or skip.</p>
             <div className="qg__grid">
               {FEATURES.map((f) => (
                 <button type="button" key={f.key} className={`qg__chip${a.features.includes(f.key) ? " is-on" : ""}`} aria-pressed={a.features.includes(f.key)} onClick={() => toggle("features", f.key)}>{SHORT[f.key] ?? f.label}</button>
@@ -289,9 +288,9 @@ export default function CaptureGate() {
           </>)}
 
           {isContact && c && (<>
-            <p className="qg__eyebrow">Almost there · {CONTACT.indexOf(name as never) + 1} of {CONTACT.length}</p>
+            <p className="qg__eyebrow">{CONTACT.indexOf(name as never) + 1} of {CONTACT.length}</p>
             <h2 className="qg__q">{c.h}</h2>
-            <p className="qg__hint">{c.p}</p>
+            {c.p && <p className="qg__hint">{c.p}</p>}
             <label className="qg__sr" htmlFor="qg-in">{c.label}</label>
             <input
               id="qg-in" className="qg__input" type={c.type} autoComplete={c.auto} inputMode={c.mode}

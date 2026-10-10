@@ -221,7 +221,7 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
           {name === "area" && (
             <>
               <h3 className="wiz__q">Where are you looking?</h3>
-              <p className="lqz__hint">Pick as many as you like.</p>
+              <p className="lqz__hint">Select all that apply.</p>
               <div className="quiz-grid lqz__grid">
                 {COMMUNITIES.map((c) => (
                   <button key={c} className={`quiz-chip${a.communities.includes(c) ? " is-on" : ""}`} onClick={() => toggle("communities", c)}>{c}</button>
@@ -270,7 +270,7 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
           {name === "features" && (
             <>
               <h3 className="wiz__q">Any must-haves?</h3>
-              <p className="lqz__hint">Pick any that matter, or skip if you&apos;re flexible.</p>
+              <p className="lqz__hint">Select all that apply, or skip.</p>
               <div className="quiz-rows lqz__rows">
                 {FEATURES.map((f) => (
                   <button key={f.key} className={`quiz-row${a.features.includes(f.key) ? " is-on" : ""}`} onClick={() => toggle("features", f.key)} aria-pressed={a.features.includes(f.key)}>
