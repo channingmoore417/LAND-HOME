@@ -10,6 +10,14 @@ import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { BATHS, BEDS, COMMUNITIES, FEATURES, PRICE_BANDS, matchHref } from "@/lib/buyerMatch";
 
 const KEY = "lhg_captured";
+
+// Funnel events to Google Analytics (the site-wide Google tag): which quiz step
+// each visitor reaches, so drop-off (e.g. at the name/phone screens) is visible.
+function track(event: string, params: Record<string, string | number> = {}) {
+  try {
+    (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", event, params);
+  } catch { /* analytics must never break the gate */ }
+}
 const DRAFT_KEY = "lhg_gate_draft";
 const PROPERTY = /^\/listings\/[^/]+/;
 
@@ -125,6 +133,17 @@ export default function CaptureGate() {
   const enabled = PROPERTY.test(base) && (!leadGate.adsOnly || onAdPage || adVisit);
   const locked = enabled && !captured && !user;
 
+  // One "gate_step" event per screen shown (step_name tells you where people stop).
+  const shownSteps = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (!locked || !checked || !ready) return;
+    if (shownSteps.current.has(step)) return;
+    shownSteps.current.add(step);
+    const traffic = adVisit || onAdPage ? "ad" : "organic";
+    if (shownSteps.current.size === 1) track("gate_view", { traffic });
+    track("gate_step", { step_name: STEPS[step], step_number: step + 1, steps_total: STEPS.length, traffic });
+  }, [locked, checked, ready, step, adVisit, onAdPage]);
+
   useEffect(() => {
     if (!locked) return;
     const prev = document.body.style.overflow;
@@ -210,6 +229,8 @@ export default function CaptureGate() {
       // (e.g. email already registered with a different phone) never blocks them.
       await createAccount();
       try { window.localStorage.setItem(KEY, "1"); window.sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+      track("gate_complete", { traffic: onAdPage || adVisit ? "ad" : "organic" });
+      track("generate_lead", { traffic: onAdPage || adVisit ? "ad" : "organic", method: "listing_gate_quiz" });
       window.dispatchEvent(new Event("lhg:captured")); // header + hero come back
       setCaptured(true);
     } catch {
