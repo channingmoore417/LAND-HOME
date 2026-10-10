@@ -137,7 +137,7 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
   return (
     <>
       <Hero areaName={areaName} city={f.city} />
-      <ListBar view={view} query={f.q} viewHref={viewHref} />
+      <ListBar view={view} query={f.q} viewHref={viewHref} filtersSlot={<FilterDrawer>{controls}</FilterDrawer>} />
       <TrackSearch criteria={searchMeta} />
       <main className="results">
         <div className="wrap">
@@ -231,7 +231,7 @@ function Hero({ areaName, city }: { areaName: string; city: string }) {
 }
 
 // Sticky search + view toggle that stays pinned above the results on scroll.
-function ListBar({ view, query, viewHref, wide }: { view: "split" | "list"; query: string; viewHref: (v: "split" | "list") => string; wide?: boolean }) {
+function ListBar({ view, query, viewHref, wide, filtersSlot }: { view: "split" | "list"; query: string; viewHref: (v: "split" | "list") => string; wide?: boolean; filtersSlot?: React.ReactNode }) {
   return (
     <div className="listbar">
       <div className={`listbar__inner${wide ? " listbar__inner--wide" : ""}`}>
@@ -241,6 +241,7 @@ function ListBar({ view, query, viewHref, wide }: { view: "split" | "list"; quer
             placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
           <button className="hsearch__btn" type="submit">Search</button>
         </form>
+        {filtersSlot}
         <div className="viewtoggle">
           <Link className={view === "split" ? "is-on" : ""} href={viewHref("split")}>Map</Link>
           <Link className={view === "list" ? "is-on" : ""} href={viewHref("list")}>List</Link>

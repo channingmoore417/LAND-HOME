@@ -1543,3 +1543,21 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 
 .namerow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
+
+/* Mobile search/filter UX: the search bar scrolls away instead of pinning over
+   the results, and a "Filters" pill floats at the bottom so people can always
+   refine their search. Filters open in the slide-in drawer (fully expanded). */
+.filterdrawer .filters{display:block !important;position:static;max-height:none;border:0;box-shadow:none;padding:2px 4px 20px;background:transparent;}
+.filterdrawer .filters__toggle{display:none !important;}
+@media(max-width:900px){
+  .listbar .filterbtn,.mapsearch__bar .filterbtn{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;background:var(--teal);color:#fff;border-color:var(--teal);border-radius:28px;padding:14px 26px;box-shadow:0 8px 24px rgba(11,32,44,.35);}
+  .searchgrid .filters__toggle{display:none !important;}
+}
+@media(max-width:680px){
+  .listbar,.mapsearch__bar{position:static;}
+  .listbar__inner{padding:10px 14px;gap:10px;}
+  .listbar .hsearch--bar,.mapsearch__bar .hsearch--bar{flex:1 1 100%;max-width:none;flex-wrap:nowrap;padding:6px 6px 6px 14px;}
+  .listbar .hsearch--bar .hsearch__input,.mapsearch__bar .hsearch--bar .hsearch__input{flex:1 1 auto;flex-basis:auto;min-width:0;padding:8px 4px;}
+  .listbar .hsearch--bar .hsearch__btn,.mapsearch__bar .hsearch--bar .hsearch__btn{width:auto;padding:11px 18px;}
+}
+@media(min-width:901px){.listbar .filterbtn{display:none;}}
