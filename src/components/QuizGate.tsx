@@ -20,9 +20,8 @@ const CONTACT: Record<string, { h: string; p: string; label: string; type: strin
   phone: { h: "Last step: your phone number", p: "This is also your password. Use it with your email to log back in anytime.", label: "Phone number", type: "tel", auto: "tel", mode: "tel" },
 };
 
-export default function QuizGate({ listingKey, onClose, onDone, onLogin }: {
+export default function QuizGate({ listingKey, onDone, onLogin }: {
   listingKey?: string;
-  onClose: () => void;
   onDone: () => void; // visitor completed the quiz: let them through
   onLogin: () => void; // returning user: switch to the login form
 }) {
@@ -40,10 +39,8 @@ export default function QuizGate({ listingKey, onClose, onDone, onLogin }: {
     } catch { /* ignore */ }
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", esc);
-    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", esc); };
-  }, [onClose]);
+    return () => { document.body.style.overflow = prev; };
+  }, []);
   useEffect(() => {
     try {
       const { firstName: _f, lastName: _l, email: _e, phone: _p, ...answers } = a;
@@ -93,16 +90,14 @@ export default function QuizGate({ listingKey, onClose, onDone, onLogin }: {
     <div className="qg" role="dialog" aria-modal="true" aria-label="Find your match">
       <form className="qg__sheet" onSubmit={(e) => { e.preventDefault(); go(); }}>
         <header className="qg__top">
-          <button type="button" className="qg__icon" onClick={() => (step === 0 ? onClose() : setStep(step - 1))} aria-label={step === 0 ? "Close" : "Back"}>
-            {step === 0 ? "×" : "←"}
-          </button>
+          {step > 0 ? <button type="button" className="qg__icon" onClick={() => setStep(step - 1)} aria-label="Back">←</button> : <span className="qg__icon" />}
           <div className="qg__bar" aria-hidden="true"><div style={{ width: `${pct}%` }} /></div>
-          {step > 0 ? <button type="button" className="qg__icon" onClick={onClose} aria-label="Close">×</button> : <span className="qg__icon" />}
+          <span className="qg__icon" />
         </header>
 
         <div className="qg__body" ref={bodyRef} key={step}>
           {name === "communities" && (<>
-            <p className="qg__eyebrow">See this home + every listing</p>
+            <p className="qg__eyebrow">Unlock this home + every listing</p>
             <h2 className="qg__q">Where are you looking?</h2>
             <p className="qg__hint">Pick every area you&apos;d consider.</p>
             <div className="qg__grid">

@@ -120,7 +120,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       {open && intent === "view" && !loginView && (
         <QuizGate
           listingKey={listingKey}
-          onClose={closeAuth}
           onLogin={() => setLoginView(true)}
           onDone={() => {
             try { window.localStorage.setItem("lhg_gate_pass", "1"); } catch { /* ignore */ }
@@ -129,7 +128,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         />
       )}
       {open && !(intent === "view" && !loginView) && (
-        <AuthModal intent={intent} startMode={loginView ? "login" : "signup"} onClose={closeAuth}
+        <AuthModal intent={intent} startMode={loginView ? "login" : "signup"} onClose={intent === "view" ? () => setLoginView(false) : closeAuth}
           onAuthed={() => { if (intent === "view") { try { window.localStorage.setItem("lhg_gate_pass", "1"); } catch { /* ignore */ } } onAuthed(); }} />
       )}
     </Ctx.Provider>
