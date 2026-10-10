@@ -76,6 +76,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!user) { setNeedsPhone(false); return; }
     let mounted = true;
+    // Accounts made by the sign-up form / capture gate already carry the phone
+    // in auth metadata (the profile row write can land a moment later), so
+    // trust that and never nag someone who just typed their number.
+    const metaDigits = String((user.user_metadata as { phone?: string } | null)?.phone ?? "").replace(/\D/g, "");
+    if (metaDigits.length >= 7) {
+      setNeedsPhone(false);
+      supabase.from("profiles").upsert({ id: user.id, email: user.email ?? null, phone: metaDigits }).then(() => {});
+      return () => { mounted = false; };
+    }
     supabase.from("profiles").select("phone").eq("id", user.id).maybeSingle().then(({ data }) => {
       if (!mounted) return;
       const digits = ((data?.phone as string | null) ?? "").replace(/\D/g, "");
