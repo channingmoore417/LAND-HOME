@@ -1544,13 +1544,13 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .namerow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 
-/* Mobile search/filter UX: the search bar scrolls away instead of pinning over
-   the results, and a "Filters" pill floats at the bottom so people can always
-   refine their search. Filters open in the slide-in drawer (fully expanded). */
+/* Mobile search/filter UX: nothing is sticky or floating. The search bar and
+   its Filters button scroll with the page; Filters opens the slide-in drawer
+   (fully expanded). */
 .filterdrawer .filters{display:block !important;position:static;max-height:none;border:0;box-shadow:none;padding:2px 4px 20px;background:transparent;}
 .filterdrawer .filters__toggle{display:none !important;}
 @media(max-width:900px){
-  .listbar .filterbtn,.mapsearch__bar .filterbtn{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;background:var(--teal);color:#fff;border-color:var(--teal);border-radius:28px;padding:14px 26px;box-shadow:0 8px 24px rgba(11,32,44,.35);}
+  .listbar,.mapsearch__bar{position:static;}
   .searchgrid .filters__toggle{display:none !important;}
 }
 @media(max-width:680px){
