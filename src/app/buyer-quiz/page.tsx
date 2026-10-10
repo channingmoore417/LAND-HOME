@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { site } from "@/config/site";
-import { logActivity } from "@/lib/activity";
 
 const COMMUNITIES = [
   "Lake Charles", "Sulphur", "Moss Bluff", "Iowa", "Vinton", "Cameron",
@@ -35,24 +34,48 @@ const PRICE_BANDS: { label: string; min?: number; max?: number }[] = [
 
 const BEDS = ["1+", "2+", "3+", "4+", "5+"];
 const BATHS = ["1+", "2+", "3+", "4+"];
-const STEPS = ["intro", "communities", "price", "features", "beds", "baths", "timeline", "contact", "done"] as const;
+const OWNERSHIP = [
+  { key: "rent", label: "No, I don't own a home right now", note: "Renting or buying my first home" },
+  { key: "own", label: "Yes, I own a home", note: "Moving up, down, or investing" },
+  { key: "own_selling", label: "Yes, and I may need to sell it", note: "We can help with both sides of the move" },
+];
+
+// Questions first; contact details are always the LAST steps, one field per screen.
+const STEPS = ["intro", "communities", "price", "features", "beds", "baths", "timeline", "owns", "firstName", "lastName", "email", "phone", "done"] as const;
+const CONTACT_STEPS = ["firstName", "lastName", "email", "phone"] as const;
+
+const digits = (v: string) => v.replace(/\D/g, "");
 
 interface Answers {
   communities: string[]; price: string; features: string[]; timeline: string;
-  beds: string; baths: string; firstName: string; lastName: string; email: string; phone: string;
+  beds: string; baths: string; owns: string; firstName: string; lastName: string; email: string; phone: string;
 }
 
 export default function BuyerQuizPage() {
   const [step, setStep] = useState(0);
   const [a, setA] = useState<Answers>({
     communities: [], price: "", features: [], timeline: "",
-    beds: "3+", baths: "2+", firstName: "", lastName: "", email: "", phone: "",
+    beds: "3+", baths: "2+", owns: "", firstName: "", lastName: "", email: "", phone: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [accountOk, setAccountOk] = useState(false);
+
+  // Keep quiz answers (never contact details) so a refresh or accidental back doesn't lose progress.
+  useEffect(() => {
+    try {
+      const d = JSON.parse(sessionStorage.getItem("lhg_quiz") || "null");
+      if (d?.a) { setA((p) => ({ ...p, ...d.a })); if (d.step > 0) setStep(Math.min(d.step, STEPS.indexOf("owns"))); }
+    } catch { /* storage unavailable */ }
+  }, []);
+  useEffect(() => {
+    try {
+      const { firstName: _f, lastName: _l, email: _e, phone: _p, ...answers } = a;
+      sessionStorage.setItem("lhg_quiz", JSON.stringify({ step: Math.min(step, STEPS.indexOf("owns")), a: answers }));
+    } catch { /* ignore */ }
+  }, [a, step]);
 
   const name = STEPS[step];
-  const total = STEPS.length - 2; // question steps only
-  const fillPct = step === 0 ? 6 : step >= STEPS.length - 1 ? 100 : (Math.min(step, total) / total) * 100;
+  const fillPct = step === 0 ? 6 : Math.max(6, (step / (STEPS.length - 1)) * 100);
 
   const set = (patch: Partial<Answers>) => setA((p) => ({ ...p, ...patch }));
   const toggle = (field: "communities" | "features", val: string) =>
@@ -67,14 +90,18 @@ export default function BuyerQuizPage() {
   // Single-choice steps auto-advance (brief delay so the highlight registers).
   const pick = (patch: Partial<Answers>) => {
     set(patch);
-    setTimeout(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 240);
+    setTimeout(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 150);
   };
 
   const canAdvance = () => {
     if (name === "communities") return a.communities.length > 0;
     if (name === "price") return !!a.price;
     if (name === "timeline") return !!a.timeline;
-    if (name === "contact") return !!a.firstName.trim() && !!a.lastName.trim() && /\S+@\S+\.\S+/.test(a.email);
+    if (name === "owns") return !!a.owns;
+    if (name === "firstName") return !!a.firstName.trim();
+    if (name === "lastName") return !!a.lastName.trim();
+    if (name === "email") return /\S+@\S+\.\S+/.test(a.email.trim());
+    if (name === "phone") return digits(a.phone).length >= 10;
     return true;
   };
 
@@ -93,6 +120,38 @@ export default function BuyerQuizPage() {
     return `/listings${p.toString() ? `?${p}` : ""}`;
   }
 
+  // Create the account (phone number = password, same as the sign-up modal) and
+  // save the quiz answers as a saved search so matches/alerts appear in /account.
+  async function createAccount(): Promise<boolean> {
+    const { getBrowserClient } = await import("@/lib/supabaseBrowser");
+    const sb = getBrowserClient();
+    const email = a.email.trim();
+    const pw = digits(a.phone);
+    const fullName = `${a.firstName.trim()} ${a.lastName.trim()}`.trim();
+    try {
+      let { data, error } = await sb.auth.signUp({ email, password: pw, options: { data: { full_name: fullName, phone: a.phone } } });
+      if (error || !data.session) {
+        const r = await sb.auth.signInWithPassword({ email, password: pw });
+        if (r.error) return false; // e.g. already registered with a different phone, or email confirmation is on
+        data = { user: r.data.user, session: r.data.session };
+      }
+      const uid = data.user?.id;
+      if (!uid) return false;
+      await sb.from("profiles").update({ full_name: fullName, phone: a.phone }).eq("id", uid);
+      const params = new URLSearchParams(matchHref().split("?")[1] ?? "");
+      await sb.from("saved_searches").insert({
+        user_id: uid, email, name: `Buyer quiz · ${a.communities.slice(0, 2).join(", ")}${a.communities.length > 2 ? " +" : ""}`,
+        criteria: {
+          city: a.communities.length === 1 ? a.communities[0] : undefined,
+          communities: a.communities, price: a.price, beds: parseInt(a.beds) || undefined,
+          baths: parseInt(a.baths) || undefined, features: a.features, query: params.toString(),
+        },
+        alert_frequency: "instant", active: true,
+      });
+      return true;
+    } catch { return false; }
+  }
+
   async function finish() {
     if (!canAdvance()) return;
     setSubmitting(true);
@@ -103,16 +162,18 @@ export default function BuyerQuizPage() {
           form_id: "buyer_quiz",
           name: `${a.firstName.trim()} ${a.lastName.trim()}`.trim(),
           first_name: a.firstName, last_name: a.lastName, email: a.email, phone: a.phone,
-          message: `Buyer Match quiz · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bed / ${a.baths} bath · ${TIMELINES.find((t) => t.key === a.timeline)?.label || "—"}`,
+          message: `Buyer Match quiz · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bed / ${a.baths} bath · ${TIMELINES.find((t) => t.key === a.timeline)?.label || "—"} · Owns home: ${OWNERSHIP.find((o) => o.key === a.owns)?.label || "—"}`,
+          owns_home: a.owns, working_with_agent: undefined,
           criteria: {
             communities: a.communities, price: a.price, features: a.features,
-            beds: a.beds, baths: a.baths, timeline: a.timeline,
+            beds: a.beds, baths: a.baths, timeline: a.timeline, owns: a.owns,
           },
           source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
         }),
       });
     } catch { /* still show matches */ }
-    logActivity("quiz", { meta: { communities: a.communities, price: a.price, features: a.features, beds: a.beds, baths: a.baths, timeline: a.timeline } });
+    setAccountOk(await createAccount());
+    import("@/lib/activity").then((m) => m.logActivity("quiz", { meta: { communities: a.communities, price: a.price, features: a.features, beds: a.beds, baths: a.baths, timeline: a.timeline, owns: a.owns } })).catch(() => {});
     setSubmitting(false);
     next();
   }
@@ -130,11 +191,11 @@ export default function BuyerQuizPage() {
               <span className="script" style={{ fontSize: "1.7rem" }}>your journey home starts here</span>
               <h1 className="wiz__q" style={{ fontSize: "clamp(1.8rem,4vw,2.4rem)", marginTop: 4 }}>Find your Southwest Louisiana match</h1>
               <p className="prose" style={{ color: "var(--ink-muted)" }}>
-                Answer six quick questions and we&apos;ll hand-match you to homes that actually fit — the
-                right communities, features, and price. Takes about a minute.
+                Answer seven quick questions and we&apos;ll hand-match you to homes that actually fit — the
+                right communities, features, and price. Takes about a minute — we only ask for your details at the very end.
               </p>
               <button className="btn btn--primary quiz__start" onClick={next}>Start the quiz →</button>
-              <p className="hv-fine">No account needed. We&apos;ll only reach out with your matches.</p>
+              <p className="hv-fine">Takes under two minutes. Your details come last.</p>
             </>
           )}
 
@@ -222,26 +283,29 @@ export default function BuyerQuizPage() {
             </>
           )}
 
-          {name === "contact" && (
+          {name === "owns" && (
             <>
               <div className="quiz-eyebrow">Question 7 of 7</div>
-              <h2 className="wiz__q">Where should we send your matches?</h2>
-              <p className="prose" style={{ color: "var(--ink-muted)" }}>We&apos;ll put together a personalized list and reach out — no spam, no pressure.</p>
-              <div className="hv-grid hv-grid--2" style={{ marginTop: 18 }}>
-                <div className="field"><label>First Name</label>
-                  <input className="input" type="text" autoComplete="given-name" value={a.firstName} onChange={(e) => set({ firstName: e.target.value })} /></div>
-                <div className="field"><label>Last Name</label>
-                  <input className="input" type="text" autoComplete="family-name" value={a.lastName} onChange={(e) => set({ lastName: e.target.value })} /></div>
+              <h2 className="wiz__q">Do you currently own a home?</h2>
+              <p className="prose" style={{ color: "var(--ink-muted)" }}>This helps us tailor how we help you.</p>
+              <div className="quiz-rows">
+                {OWNERSHIP.map((o) => (
+                  <Row key={o.key} radio active={a.owns === o.key} onClick={() => pick({ owns: o.key })} label={o.label} note={o.note} />
+                ))}
               </div>
-              <div className="hv-grid hv-grid--2">
-                <div className="field"><label>Email</label>
-                  <input className="input" type="email" autoComplete="email" value={a.email} onChange={(e) => set({ email: e.target.value })} /></div>
-                <div className="field"><label>Phone</label>
-                  <input className="input" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
-              </div>
-              <Nav onBack={back} onNext={finish} canNext={canAdvance() && !submitting} nextLabel={submitting ? "Matching…" : "See my matches →"} />
-              <p className="hv-fine">By submitting you agree to be contacted by {site.name} about your search. Opt out anytime.</p>
+              <Nav onBack={back} hideNext />
             </>
+          )}
+
+          {(CONTACT_STEPS as readonly string[]).includes(name) && (
+            <ContactStep
+              name={name as (typeof CONTACT_STEPS)[number]}
+              index={(CONTACT_STEPS as readonly string[]).indexOf(name)}
+              a={a} set={set} onBack={back}
+              onNext={name === "phone" ? finish : next}
+              canNext={canAdvance() && !submitting}
+              submitting={submitting}
+            />
           )}
 
           {name === "done" && (
@@ -255,6 +319,7 @@ export default function BuyerQuizPage() {
                   {a.communities.slice(0, 3).join(", ")}{a.communities.length > 3 ? ` +${a.communities.length - 3} more` : ""}
                 </strong>{" "}
                 that fit {a.price || "your range"}. A member of our team will reach out shortly.
+                {accountOk && " Your free account is ready — log in anytime with your email and phone number to see saved matches."}
               </p>
               <Summary a={a} />
               <div className="home-cta" style={{ marginTop: 22 }}>
@@ -301,6 +366,7 @@ function Summary({ a }: { a: Answers }) {
     ["Must-haves", a.features.map((f) => FEATURES.find((x) => x.key === f)?.label).join(", ") || "Flexible"],
     ["Size", `${a.beds} bed · ${a.baths} bath`],
     ["Timeline", TIMELINES.find((t) => t.key === a.timeline)?.label || "—"],
+    ["Own a home?", OWNERSHIP.find((o) => o.key === a.owns)?.label || "—"],
   ];
   return (
     <div className="quiz-summary">
@@ -311,5 +377,50 @@ function Summary({ a }: { a: Answers }) {
         </div>
       ))}
     </div>
+  );
+}
+
+const CONTACT_COPY = {
+  firstName: { h: "What's your first name?", p: "So we know who we're helping.", label: "First name", type: "text", auto: "given-name" },
+  lastName: { h: "And your last name?", p: "Just one more detail.", label: "Last name", type: "text", auto: "family-name" },
+  email: { h: "Where should we send your matches?", p: "We'll email your personalized list and new listings as they hit the market.", label: "Email", type: "email", auto: "email" },
+  phone: { h: "Last step: your phone number", p: "This is also your password — use it with your email to log in and see your matches anytime.", label: "Phone", type: "tel", auto: "tel" },
+} as const;
+
+// One field per screen. Enter advances; contact details are always the final steps.
+function ContactStep({ name, index, a, set, onBack, onNext, canNext, submitting }: {
+  name: keyof typeof CONTACT_COPY; index: number; a: Answers; set: (p: Partial<Answers>) => void;
+  onBack: () => void; onNext: () => void; canNext: boolean; submitting: boolean;
+}) {
+  const c = CONTACT_COPY[name];
+  const last = name === "phone";
+  return (
+    <>
+      <div className="quiz-eyebrow">Almost there · {index + 1} of 4</div>
+      <h2 className="wiz__q">{c.h}</h2>
+      <p className="prose" style={{ color: "var(--ink-muted)" }}>{c.p}</p>
+      <form onSubmit={(e) => { e.preventDefault(); if (canNext) onNext(); }}>
+        <div className="field" style={{ marginTop: 18 }}>
+          <label htmlFor={`q-${name}`}>{c.label}</label>
+          <input id={`q-${name}`} className="input" type={c.type} autoComplete={c.auto} autoFocus
+            inputMode={name === "phone" ? "tel" : name === "email" ? "email" : "text"}
+            enterKeyHint={last ? "go" : "next"} autoCapitalize={name === "email" ? "none" : "words"} spellCheck={false}
+            value={a[name]} onChange={(e) => set({ [name]: e.target.value } as Partial<Answers>)} />
+        </div>
+        <div className="quiz-nav">
+          <button type="button" className="quiz-back" onClick={onBack}>← Back</button>
+          <button type="submit" className="btn btn--primary" style={{ width: "auto", padding: "13px 26px" }} disabled={!canNext}>
+            {last ? (submitting ? "Matching…" : "See my matches →") : "Continue"}
+          </button>
+        </div>
+      </form>
+      {last && (
+        <p className="hv-fine">
+          By continuing, you consent to receive calls, texts, and emails from {site.name}, brokered by {site.brokerage}, about
+          your search and real estate matters, in line with TCPA and Do Not Call guidelines. Consent is not a condition of
+          purchase; you can opt out anytime.
+        </p>
+      )}
+    </>
   );
 }

@@ -1063,3 +1063,5 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important;}}
 .article__live{margin:28px 0;padding:18px;border:1px solid var(--aqua-soft);border-radius:16px;background:#fff;}
+.quiz-chip,.quiz-row,.quiz .btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.quiz .input{min-height:52px;font-size:16px;} /* 16px stops iOS zoom-on-focus */
