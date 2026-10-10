@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { site, getAdPage, leadGate, AD_VISIT_KEY as AD_KEY } from "@/config/site";
+import { site, getAdPage, leadGate, AD_VISIT_KEY as AD_KEY, AD_VISIT_COOKIE as AD_COOKIE } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { useAuth } from "@/components/AuthProvider";
@@ -66,6 +66,21 @@ export default function CaptureGate() {
   const guard = useFormGuard();
   const landing = useRef<string>("");
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Test hook: open any page with ?gate=reset to forget "already completed",
+  // the ad-visit flag, saved quiz answers and the customer login on THIS
+  // browser, then reload as a brand-new visitor.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("gate") !== "reset") return;
+    try {
+      window.localStorage.removeItem(KEY);
+      window.sessionStorage.removeItem(AD_KEY);
+      window.sessionStorage.removeItem(DRAFT_KEY);
+      document.cookie = `${AD_COOKIE}=; path=/; max-age=0`;
+    } catch { /* storage blocked */ }
+    const done = () => window.location.replace(window.location.pathname);
+    getBrowserClient().auth.signOut().then(done, done);
+  }, []);
 
   useEffect(() => {
     try {
