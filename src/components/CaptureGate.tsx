@@ -20,7 +20,7 @@ const PROPERTY = /^\/listings\/[^/]+/;
 // Register modal: the phone number is the password), which unlocks saved
 // homes and alerts. A visitor who is already signed in never sees the gate.
 // Same lead form as the listing page ("Get more details"): shared spam guard,
-// form_id "listing_inquiry" + listing_key, so it flows through the normal pipeline.
+// form_id "ad_capture" + listing_key, so it flows through the normal pipeline.
 export default function CaptureGate() {
   const pathname = usePathname();
   const { user, ready } = useAuth();
@@ -95,7 +95,7 @@ export default function CaptureGate() {
     try {
       const listingKey = base.split("/")[2];
       const ok = await guard.submit({
-        form_id: "listing_inquiry",
+        form_id: "ad_capture",
         listing_key: listingKey,
         source_url: landing.current || window.location.pathname,
         ...namePayload(f),
