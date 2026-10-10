@@ -201,6 +201,19 @@ export const AD_VISIT_KEY = "lhg_ad_visit";
 // Same flag as a cookie, set by middleware on any ad click (survives new tabs).
 export const AD_VISIT_COOKIE = "lhg_ad_visit";
 
+// City slugs whose /[city]/[topic] pages are the ad landing pages (homes for
+// sale in a city, mobile homes in a city, ...). For ad visitors ONLY these
+// pages hide the header and hero; every other page shows them normally.
+export const adLandingCities = [
+  "lake-charles", "sulphur", "moss-bluff", "iowa", "vinton", "cameron", "ragley",
+  "dequincy", "deridder", "jennings", "welsh", "carlyss", "westlake",
+];
+
+export function isAdLandingPath(pathname: string | null): boolean {
+  const segs = (pathname ?? "").replace(/\/ga\/?$/i, "").split("/").filter(Boolean);
+  return segs.length === 2 && adLandingCities.includes(segs[0]);
+}
+
 export function hasAdSuffix(pathname: string): boolean {
   const last = pathname.replace(/\/+$/, "").split("/").pop() ?? "";
   return last.toLowerCase() === adSuffix;

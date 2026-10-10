@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { site, getAdPage, leadGate, AD_VISIT_KEY as AD_KEY, AD_VISIT_COOKIE as AD_COOKIE } from "@/config/site";
+import { site, getAdPage, isAdLandingPath, leadGate, AD_VISIT_KEY as AD_KEY, AD_VISIT_COOKIE as AD_COOKIE } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { useAuth } from "@/components/AuthProvider";
@@ -99,10 +99,6 @@ export default function CaptureGate() {
     if (!onAdPage) return;
     setAdVisit(true);
     landing.current = window.location.pathname + window.location.search;
-    // Ad mode hides the header and hero; skip it for anyone who already registered.
-    let registered = false;
-    try { registered = window.localStorage.getItem(KEY) === "1"; } catch { /* private mode */ }
-    if (!registered) document.documentElement.dataset.ad = "1";
     try { window.sessionStorage.setItem(AD_KEY, landing.current); } catch { /* ignore */ }
   }, [onAdPage]);
 
@@ -115,10 +111,14 @@ export default function CaptureGate() {
   }, [a, step]);
   useEffect(() => { bodyRef.current?.scrollTo({ top: 0 }); }, [step]);
 
-  // Registered (or signed in): leave ad mode so the header and hero come back.
+  // Ad mode (header + hero hidden) applies only on the city/topic landing pages,
+  // and ends once the visitor registers or signs in.
   useEffect(() => {
-    if (captured || user) delete document.documentElement.dataset.ad;
-  }, [captured, user]);
+    if (!checked) return;
+    const hide = (adVisit || onAdPage) && !captured && !user && isAdLandingPath(pathname);
+    if (hide) document.documentElement.dataset.ad = "1";
+    else delete document.documentElement.dataset.ad;
+  }, [checked, adVisit, onAdPage, captured, user, pathname]);
 
   // Gate only on a property page (strip a trailing /GA first).
   const base = (pathname ?? "").replace(/\/ga\/?$/i, "");
