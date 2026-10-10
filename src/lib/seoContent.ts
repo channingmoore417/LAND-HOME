@@ -1,4 +1,5 @@
 // ============================================================
+import { BUSINESS_ID } from "@/lib/schema";
 // Content + structured-data generation for the SEO/AEO landing pages.
 // Resolves on-page copy (custom override → generated → computed fallback),
 // builds a data-driven FAQ, and emits JSON-LD (BreadcrumbList, ItemList,
@@ -7,8 +8,10 @@
 
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
-import { pageTopicLabel, topicNoun, type SeoPage } from "@/lib/seo";
+import { pageTopicLabel, topicNoun, shortUsd, type SeoPage } from "@/lib/seo";
 import type { Card, ListingStats } from "@/lib/listings";
+import type { PageMarket } from "@/lib/market";
+import { napSchema } from "@/lib/nap";
 
 export interface ResolvedContent {
   h1: string;
@@ -84,6 +87,30 @@ export function generatedBody(page: SeoPage): string {
       `## Financing\nManufactured-home financing differs from a standard mortgage; confirm land ownership and utilities up front. The Land & Home Group and a trusted local lender can walk you through it.`,
     ].join("\n\n");
   }
+  if (t === "price" && page.price_max) {
+    const cap = shortUsd(page.price_max);
+    return [
+      fact,
+      `## Homes under ${cap} in ${city}\nThese are houses for sale in ${city} listed at ${cap} or less. Lots and land are left out so you only see homes. At this price you'll mostly find starter homes, older homes on established streets, and some mobile homes on their own land.`,
+      `## Buying at this price\nHomes in this range move fast, so get pre-approved before you start touring. Check the roof age, the flood zone and an insurance quote early, since insurance can change what a home really costs each month.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
+  if (t === "price") {
+    return [
+      fact,
+      `## Luxury homes in ${city}\nThese are homes for sale in ${city} listed at ${shortUsd(page.price_min ?? 500000)} and up, from larger custom homes in established neighborhoods to newer builds and homes on acreage or the water.`,
+      `## Buying a luxury home\nHigher-priced homes often take longer to sell, which can leave room to negotiate. Ask for the insurance history, check the flood zone, and get a jumbo loan pre-approval lined up if you're financing.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
+  if (t === "zip" && page.postal_code) {
+    return [
+      `These are all the homes for sale in the ${page.postal_code} ZIP code in ${city}, updated throughout the day from the MLS.`,
+      `## Buying in ${page.postal_code}\nA ZIP code covers a lot of ground, so prices and school zones can change from one street to the next. Check the flood zone and school zone for the exact address, and get an insurance quote early.`,
+      `## Ready to tour?\n${CLOSE_CTA}`,
+    ].join("\n\n");
+  }
   if (t === "beds") {
     return [
       fact,
@@ -100,6 +127,10 @@ export function generatedBody(page: SeoPage): string {
     waterfront: `## Waterfront living in ${city}\nWaterfront property is among the most sought-after in the area, offering boating, fishing, and views right out the back door. Look closely at docks, bulkheads, and access when you tour.`,
     updated: `## Updated & remodeled homes in ${city}\nMove-in-ready, recently updated homes save you the work of renovating. Browse remodeled homes in ${city} with newer kitchens, baths, and systems.`,
     garage: `## Homes with garages in ${city}\nGarage space means storage, workshop room, and protected parking. Browse ${city} homes with attached and detached garages.`,
+    shop: `## Homes with a shop in ${city}\nA shop gives you room for tools, a boat, a side business or a hobby without giving up the garage. These are homes in ${city} where the listing mentions a shop or workshop, from small storage shops to full metal buildings with power and roll-up doors.\n\n## What to look at in the shop\nAsk for the size, whether it has power, water and a slab, and whether it was permitted. Check how it sits on the lot and whether trucks and trailers can get to it.`,
+    fixer: `## Fixer upper homes in ${city}\nThese are homes in ${city} where the listing says the house needs work, like a fixer, a handyman special or an investor special. They're usually priced below move-in ready homes, which can make them a way into a neighborhood that's otherwise out of reach.\n\n## Before you buy a fixer upper\nGet a full inspection, and get repair bids before you make your offer, not after. Roofs, foundations and old wiring are the big ones here. Some loans won't cover a home that needs major repairs, so talk to a lender early about renovation loans.`,
+    golf: `## Golf course homes in ${city}\nThese are homes in ${city} on or backing up to a golf course, or in golf course communities like Graywood. Expect larger homes and lots, and often an HOA.\n\n## Before you buy on a golf course\nAsk about HOA dues and whether club membership is separate from the home. Look at which way the home faces the course, since stray balls come with the view on some lots.`,
+    owner_financing: `## Owner financed homes and land in ${city}\nWith owner financing, the seller acts as the bank and you make payments to them instead of a lender. It can help buyers who don't fit a traditional loan, and it's especially common on land. These are listings in ${city} where the seller says they'll consider it.\n\n## Before you sign an owner-financed deal\nGet the terms in writing: price, down payment, interest rate, length and any balloon payment. Use a title company, make sure the deal is recorded, and have your own agent or attorney review the contract. Ask whether the seller still owes money on the property.`,
   };
   const block = (fk && featBlocks[fk]) || `## ${pageTopicLabel(page)} in ${city}\nBrowse ${topicNoun(page)} for sale in ${city}, updated live throughout the day.`;
   return [fact, block, `## Ready to tour?\n${CLOSE_CTA}`].join("\n\n");
@@ -109,7 +140,8 @@ export function resolveContent(page: SeoPage): ResolvedContent {
   const cityLa = page.city ? `${page.city}, LA` : "Southwest Louisiana";
   const topic = pageTopicLabel(page);
   const h1 = page.custom_h1 || page.gen_h1 || `${topic} in ${cityLa}`;
-  const title = page.custom_meta_title || page.gen_meta_title || `${h1} | ${site.name}`;
+  // pageMetadata adds the brand suffix only when the title stays under ~60 chars.
+  const title = page.custom_meta_title || page.gen_meta_title || h1;
   const metaDesc =
     page.custom_meta_desc ||
     page.gen_meta_desc ||
@@ -123,20 +155,98 @@ export interface Faq {
   a: string;
 }
 
-export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
-  const city = page.city || "Southwest Louisiana";
+// Rough drive from each town to downtown Lake Charles, for the "how close is
+// {city} to Lake Charles?" question people search for.
+const TO_LAKE_CHARLES: Record<string, string> = {
+  "Sulphur": "about 10 miles west, roughly 15 minutes on I-10 across the Calcasieu River",
+  "Westlake": "just across the Calcasieu River, about 5 miles and 10 minutes",
+  "Moss Bluff": "about 10 miles north, roughly 15 minutes on Highway 171",
+  "Iowa": "about 13 miles east, roughly 15 minutes on I-10",
+  "Carlyss": "about 15 miles southwest, roughly 20 minutes through Sulphur",
+  "Vinton": "about 27 miles west, roughly 30 minutes on I-10",
+  "Ragley": "about 22 miles north, roughly 25 minutes on Highway 171",
+  "DeQuincy": "about 30 miles north, roughly 35 minutes",
+  "DeRidder": "about 50 miles north, just under an hour on Highway 171",
+  "Jennings": "about 35 miles east, roughly 35 minutes on I-10",
+  "Welsh": "about 25 miles east, roughly 25 minutes on I-10",
+  "Cameron": "about 50 miles south, a little over an hour",
+};
+
+/** Fills {tokens} in hand-written FAQ answers with live market numbers. */
+function fillTokens(text: string, city: string, m: PageMarket | null, stats: ListingStats): string {
+  const vals: Record<string, string> = {
+    city,
+    count: (m?.count ?? stats.count).toLocaleString(),
+    priced_count: (m?.priced_count ?? 0).toLocaleString(),
+    median_price: m?.median_price ? usd(m.median_price) : "—",
+    median_ppsf: m?.median_ppsf ? usd(m.median_ppsf) : "—",
+    median_sqft: m?.median_sqft ? m.median_sqft.toLocaleString() : "—",
+    median_dom: m?.median_dom != null ? String(m.median_dom) : "—",
+    waterfront_count: (m?.waterfront_count ?? 0).toLocaleString(),
+    land_count: (m?.land_count ?? 0).toLocaleString(),
+    pending_count: (m?.pending_count ?? 0).toLocaleString(),
+    new_7d: (m?.new_7d ?? 0).toLocaleString(),
+  };
+  return text.replace(/\{(\w+)\}/g, (all, k: string) => vals[k] ?? all);
+}
+
+export function faqsFor(page: SeoPage, stats: ListingStats, market: PageMarket | null = null): Faq[] {
+  // Neighborhood pages talk about the neighborhood, not the whole city.
+  const city =
+    page.neighborhood ||
+    (page.page_type === "school" && page.high_school_district ? `the ${page.high_school_district} school district` : null) ||
+    (page.page_type === "zip" ? page.postal_code : null) ||
+    page.city ||
+    "Southwest Louisiana";
   const noun = topicNoun(page);
-  const range =
-    stats.priceMin && stats.priceMax
-      ? `, priced from ${usd(stats.priceMin)} to ${usd(stats.priceMax)}`
+  const m = market;
+  const isLand = page.page_type === "land";
+
+  // Hand-written questions (e.g. Google's "People also ask") lead the list.
+  const custom: Faq[] = (page.custom_faqs ?? [])
+    .filter((f) => f && f.q && f.a)
+    .map((f) => ({ q: fillTokens(f.q, city, m, stats), a: fillTokens(f.a, city, m, stats) }));
+  const asked = custom.map((f) => f.q.toLowerCase()).join(" | ");
+  const covered = (...words: string[]) => words.some((w) => asked.includes(w));
+
+  const typical =
+    m?.median_price && m.priced_count >= 3
+      ? isLand
+        ? `, with a median asking price of ${usd(m.median_price)}${m.median_acres ? ` for a median ${m.median_acres} acres` : ""}`
+        : `, with a median asking price of ${usd(m.median_price)}`
       : "";
 
   const faqs: Faq[] = [
+    ...custom,
     {
       q: `How many ${noun} are for sale in ${city}?`,
-      a: `There are currently ${stats.count.toLocaleString()} ${noun} for sale in ${city}, Louisiana${range}. The list updates automatically as new listings hit the market.`,
+      a: `There are currently ${(m?.count ?? stats.count).toLocaleString()} ${noun} for sale in ${city}, Louisiana${typical}. The list updates automatically as new listings hit the market.`,
     },
   ];
+
+  if (!isLand && m?.median_price && m.priced_count >= 5 && !covered("cost", "price", "expensive", "afford")) {
+    faqs.push({
+      q: page.page_type === "city" ? `What do homes cost in ${city}, LA?` : `What do ${noun} cost in ${city}?`,
+      a: `The median asking price is ${usd(m.median_price)} right now${m.median_ppsf ? `, about ${usd(m.median_ppsf)} per square foot` : ""}, based on ${m.priced_count.toLocaleString()} ${noun} on the market. Prices vary a lot by neighborhood, age, lot size and condition, so use the listings above to see what your budget buys today.`,
+    });
+  }
+
+  if (page.page_type === "city" && page.city && !covered("waterfront")) {
+    faqs.push({
+      q: `Are there waterfront homes for sale in ${city}?`,
+      a:
+        m && m.waterfront_count > 0
+          ? `Yes. ${m.waterfront_count.toLocaleString()} waterfront ${m.waterfront_count === 1 ? "home is" : "homes are"} listed in ${city} right now, on lakes, bayous, canals or the river. Filter the search for waterfront, and look closely at docks, bulkheads, flood zone and insurance when you tour.`
+          : `Not at the moment. Waterfront homes in ${city} come up from time to time, so save a search and we'll send them as soon as they're listed.`,
+    });
+  }
+
+  if (page.page_type === "city" && page.city && TO_LAKE_CHARLES[page.city] && !covered("lake charles")) {
+    faqs.push({
+      q: `How close is ${city} to Lake Charles?`,
+      a: `${city} is ${TO_LAKE_CHARLES[page.city]}. Drive times change with traffic, shift changes and which side of the river you're headed to.`,
+    });
+  }
 
   // One feature/category-specific Q where it adds real value.
   const fk = page.feature_key;
@@ -163,11 +273,12 @@ export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
   } else if (page.page_type === "beds") {
     faqs.push({
       q: `Are larger homes affordable in ${city}?`,
-      a: `Yes — one of the advantages of ${city} is that bigger homes remain attainable compared with most of the country. There are ${stats.count.toLocaleString()} ${noun} on the market right now${range}, spanning practical family homes to spacious estates.`,
+      a: `Yes — one of the advantages of ${city} is that bigger homes remain attainable compared with most of the country. There are ${stats.count.toLocaleString()} ${noun} on the market right now${typical}, spanning practical family homes to spacious estates.`,
     });
   }
 
-  faqs.push(...cityLivingFaqs(page, city));
+  // Built-in "living in" questions, minus any the hand-written list already asks.
+  if (!["neighborhood", "school", "zip"].includes(page.page_type)) faqs.push(...cityLivingFaqs(page, city).filter((f) => !f.skipIf.some((w) => asked.includes(w))));
 
   faqs.push({
     q: `How often are these ${city} listings updated?`,
@@ -184,15 +295,17 @@ export function faqsFor(page: SeoPage, stats: ListingStats): Faq[] {
 // Relocation / "living in" questions — strong AEO + local SEO. Lake Charles
 // answers are specific; add other cities here as the program expands. The
 // richest set lands on the city hub; a couple appear on every page.
-function cityLivingFaqs(page: SeoPage, city: string): Faq[] {
+function cityLivingFaqs(page: SeoPage, city: string): (Faq & { skipIf: string[] })[] {
   if (city !== "Lake Charles") return [];
   const isHub = page.page_type === "city";
-  const out: Faq[] = [
+  const out: (Faq & { skipIf: string[] })[] = [
     {
+      skipIf: ["good place"],
       q: `Is Lake Charles, Louisiana a good place to live?`,
       a: `Lake Charles is widely considered a good place to live for buyers who value affordability and an easygoing, outdoor lifestyle. The cost of living runs below the national average, homes are attainable, and residents enjoy the lakefront, a lively festival calendar (Mardi Gras, Contraband Days and more), casinos and dining, and an easy drive to Houston. Like anywhere on the Gulf Coast, summers are hot and humid, but many buyers find the value and the community more than worth it.`,
     },
     {
+      skipIf: ["expensive", "cost of living"],
       q: `Is it expensive to live in Lake Charles?`,
       a: `No — Lake Charles is considered affordable. The overall cost of living sits below the U.S. average, and housing in particular is a bargain compared with most of the country. Louisiana's homestead exemption also lowers property taxes for primary residences, helping a budget go further.`,
     },
@@ -200,18 +313,22 @@ function cityLivingFaqs(page: SeoPage, city: string): Faq[] {
   if (isHub) {
     out.push(
       {
+        skipIf: ["neighborhood", "best places"],
         q: `What are the best family neighborhoods in Lake Charles?`,
         a: `South Lake Charles is the most popular choice for families, thanks to well-regarded schools, newer subdivisions, parks and convenient shopping along Nelson Road. Other favorites include the Graywood and Country Club areas (larger lots and newer custom homes), the Prien Lake area, and the growing suburbs toward Moss Bluff and Sulphur just outside the city. The right fit depends on schools, commute and budget — we're glad to help you compare.`,
       },
       {
+        skipIf: ["income", "wealthy"],
         q: `What is the average income in Lake Charles, Louisiana?`,
-        a: `The median household income in Lake Charles is roughly $48,000 according to recent U.S. Census estimates — a bit below the national median — but the area's low cost of living, and especially its affordable housing, means that income tends to go further here than in many larger metros.`,
+        a: `The median household income in Lake Charles is about $59,000 (U.S. Census Bureau, 2020–2024 American Community Survey), below the national median of roughly $81,000. The area's lower cost of living, and especially its affordable housing, means that income tends to go further here than in many larger metros.`,
       },
       {
+        skipIf: ["to do"],
         q: `What is there to do in Lake Charles?`,
         a: `Plenty. Lake Charles is known for its casinos and entertainment, lakefront promenade and parks, fishing and boating, and a busy festival schedule including Mardi Gras and Contraband Days. McNeese State University adds college sports and events, and the Gulf beaches at Cameron are a short drive away.`,
       },
       {
+        skipIf: ["property tax"],
         q: `What are property taxes like in Lake Charles?`,
         a: `Property taxes in Calcasieu Parish are relatively low, and Louisiana's homestead exemption shields the first $75,000 of a primary residence's value from most parish taxes, keeping annual bills modest for owner-occupants. Exact taxes vary by location and assessed value — each listing's details and your closing documents reflect the specifics.`,
       },
@@ -275,22 +392,13 @@ export function jsonLdGraph(opts: {
   const agent = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
+    "@id": BUSINESS_ID,
     name: site.name,
     description: `${site.name}, brokered by ${site.brokerage}, serving ${cityLabel} and Southwest Louisiana.`,
     url: siteUrl,
     telephone: site.phone,
     areaServed: { "@type": "City", name: `${cityLabel}, Louisiana` },
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: site.localSeo.city,
-      addressRegion: site.localSeo.region,
-      addressCountry: "US",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: site.localSeo.latitude,
-      longitude: site.localSeo.longitude,
-    },
+    ...napSchema(),
   };
 
   return [breadcrumb, itemList, faqPage, agent];

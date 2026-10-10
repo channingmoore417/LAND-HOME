@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import CaptureGate from "@/components/CaptureGate";
+import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
+import SiteLocalBand from "@/components/SiteLocalBand";
 import AuthProvider from "@/components/AuthProvider";
-import { site } from "@/config/site";
+import { site, AD_VISIT_KEY } from "@/config/site";
 import { SITE_URL } from "@/lib/seoConfig";
+import { getNavCityMenu } from "@/lib/seo";
 import "./globals.css";
 
 const DESC =
@@ -13,6 +18,13 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${site.name} | Lake Charles Real Estate`, template: `%s | ${site.name}` },
   description: DESC,
+  icons: {
+    icon: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab43fb08d8128ee4cb38e1b.jpg",
+    apple: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab43fb08d8128ee4cb38e1b.jpg",
+  },
+  verification: {
+    google: "UMH1v38QMsah0vOpy-uV5lPTIij5xk9Q_RLKQm4-SxI",
+  },
   openGraph: {
     type: "website",
     siteName: site.name,
@@ -30,14 +42,27 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+// City/topic nav data changes rarely (new programmatic pages added
+// occasionally, not per-request) — revalidate hourly rather than on every
+// request, so pages that don't otherwise need dynamic rendering can still
+// be statically generated.
+export const revalidate = 3600;
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Cities + their topic pages (mobile homes, new construction, 4+ bedroom,
+  // etc.), fetched fresh from seo_pages so the nav/footer never drift out of
+  // sync with which programmatic pages actually exist.
+  const cityMenu = await getNavCityMenu();
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Ad visit (came in via a /GA link): flag <html> before first paint so the header and hero stay hidden on every later page. */}
+        <script dangerouslySetInnerHTML={{ __html: `try{if(sessionStorage.getItem(${JSON.stringify(AD_VISIT_KEY)}))document.documentElement.dataset.ad="1"}catch(e){}` }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -50,10 +75,21 @@ export default function RootLayout({
         />
       </head>
       <body>
+        {/* Google tag (GA4 / Google Ads). Loads after the page is interactive; GA4 tracks client-side page changes on its own. */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-J59TGYC1RT" strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-J59TGYC1RT');`}
+        </Script>
         <AuthProvider>
-          <SiteHeader />
+          <SiteHeader cityMenu={cityMenu} />
           {children}
-          <SiteFooter />
+          <SiteLocalBand cities={cityMenu.map((c) => ({ label: c.label, href: c.href }))} />
+          <SiteFooter cityMenu={cityMenu} />
+          <CaptureGate />
+          <ListingAlertsQuiz global source="site" />
         </AuthProvider>
       </body>
     </html>

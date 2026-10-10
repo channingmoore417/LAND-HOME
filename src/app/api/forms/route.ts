@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
+import { syncLeadToBoldTrail } from "@/lib/boldtrail";
+import { clientIp, evaluateSpam } from "@/lib/spam";
 
 export const runtime = "nodejs";
 
@@ -20,6 +22,8 @@ const FORM_IDS = [
   "mortgage_preapproval",
   "buyer_guide",
   "buyer_quiz",
+  "ad_capture",
+  "cash_offer",
 ] as const;
 type FormId = (typeof FORM_IDS)[number];
 
@@ -29,6 +33,8 @@ interface FormPayload {
   source_url?: string;
   listing_key?: string;
   name?: string;
+  first_name?: string;
+  last_name?: string;
   email?: string;
   phone?: string;
   message?: string;
@@ -36,33 +42,20 @@ interface FormPayload {
   working_with_agent?: boolean;
   criteria?: Record<string, unknown>;
   alert_frequency?: string;
-  // Spam-protection signals (optional; sent by public-facing forms):
+  // Spam signals, attached by useFormGuard() on every form (see spam.ts):
   company?: string; // honeypot — must be empty
   form_loaded_at?: number; // epoch ms when the form was rendered
+  human_interactions?: number; // key/pointer events before submit
   [k: string]: unknown;
 }
 
-// Minimum time (ms) a real person needs to fill out a form. Anything faster
-// is almost certainly an automated submission.
-const MIN_SUBMIT_MS = 2500;
-
-// Returns a reason string if the payload looks like spam, else null.
-// Checks are only applied when the relevant signal is present, so forms that
-// don't send these fields are unaffected.
-function spamReason(p: FormPayload): string | null {
-  if (typeof p.company === "string" && p.company.trim() !== "") return "honeypot";
-  if (typeof p.form_loaded_at === "number" && Number.isFinite(p.form_loaded_at)) {
-    const elapsed = Date.now() - p.form_loaded_at;
-    if (elapsed >= 0 && elapsed < MIN_SUBMIT_MS) return "too-fast";
-  }
-  return null;
-}
-
-async function writeToSupabase(p: FormPayload) {
+// Returns which table the submission landed in and the new row id, so the
+// BoldTrail sync below can stamp the row once the contact is created.
+async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: number } | null> {
   const supabase = getAdminClient();
 
   if (p.form_id === "showing_request") {
-    const { error } = await supabase.from("showing_requests").insert({
+    const { data, error } = await supabase.from("showing_requests").insert({
       listing_key: p.listing_key ?? null,
       full_name: p.name ?? null,
       email: p.email ?? null,
@@ -70,9 +63,9 @@ async function writeToSupabase(p: FormPayload) {
       preferred_times: p.preferred_times ?? null,
       message: p.message ?? null,
       status: "new",
-    });
+    }).select("id").single();
     if (error) throw error;
-    return;
+    return { table: "showing_requests", id: data.id };
   }
 
   if (p.form_id === "saved_search") {
@@ -83,11 +76,14 @@ async function writeToSupabase(p: FormPayload) {
       alert_frequency: p.alert_frequency ?? "instant",
     });
     if (error) throw error;
-    return;
+    return null;
   }
 
   // Everything else is a lead. `destination` = which form produced it.
-  const { error } = await supabase.from("leads").insert({
+  // `criteria` carries the form's structured answers (valuation property
+  // details, pre-approval numbers, quiz picks); the DB trigger forwards its
+  // keys to GHL flat so each one maps to its own custom field.
+  const { data, error } = await supabase.from("leads").insert({
     full_name: p.name ?? null,
     email: p.email ?? null,
     phone: p.phone ?? null,
@@ -96,8 +92,10 @@ async function writeToSupabase(p: FormPayload) {
     listing_key: p.listing_key ?? null,
     message: p.message ?? null,
     working_with_agent: p.working_with_agent ?? null,
-  });
+    criteria: p.criteria ?? null,
+  }).select("id").single();
   if (error) throw error;
+  return { table: "leads", id: data.id };
 }
 
 export async function POST(req: Request) {
@@ -122,27 +120,76 @@ export async function POST(req: Request) {
     submitted_at: new Date().toISOString(),
   };
 
-  // Spam gate: silently accept (so bots get no signal) but drop the
-  // submission — never write it or forward it downstream.
-  const reason = spamReason(payload);
-  if (reason) {
-    console.warn(`[forms] dropped spam (${reason}) for form_id=${payload.form_id}`);
+  // Spam gate. Respond exactly as we would on success so bots learn nothing
+  // about why they were dropped, but never write, sync or forward it. This
+  // runs before the Supabase write AND before the BoldTrail sync, so junk
+  // never reaches the CRM.
+  const verdict = evaluateSpam(payload, {
+    ip: clientIp(req.headers),
+    origin: req.headers.get("origin"),
+    host: req.headers.get("host"),
+  });
+  if (verdict.spam) {
+    console.warn(
+      "[forms] dropped spam",
+      JSON.stringify({
+        form_id: payload.form_id,
+        score: verdict.score,
+        reasons: verdict.reasons,
+        email: payload.email ?? null,
+      }),
+    );
     return NextResponse.json({ ok: true, submission_id: payload.submission_id });
   }
+  // Near-misses are worth seeing — they are how the threshold gets tuned.
+  if (verdict.score > 0) {
+    console.info(
+      "[forms] allowed with spam score",
+      JSON.stringify({ form_id: payload.form_id, score: verdict.score, reasons: verdict.reasons }),
+    );
+  }
 
-  // Strip the spam-protection signals so they're never stored or forwarded.
+  // Strip the spam signals so they are never stored or forwarded downstream.
   delete payload.company;
   delete payload.form_loaded_at;
+  delete payload.human_interactions;
 
   // 1) Persist to Supabase first so a webhook outage never loses a lead.
   let dbOk = true;
   let dbError: string | null = null;
+  let dbRow: { table: string; id: number } | null = null;
   try {
-    await writeToSupabase(payload);
+    dbRow = await writeToSupabase(payload);
   } catch (e) {
     dbOk = false;
     dbError = (e as Error).message;
     console.error("[forms] supabase write failed:", dbError);
+  }
+
+  // 1b) Push the contact into BoldTrail (kvCORE) — best-effort: never blocks
+  // or fails the submission, and skips itself when the token isn't set.
+  let boldtrailOk: boolean | null = null;
+  const bt = await syncLeadToBoldTrail({
+    name: payload.name,
+    firstName: payload.first_name,
+    lastName: payload.last_name,
+    email: payload.email,
+    phone: payload.phone,
+    source: "landhomegroup.com",
+    formId: payload.form_id,
+  });
+  if (bt) {
+    boldtrailOk = bt.ok;
+    if (bt.ok && dbRow) {
+      try {
+        await getAdminClient()
+          .from(dbRow.table)
+          .update({ boldtrail_contact_id: bt.contactId, boldtrail_synced_at: new Date().toISOString() })
+          .eq("id", dbRow.id);
+      } catch (e) {
+        console.error("[forms] boldtrail stamp failed:", (e as Error).message);
+      }
+    }
   }
 
   // 2) Forward the same payload to the single external webhook (if set).
@@ -165,7 +212,7 @@ export async function POST(req: Request) {
 
   const ok = dbOk || webhookOk === true;
   return NextResponse.json(
-    { ok, submission_id: payload.submission_id, dbOk, dbError, webhookOk },
+    { ok, submission_id: payload.submission_id, dbOk, dbError, webhookOk, boldtrailOk },
     { status: ok ? 200 : 500 },
   );
 }

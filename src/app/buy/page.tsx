@@ -1,23 +1,25 @@
 import type { Metadata } from "next";
+import { BUSINESS_ID } from "@/lib/schema";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { usd } from "@/lib/format";
 import { listingStats } from "@/lib/listings";
-import { cityCards } from "@/lib/neighborhoods";
-import AreaShowcase from "@/components/AreaShowcase";
-import LocalMap from "@/components/LocalMap";
+import { cityShowcase } from "@/lib/cityShowcase";
+import CityShowcase from "@/components/CityShowcase";
 import JsonLd from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
+import { napSchema } from "@/lib/nap";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Buy a Home in Southwest Louisiana",
   description:
-    "Buy a home in Southwest Louisiana with The Land & Home Group. Browse homes by city — Lake Charles, Sulphur, Westlake and more — with live MLS listings, local guidance, and easy pre-approval.",
-  alternates: { canonical: `${SITE}/buy` },
-};
+    "Buy a home in Southwest Louisiana. Browse homes by city, from Lake Charles and Sulphur to Westlake and Moss Bluff, with live MLS listings and local agents.",
+  path: "/buy",
+});
 
 const FAQS = [
   {
@@ -43,7 +45,7 @@ const FAQS = [
 ];
 
 export default async function BuyPage() {
-  const [stats, cities] = await Promise.all([listingStats({}), cityCards()]);
+  const [stats, cities] = await Promise.all([listingStats({}), cityShowcase()]);
 
   const jsonLd = [
     {
@@ -66,13 +68,13 @@ export default async function BuyPage() {
     {
       "@context": "https://schema.org",
       "@type": "RealEstateAgent",
+      "@id": BUSINESS_ID,
       name: site.name,
       description: `${site.name}, brokered by ${site.brokerage}, helping buyers across Southwest Louisiana.`,
       url: SITE,
       telephone: site.phone,
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
-      address: { "@type": "PostalAddress", addressLocality: site.localSeo.city, addressRegion: site.localSeo.region, addressCountry: "US" },
-      geo: { "@type": "GeoCoordinates", latitude: site.localSeo.latitude, longitude: site.localSeo.longitude },
+      ...napSchema(),
     },
   ];
 
@@ -85,8 +87,7 @@ export default async function BuyPage() {
           <nav className="hero__crumb" aria-label="Breadcrumb">
             <Link href="/">Home</Link> &nbsp;/&nbsp; Buy
           </nav>
-          <span className="hero__script">buy a home in</span>
-          <h1>Southwest Louisiana</h1>
+          <h1><span className="hero__script">buy a home in</span>Southwest Louisiana</h1>
           <p className="hero__sub">
             Find your next home across Lake Charles, Sulphur, Westlake and every community in between —
             with live MLS listings, real local guidance, and no-pressure help from start to close.
@@ -97,7 +98,7 @@ export default async function BuyPage() {
             {stats.priceMin ? <div><div className="n">{usd(stats.priceMin)}</div><div className="k">Starting Price</div></div> : null}
           </div>
           <div className="hero__cta">
-            <Link className="btn btn--aqua" href="/listings">Browse all listings</Link>
+            <Link className="btn btn--aqua" href="/homes-for-sale">Browse all listings</Link>
             <a className="btn btn--hollow" href={site.phoneHref}>Call Us Now</a>
           </div>
         </div>
@@ -107,12 +108,7 @@ export default async function BuyPage() {
       </header>
 
       {/* City photo cards */}
-      <AreaShowcase
-        eyebrow="by community"
-        title="Browse homes by city"
-        cards={cities}
-        hrefFor={(slug) => `/${slug}`}
-      />
+      <CityShowcase eyebrow="by community" title="Browse homes by city" cards={cities} />
 
       {/* Informational content */}
       <section className="seo-body">
@@ -159,7 +155,6 @@ export default async function BuyPage() {
       </section>
 
       {/* About + map */}
-      <LocalMap href="/listings" ctaLabel="Browse all listings" />
 
       {/* Buyer FAQ */}
       <section className="faq">

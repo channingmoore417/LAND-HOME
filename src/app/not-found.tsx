@@ -13,7 +13,7 @@ export default function NotFound() {
         <p className="lead__sub" style={{ maxWidth: 460, margin: "12px auto 24px" }}>
           It may have sold or been taken off the market. Browse our current homes for sale.
         </p>
-        <Link className="btn btn--aqua" href="/listings" style={{ maxWidth: 280, margin: "0 auto" }}>
+        <Link className="btn btn--aqua" href="/homes-for-sale" style={{ maxWidth: 280, margin: "0 auto" }}>
           View All Listings
         </Link>
       </div>

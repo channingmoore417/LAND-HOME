@@ -1,15 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import ListingCard from "@/components/ListingCard";
-import AreaShowcase from "@/components/AreaShowcase";
-import LocalMap from "@/components/LocalMap";
+import CityShowcase from "@/components/CityShowcase";
 import JsonLd from "@/components/JsonLd";
 import Testimonials from "@/components/Testimonials";
 import BlogCover from "@/components/BlogCover";
-import { fetchCards, fetchFirstPhotos } from "@/lib/listings";
-import { cityCards } from "@/lib/neighborhoods";
+import { fetchCards, fetchPhotosMap } from "@/lib/listings";
+import { cityShowcase } from "@/lib/cityShowcase";
 import { getPosts } from "@/lib/blog";
 import { REVIEWS } from "@/lib/reviews";
+import { agentSchema } from "@/lib/schema";
 import { site } from "@/config/site";
 import { SITE_URL as SITE } from "@/lib/seoConfig";
 
@@ -17,16 +17,33 @@ export const dynamic = "force-dynamic";
 
 const GBP_URL = "https://share.google/P0z9MIBZPEnlqMUMh";
 
+const HOME_OG_TITLE = "Lake Charles Realtor | Homes for Sale & Real Estate";
+const HOME_OG_DESC =
+  "Browse Lake Charles homes for sale and work with a trusted local real estate team. Live MLS listings, free home valuations, and no-pressure guidance.";
+
 export const metadata: Metadata = {
-  title: { absolute: "Lake Charles Realtor | Homes for Sale & Real Estate" },
+  // title.absolute bypasses the layout's "%s | site.name" template — this
+  // title is already the full, keyword-first SEO title on its own.
+  title: { absolute: HOME_OG_TITLE },
   description:
-    "Looking for a Lake Charles realtor? The Land & Home Group helps you buy and sell across Lake Charles and Southwest Louisiana — browse homes for sale, get a free home value report, and work with a trusted local real estate team.",
+    "Lake Charles realtor team helping you buy and sell across Southwest Louisiana. Browse homes for sale, get a free home value, and work with local agents.",
   alternates: { canonical: "/" },
+  // openGraph/twitter objects REPLACE the layout's entirely rather than
+  // merging, so every field (including the image) has to be repeated here.
   openGraph: {
-    title: "Lake Charles Realtor | Homes for Sale & Real Estate",
-    description:
-      "Browse Lake Charles homes for sale and work with a trusted local real estate team. Live MLS listings, free home valuations, and no-pressure guidance.",
+    type: "website",
     url: SITE,
+    title: HOME_OG_TITLE,
+    description: HOME_OG_DESC,
+    siteName: site.name,
+    locale: "en_US",
+    images: [{ url: site.teamPhotoUrl, width: 1200, height: 630, alt: `${site.name} — Lake Charles real estate team` }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_OG_TITLE,
+    description: HOME_OG_DESC,
+    images: [site.teamPhotoUrl],
   },
 };
 
@@ -60,41 +77,26 @@ const FAQS = [
 export default async function Home() {
   const [{ rows: team }, cities, posts] = await Promise.all([
     fetchCards({ lhgOnly: true }, { limit: 6, sort: "new" }),
-    cityCards(),
+    cityShowcase(),
     getPosts({ limit: 3 }),
   ]);
-  const photos = await fetchFirstPhotos(team.map((r) => r.listing_key));
-  for (const r of team) r.photo_url = photos.get(r.listing_key) ?? null;
+  const photos = await fetchPhotosMap(team.map((r) => r.listing_key));
+  for (const r of team) r.photos = photos.get(r.listing_key) ?? [];
 
   const jsonLd = [
     {
       "@context": "https://schema.org",
-      "@type": "RealEstateAgent",
-      name: site.name,
+      ...agentSchema(),
       description:
         "Lake Charles realtor and Southwest Louisiana real estate team helping buyers and sellers across Calcasieu Parish — homes for sale, free home valuations, and local guidance.",
-      url: SITE,
-      image: site.teamPhotoUrl,
-      logo: site.logoUrl,
-      telephone: site.phoneHref.replace("tel:", ""),
-      priceRange: "$$",
       areaServed: [
         { "@type": "City", name: "Lake Charles" },
         ...cities.filter((c) => c.name !== "Lake Charles").map((c) => ({ "@type": "City", name: c.name })),
       ],
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: site.localSeo.city,
-        addressRegion: site.localSeo.region,
-        addressCountry: "US",
-      },
-      geo: { "@type": "GeoCoordinates", latitude: site.localSeo.latitude, longitude: site.localSeo.longitude },
-      sameAs: [GBP_URL],
-      parentOrganization: { "@type": "Organization", name: site.brokerage },
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue: "5.0",
-        reviewCount: String(REVIEWS.length),
+        reviewCount: String(site.nap.reviewCount),
         bestRating: "5",
       },
       review: REVIEWS.map((r) => ({
@@ -111,7 +113,7 @@ export default async function Home() {
       url: SITE,
       potentialAction: {
         "@type": "SearchAction",
-        target: `${SITE}/listings?q={search_term_string}`,
+        target: `${SITE}/homes-for-sale?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },
@@ -141,7 +143,7 @@ export default async function Home() {
                 The Land &amp; Home Group helps you buy and sell across Lake Charles and Southwest
                 Louisiana — local expertise, modern tools, and no-pressure guidance every step of the way.
               </p>
-              <form className="hsearch" action="/listings" method="get">
+              <form className="hsearch" action="/homes-for-sale" method="get">
                 <input type="hidden" name="view" value="split" />
                 <input className="hsearch__input" type="text" name="q" placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
                 <button className="hsearch__btn" type="submit">Search</button>
@@ -203,7 +205,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="home-cta">
-            <Link className="btn btn--primary" href="/listings">Start Browsing Homes</Link>
+            <Link className="btn btn--primary" href="/homes-for-sale">Start Browsing Homes</Link>
             <Link className="btn btn--ghost" href="/home-value">Get My Home Value</Link>
           </div>
         </div>
@@ -234,14 +236,13 @@ export default async function Home() {
       <Testimonials reviewsUrl={GBP_URL} />
 
       {/* BROWSE BY CITY — homes for sale in each community */}
-      <AreaShowcase
+      <CityShowcase
         eyebrow="by community"
-        title="Lake Charles &amp; Southwest Louisiana Homes for Sale"
+        title="Lake Charles & Southwest Louisiana Homes for Sale"
         cards={cities}
-        hrefFor={(slug) => `/${slug}`}
       />
       <div className="wrap home-cta home-cta--tight">
-        <Link className="btn btn--primary" href="/listings">Search All Homes for Sale</Link>
+        <Link className="btn btn--primary" href="/homes-for-sale">Search All Homes for Sale</Link>
         <Link className="btn btn--ghost" href="/buy">Explore Buying in SWLA</Link>
       </div>
 
@@ -377,9 +378,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <LocalMap cityLabel="Southwest Louisiana" mapOnly />
       <div className="wrap home-cta home-cta--tight">
-        <Link className="btn btn--primary" href="/listings">Start Your Home Search</Link>
+        <Link className="btn btn--primary" href="/homes-for-sale">Start Your Home Search</Link>
         <a className="btn btn--ghost" href={site.phoneHref}>Call {site.phone}</a>
       </div>
     </div>

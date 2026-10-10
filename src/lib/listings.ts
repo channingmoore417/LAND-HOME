@@ -20,6 +20,11 @@ export const FEATURE_COLUMN: Record<string, string> = {
   updated: "is_updated_remodeled",
   single_story: "is_single_story",
   acre_plus: "has_acre_plus",
+  // Read from the listing description by generated columns in Supabase.
+  shop: "has_shop",
+  fixer: "is_fixer_upper",
+  golf: "is_golf_course",
+  owner_financing: "has_owner_financing",
 };
 
 export interface ListingCriteria {
@@ -33,12 +38,14 @@ export interface ListingCriteria {
   sqftMax?: number;
   yearMin?: number;
   type?: string; // UI value: "Single Family" | "Multi-Family" | "New Construction" | "Land" | "Mobile / Manufactured"
-  category?: "land" | "single_family" | "mobile"; // SEO-page shorthand
+  category?: "land" | "single_family" | "mobile" | "residential"; // SEO-page shorthand
   features?: string[]; // feature keys (see FEATURE_COLUMN)
   postalCode?: string; // ZIP (prefix match, tolerates ZIP+4)
   subdivisionAny?: string[]; // neighborhood: subdivision_name ILIKE keywords (OR'd)
+  highSchool?: string; // school-zone pages: MLS high_school (exact, case-insensitive)
   q?: string; // free-text search
   lhgOnly?: boolean; // only The Land & Home Group's own listings
+  listAgentMlsId?: string; // one agent's own listings (agent pages)
   // Geographic bounds (map "search this area"): south/north lat, west/east lng.
   latMin?: number;
   latMax?: number;
@@ -71,6 +78,7 @@ export interface Card {
   internet_address_yn: boolean;
   days_on_market: number | null;
   photo_url?: string | null; // attached after fetchFirstPhotos
+  photos?: string[]; // attached after fetchPhotosMap — powers the card slider
 }
 
 // Applies every filter to a Supabase query builder. Shared so the search page
@@ -83,6 +91,7 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   query = query.not("property_type", "in", "(ResidentialLease,CommercialLease)");
 
   if (c.lhgOnly) query = query.eq("is_lhg_listing", true);
+  if (c.listAgentMlsId) query = query.ilike("list_agent_mls_id", c.listAgentMlsId.replace(/[%_]/g, ""));
   if (c.city) query = query.ilike("city", c.city);
   if (c.bedsMin) query = query.gte("bedrooms_total", c.bedsMin);
   if (c.bathsMin) query = query.gte("bathrooms_total", c.bathsMin);
@@ -96,6 +105,7 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   if (c.category === "land") query = query.eq("property_type", "Land");
   else if (c.category === "single_family") query = query.eq("property_sub_type", "SingleFamilyResidence");
   else if (c.category === "mobile") query = query.in("property_sub_type", MOBILE_SUBTYPES);
+  else if (c.category === "residential") query = query.eq("property_type", "Residential");
 
   if (c.type === "Single Family") query = query.eq("property_sub_type", "SingleFamilyResidence");
   else if (c.type === "Multi-Family")
@@ -115,6 +125,8 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   if (typeof c.lngMax === "number") query = query.lte("longitude", c.lngMax);
 
   if (c.postalCode) query = query.ilike("postal_code", `${c.postalCode}%`);
+
+  if (c.highSchool) query = query.ilike("high_school", c.highSchool.replace(/[%_]/g, ""));
 
   if (c.subdivisionAny?.length) {
     query = query.or(
@@ -142,7 +154,12 @@ export function applySort(query: any, sort: SortKey) {
     case "phigh": return query.order("list_price", { ascending: false, nullsFirst: false });
     case "beds": return query.order("bedrooms_total", { ascending: false, nullsFirst: false });
     case "sqft": return query.order("living_area", { ascending: false, nullsFirst: false });
-    default: return query.order("modification_timestamp", { ascending: false, nullsFirst: false });
+    // "Newest" = most recently LISTED. modification_timestamp only says when a
+    // listing was last edited, which resurfaces old homes after a price tweak.
+    default:
+      return query
+        .order("on_market_date", { ascending: false, nullsFirst: false })
+        .order("modification_timestamp", { ascending: false, nullsFirst: false });
   }
 }
 
@@ -158,6 +175,27 @@ export async function fetchFirstPhotos(keys: string[]): Promise<Map<string, stri
     .order("order", { ascending: true });
   for (const m of (data as { listing_key: string; media_url: string }[]) ?? []) {
     if (!map.has(m.listing_key)) map.set(m.listing_key, m.media_url);
+  }
+  return map;
+}
+
+// Up to `limit` photos per listing_key, in order — powers the card photo
+// slider (swipe through a listing's photos without opening it).
+export async function fetchPhotosMap(keys: string[], limit = 6): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>();
+  if (keys.length === 0) return map;
+  const supabase = getLiveClient();
+  const { data } = await supabase
+    .from("listing_media")
+    .select("listing_key, media_url, order")
+    .in("listing_key", keys)
+    .order("order", { ascending: true });
+  for (const m of (data as { listing_key: string; media_url: string }[]) ?? []) {
+    const arr = map.get(m.listing_key) ?? [];
+    if (arr.length < limit) {
+      arr.push(m.media_url);
+      map.set(m.listing_key, arr);
+    }
   }
   return map;
 }

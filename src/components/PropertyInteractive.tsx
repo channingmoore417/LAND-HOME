@@ -1,27 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { namePayload } from "@/lib/formName";
+import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 
 // All the lead-capture UI for a listing: sidebar lead card + message form,
 // the sticky mobile bar, and the Tour / Ask modals. Every form posts to the
-// single /api/forms endpoint with a stable form_id.
+// single /api/forms endpoint with a stable form_id, guarded by useFormGuard().
 
 interface Props {
   listingKey: string;
   address: string; // full label for modals, e.g. "123 Main St, Lake Charles, LA 70601"
   priceLabel: string; // e.g. "$424,500"
-}
-
-async function submitForm(payload: Record<string, unknown>) {
-  const res = await fetch("/api/forms", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      ...payload,
-      source_url: typeof window !== "undefined" ? window.location.pathname : undefined,
-    }),
-  });
-  return res.ok;
 }
 
 function dateOptions() {
@@ -51,6 +42,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
   const [tourSent, setTourSent] = useState(false);
   const [askSent, setAskSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  // One guard per form — each owns its own honeypot input.
+  const msgGuard = useFormGuard();
+  const tourGuard = useFormGuard();
+  const askGuard = useFormGuard();
 
   function lock(open: boolean) {
     document.body.style.overflow = open ? "hidden" : "";
@@ -72,17 +67,25 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     lock(false);
   };
 
+  // The inquiry message always names the property from the page it was sent
+  // from, so downstream (contact note, team SMS) reads the address, not just
+  // the MLS key.
+  const withAddress = (msg: FormDataEntryValue | null) => {
+    const text = String(msg ?? "").trim();
+    return text ? `Re: ${address} — ${text}` : `Inquiry about ${address}`;
+  };
+
   async function handleMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setBusy(true);
     const f = new FormData(e.currentTarget);
-    const ok = await submitForm({
+    const ok = await msgGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
-      message: f.get("message"),
+      message: withAddress(f.get("message")),
     });
     setBusy(false);
     if (ok) setMsgSent(true);
@@ -92,10 +95,10 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     e.preventDefault();
     setBusy(true);
     const f = new FormData(e.currentTarget);
-    const ok = await submitForm({
+    const ok = await tourGuard.submit({
       form_id: "showing_request",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
       preferred_times: `${tourMode} · ${dates[dateIdx].label}`,
@@ -109,13 +112,13 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
     e.preventDefault();
     setBusy(true);
     const f = new FormData(e.currentTarget);
-    const ok = await submitForm({
+    const ok = await askGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
-      name: f.get("name"),
+      ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
-      message: f.get("message"),
+      message: withAddress(f.get("message")),
     });
     setBusy(false);
     if (ok) setAskSent(true);
@@ -153,8 +156,12 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
             <p className="form__ok">Thanks — we&apos;ll be in touch shortly about this home.</p>
           ) : (
             <form onSubmit={handleMessage}>
-              <input className="input" name="name" type="text" placeholder="Full name" required />
-              <input className="input" name="phone" type="tel" placeholder="Phone" />
+              <HoneypotField inputRef={msgGuard.hpRef} />
+              <div className="namerow">
+                  <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
+                  <input className="input" name="last_name" type="text" placeholder="Last name" autoComplete="family-name" required />
+                </div>
+              {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
               <input className="input" name="email" type="email" placeholder="Email" required />
               <textarea
                 className="input"
@@ -208,6 +215,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
               <p className="form__ok">Tour requested! We&apos;ll confirm your time by phone or email.</p>
             ) : (
               <form onSubmit={handleTour}>
+                <HoneypotField inputRef={tourGuard.hpRef} />
                 <div className="tour__toggle">
                   {(["In-Person Tour", "Video Chat Tour"] as const).map((m) => (
                     <button
@@ -233,8 +241,11 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
                     </div>
                   ))}
                 </div>
-                <input className="input" name="name" type="text" placeholder="First & last name" required />
-                <input className="input" name="phone" type="tel" placeholder="Phone" required />
+                <div className="namerow">
+                  <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
+                  <input className="input" name="last_name" type="text" placeholder="Last name" autoComplete="family-name" required />
+                </div>
+                {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" required />}
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <button className="btn btn--aqua" disabled={busy}>
                   {busy ? "Sending…" : "Confirm Tour Request"}
@@ -269,14 +280,17 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
               <p className="form__ok">Got it — we&apos;ll answer your question shortly.</p>
             ) : (
               <form onSubmit={handleAsk}>
-                <input className="input" name="name" type="text" placeholder="First & last name" required />
-                <input className="input" name="phone" type="tel" placeholder="Phone" />
+                <HoneypotField inputRef={askGuard.hpRef} />
+                <div className="namerow">
+                  <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
+                  <input className="input" name="last_name" type="text" placeholder="Last name" autoComplete="family-name" required />
+                </div>
+                {!A2P_REVIEW_MODE && <input className="input" name="phone" type="tel" placeholder="Phone" />}
                 <input className="input" name="email" type="email" placeholder="Email" required />
                 <textarea
                   className="input"
                   name="message"
                   placeholder="What would you like to know about this home?"
-                  defaultValue={`I'd like more information about ${address}.`}
                 />
                 <button className="btn btn--aqua" disabled={busy}>
                   {busy ? "Sending…" : "Send Question"}

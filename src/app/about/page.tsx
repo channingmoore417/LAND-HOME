@@ -1,22 +1,26 @@
 import type { Metadata } from "next";
+import { BUSINESS_ID, personId } from "@/lib/schema";
+import AwardList, { awardStrings } from "@/components/AwardList";
 import Link from "next/link";
 import { site } from "@/config/site";
 import { cityCards } from "@/lib/neighborhoods";
 import { getTeam } from "@/lib/team";
-import LocalMap from "@/components/LocalMap";
 import TeamGrid from "@/components/TeamGrid";
 import JsonLd from "@/components/JsonLd";
+import { pageMetadata } from "@/lib/seoMeta";
 
 export const dynamic = "force-dynamic";
 
 import { SITE_URL as SITE } from "@/lib/seoConfig";
+import { napSchema } from "@/lib/nap";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "About Us",
   description:
-    "Meet the agents behind The Land & Home Group, brokered by EXIT Realty Southern — a local, no-pressure real estate team helping families buy and sell across Lake Charles, Sulphur and all of Southwest Louisiana.",
-  alternates: { canonical: `${SITE}/about` },
-};
+    "Meet the local agents of The Land & Home Group, brokered by EXIT Realty Southern, helping families buy and sell in Lake Charles, Sulphur and nearby towns.",
+  path: "/about",
+  image: site.teamPhotoUrl,
+});
 
 const REVIEWS = [
   { name: "Avery Greninger", text: "Lauren is the best, a true advocate for her clients. She helped ease the stresses of my first home-buying experience. You can always count on her, trusting she prioritizes her clients!" },
@@ -79,29 +83,24 @@ export default async function AboutPage() {
     {
       "@context": "https://schema.org",
       "@type": "RealEstateAgent",
+      "@id": BUSINESS_ID,
       name: site.name,
       description: `${site.name}, brokered by ${site.brokerage}, helping buyers and sellers across Southwest Louisiana.`,
       url: SITE,
       telephone: site.phone,
       areaServed: { "@type": "AdministrativeArea", name: "Southwest Louisiana" },
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: site.localSeo.city,
-        addressRegion: site.localSeo.region,
-        addressCountry: "US",
-      },
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: site.localSeo.latitude,
-        longitude: site.localSeo.longitude,
-      },
+      ...napSchema(),
       employee: team.map((a) => ({
-        "@type": "RealEstateAgent",
+        "@type": ["Person", "RealEstateAgent"],
+        "@id": personId(a.slug),
         name: a.full_name,
         ...(a.title ? { jobTitle: a.title } : {}),
         ...(a.phone ? { telephone: a.phone } : {}),
         ...(a.email ? { email: a.email } : {}),
         ...(a.photo_url ? { image: a.photo_url } : {}),
+        ...(a.full_name === site.blogAuthor.name
+          ? { award: awardStrings(), url: `${SITE}/agents/${a.slug}`, sameAs: [site.blogAuthor.zillowUrl, site.blogAuthor.instagramUrl, site.blogAuthor.facebookUrl] }
+          : { url: `${SITE}/agents/${a.slug}` }),
       })),
     },
   ];
@@ -133,7 +132,7 @@ export default async function AboutPage() {
               </div>
               <div className="hero__cta">
                 <Link className="btn btn--aqua" href="/contact">Get in Touch</Link>
-                <Link className="btn btn--hollow" href="/listings">Browse Listings</Link>
+                <Link className="btn btn--hollow" href="/homes-for-sale">Browse Listings</Link>
               </div>
             </div>
             <div className="hero__photo">
@@ -173,6 +172,15 @@ export default async function AboutPage() {
               headed in the region, one of our agents knows it well.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Lauren's awards */}
+      <section className="seo-body awards-sec">
+        <div className="wrap">
+          <span className="script">recognized for results</span>
+          <h2 className="section__title">Lauren Huffman&apos;s Awards</h2>
+          <AwardList />
         </div>
       </section>
 
@@ -246,8 +254,6 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Google map (team photo now lives in the hero) */}
-      <LocalMap href="/contact" ctaLabel="Contact the team" showPhoto={false} />
 
       {/* Pre-approval CTA — the referral flywheel */}
       <section className="preapproval">

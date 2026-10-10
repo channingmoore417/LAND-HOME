@@ -6,8 +6,10 @@
 export const site = {
   name: "The Land & Home Group",
   brokerage: "EXIT Realty Southern",
-  phone: "(337) 245-0909",
-  phoneHref: "tel:+13372450909",
+  phone: "(713) 314-6466",
+  phoneHref: "tel:+17133146466",
+  email: "lauren@landhomegroup.com",
+  emailHref: "mailto:lauren@landhomegroup.com",
   logoUrl:
     "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a29b0edff11dedc40eb9d4e.png",
   teamPhotoUrl:
@@ -18,24 +20,25 @@ export const site = {
     {
       label: "Buy",
       href: "/buy",
+      // Per-city (and per-city-topic: mobile homes, new construction,
+      // 4+ bedroom, etc.) links are NOT hand-maintained here — they're
+      // fetched live from seo_pages (see getNavCityMenu in lib/seo.ts) and
+      // rendered by SiteHeader as a nested Buy > City > Topic menu, so this
+      // list never drifts out of sync with which programmatic pages exist.
       children: [
-        { label: "All Homes for Sale", href: "/buy" },
-        { label: "Lake Charles", href: "/lake-charles/homes-for-sale" },
-        { label: "Sulphur", href: "/sulphur/homes-for-sale" },
-        { label: "Iowa", href: "/iowa/homes-for-sale" },
-        { label: "Westlake", href: "/westlake/homes-for-sale" },
-        { label: "Ragley", href: "/ragley/homes-for-sale" },
-        { label: "Jennings", href: "/jennings/homes-for-sale" },
-        { label: "DeRidder", href: "/deridder/homes-for-sale" },
-        { label: "Vinton", href: "/vinton/homes-for-sale" },
-        { label: "Cameron", href: "/cameron/homes-for-sale" },
-        { label: "Welsh", href: "/welsh/homes-for-sale" },
-        { label: "Moss Bluff", href: "/moss-bluff/homes-for-sale" },
+        { label: "All Homes for Sale", href: "/homes-for-sale" },
+        { label: "Work With a Buyer's Agent", href: "/buyers-agent" },
       ],
     },
-    { label: "Sell", href: "/home-value" },
+    {
+      label: "Sell",
+      href: "/home-value",
+      children: [
+        { label: "What's My Home Worth?", href: "/home-value" },
+        { label: "Sell Fast for Cash (As-Is)", href: "/sell-my-house-fast" },
+      ],
+    },
     { label: "Our Listings", href: "/our-listings" },
-    { label: "Listings", href: "/listings" },
     { label: "Blog", href: "/blog" },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
@@ -51,13 +54,14 @@ export const site = {
           { label: "Lake Charles Homes for Sale", href: "/lake-charles/homes-for-sale" },
           { label: "Land for Sale in Lake Charles", href: "/lake-charles/land-for-sale" },
           { label: "Waterfront Homes in Lake Charles", href: "/lake-charles/waterfront-homes" },
-          { label: "All SWLA Listings", href: "/listings" },
+          { label: "Sell My House Fast (Cash Offer)", href: "/sell-my-house-fast" },
+          { label: "All SWLA Listings", href: "/homes-for-sale" },
         ],
       },
       {
         title: "Connect",
         links: [
-          { label: "(337) 245-0909", href: "tel:+13372450909" },
+          { label: "(713) 314-6466", href: "tel:+17133146466" },
           { label: "thelandhomegroup", href: "https://instagram.com/thelandhomegroup" },
           { label: "Lake Charles, LA", href: "/contact" },
           { label: "Schedule a Call", href: "/contact" },
@@ -66,27 +70,39 @@ export const site = {
     ],
     legal:
       "Equal Housing Opportunity · Information deemed reliable but not guaranteed.",
+    legalLinks: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
   },
 
-  // Bayou Mortgage partner module (the referral flywheel).
+  // Mortgage partner module (the referral flywheel). Bayou Mortgage LLC has
+  // closed; this is now Channing Moore operating as The Moore Mortgage Team,
+  // licensed through Umortgage.
   bayou: {
-    name: "Bayou Mortgage",
+    name: "The Moore Mortgage Team",
+    repName: "Channing Moore",
+    personalNmls: "1235512",
+    companyName: "Umortgage",
+    companyNmls: "1457759",
     logoUrl:
-      "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/64b0048711553d23dbe46d69.png",
-    headline: "Get a Real Rate with Bayou Mortgage",
+      "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a7dc297c00ec1b226d3cc85.png",
+    headshotUrl:
+      "https://assets.cdn.filesafe.space/oEIlQOv4C2ZirNFvg7QJ/media/6a7dc26679dbc24f68bac7d9.png",
+    headline: "Get Your Real Numbers. Payment, Rate and Cost",
     sub: "Our preferred local Louisiana lender. No-pressure quote — see your true monthly payment in minutes.",
     ctaLabel: "Get My Quote",
     ctaHref: "/get-pre-approved",
     disclosure:
-      "Estimates only and not a commitment to lend. Channing Moore | NMLS #1235512 | Bayou Mortgage LLC | NMLS #1845349 | Licensed in Louisiana | Equal Housing Lender. Rates shown are example estimates — contact for current rates and APR.",
+      "Estimates only and not a commitment to lend. Channing Moore | NMLS #1235512 | Umortgage | NMLS #1457759 | Licensed in Louisiana | Equal Housing Lender. Rates shown are example estimates — contact for current rates and APR.",
   },
 
   // Local SEO — the client's Google Business Profile (used for the map embed
   // + RealEstateAgent/LocalBusiness geo coordinates in structured data).
   localSeo: {
-    gbpName: "Lauren Bane Huffman | Lake Charles Realtor",
+    gbpName: "The Land & Home Group | Lake Charles Realtor",
     mapEmbedUrl:
-      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4300.206904046305!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sLauren%20Bane%20Huffman%20%7C%20Lake%20Charles%20Realtor!5e1!3m2!1sen!2sus!4v1781719708228!5m2!1sen!2sus",
+      "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3447.3474971895225!2d-93.3336138!3d30.227165499999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x863b8f69b8ed9fe9%3A0x9064a40b358210a0!2sThe%20Land%20%26%20Home%20Group%20%7C%20Lake%20Charles%20Realtor!5e0!3m2!1sen!2sus!4v1790188666149!5m2!1sen!2sus",
     latitude: 30.2271655,
     longitude: -93.3336138,
     city: "Lake Charles",
@@ -94,14 +110,103 @@ export const site = {
   },
 
   // Blog author (team leader) — powers the author bio card + Person structured
-  // data for Google E-E-A-T. Drop a headshot URL in photoUrl when available.
+  // data for Google E-E-A-T. photoUrl is Lauren's headshot.
   blogAuthor: {
     name: "Lauren Huffman",
     title: "Team Leader · Lake Charles Realtor",
-    photoUrl: "",
+    photoUrl: "https://assets.cdn.filesafe.space/xdGkCWotXaek58gmTbxt/media/6ab41ce8ec718870e13e4db2.jpg",
     bio:
-      "Lauren Huffman leads The Land & Home Group, brokered by EXIT Realty Southern. A Southwest Louisiana local and one of the area's most-reviewed agents, Lauren has helped hundreds of families buy and sell across Lake Charles, Sulphur, Moss Bluff, Westlake and the surrounding communities — with honest, no-pressure guidance and deep local market knowledge.",
+      "Lauren Huffman leads The Land & Home Group, brokered by EXIT Realty Southern. She started in Southwest Louisiana real estate in 2019, was her brokerage's Rookie of the Year, and has since grown a team that has served several hundred families, with over 70% of its business coming from referrals. In 2025 she was named REALTOR® of the Year by the Southwest Louisiana Association of REALTORS® and received EXIT Louisiana's Trusted Advisor Award.",
     url: "/about",
     gbpUrl: "https://share.google/P0z9MIBZPEnlqMUMh",
+    instagramUrl: "https://www.instagram.com/thelandhomegroup",
+    facebookUrl: "https://www.facebook.com/landhomerealestategroup",
+    zillowUrl: "https://www.zillow.com/profile/laurenbhuffman",
+    // Lauren's awards (from Lauren). Shown on the author card, About and
+    // buyer's agent pages, and as schema.org `award` on her Person markup.
+    awards: [
+      { title: "SWLAR Realtor of the Year", year: "2025", detail: "Southwest Louisiana Association of REALTORS®" },
+      { title: "EXIT Realty Platinum Award", year: "2026", detail: "100+ transactions" },
+      { title: "EXIT Realty Gold Award", year: "2025", detail: "75+ transactions" },
+      { title: "Trusted Advisor Award, EXIT Louisiana", year: "2025" },
+    ] as { title: string; year: string; detail?: string }[],
+  },
+
+  // NAP (name / address / phone) — must match the Google Business Profile
+  // exactly. Powers the visible "find us" block, the footer, and every
+  // RealEstateAgent schema address on the site.
+  nap: {
+    name: "The Land & Home Group",
+    street: "3701 Maplewood Dr",
+    city: "Sulphur",
+    region: "LA",
+    postalCode: "70663",
+    website: "https://www.landhomegroup.com",
+    hours: [
+      { days: "Monday – Friday", time: "8 AM – 8 PM" },
+      { days: "Saturday – Sunday", time: "Closed" },
+    ],
+    // schema.org OpeningHoursSpecification equivalent of `hours`
+    openDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    opens: "08:00",
+    closes: "20:00",
+    rating: "5.0",
+    reviewCount: 50,
+    mapsUrl: "https://maps.google.com/?cid=10404621407182000288",
+    directionsUrl:
+      "https://www.google.com/maps/dir/?api=1&destination=The+Land+%26+Home+Group+3701+Maplewood+Dr+Sulphur+LA+70663",
   },
 } as const;
+
+// ============================================================
+// Google Ads landing pages — OPT-IN, per page.
+// Only the paths listed here change. Every other page keeps the
+// normal header and has no capture gate. Add a path to turn it on,
+// remove it to turn it off (then redeploy).
+//   hideHeader: drop the global header on that page
+//   hideHero:   drop the big hero banner (the property page's own address +
+//               photo header is never hidden)
+//   capture:    marks the visit as an ad visit; the full-screen name/phone/
+//               email gate (hard — no dismiss) then appears when the visitor
+//               opens a property (/listings/…), not on the landing page.
+//               Visitors who already submitted once skip it
+// Trailing "/*" matches everything under that path.
+// ============================================================
+export interface AdPage {
+  path: string;
+  hideHeader?: boolean;
+  hideHero?: boolean; // drop the big banner at the top of index-style pages
+  capture?: boolean;
+}
+
+export const adPages: AdPage[] = [
+  // { path: "/get-pre-approved", hideHeader: true, capture: true },
+  // { path: "/lp/*", hideHeader: true, capture: true },
+];
+
+// Add this as the LAST segment of any URL to switch that page into ad mode
+// (header + hero hidden; capture gate on property click) with no code change, e.g.
+//   /lake-charles/homes-for-sale/GA   ·   /listings/1146589207/GA   ·   /GA
+// src/middleware.ts serves the normal page for the URL minus the suffix.
+export const adSuffix = "ga";
+
+// sessionStorage key flagging an ad visit. Set when a /GA page loads; while set,
+// the header and index hero stay hidden on every page (filters, searches and
+// property clicks all navigate away from the /GA URL).
+export const AD_VISIT_KEY = "lhg_ad_visit";
+
+export function hasAdSuffix(pathname: string): boolean {
+  const last = pathname.replace(/\/+$/, "").split("/").pop() ?? "";
+  return last.toLowerCase() === adSuffix;
+}
+
+export function getAdPage(pathname: string | null): AdPage | undefined {
+  if (!pathname) return undefined;
+  if (hasAdSuffix(pathname)) return { path: pathname, hideHeader: true, hideHero: true, capture: true };
+  const clean = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return adPages.find((a) =>
+    a.path.endsWith("/*")
+      ? clean === a.path.slice(0, -2) || clean.startsWith(a.path.slice(0, -1))
+      : clean === a.path,
+  );
+}

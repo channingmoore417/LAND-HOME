@@ -83,7 +83,7 @@ export default function ListingsControls({
     if (next.zip) p.set("zip", next.zip);
     if (next.neighborhood) p.set("neighborhood", next.neighborhood);
     if (next.sort && next.sort !== "new") p.set("sort", next.sort);
-    router.push(`/listings${p.toString() ? `?${p}` : ""}`, { scroll: false });
+    router.push(`/homes-for-sale${p.toString() ? `?${p}` : ""}`, { scroll: false });
   }
 
   // Update + navigate immediately (used by selects, pills, checkboxes).
