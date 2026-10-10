@@ -6,7 +6,7 @@ import CaptureGate from "@/components/CaptureGate";
 import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
 import SiteLocalBand from "@/components/SiteLocalBand";
 import AuthProvider from "@/components/AuthProvider";
-import { site, AD_VISIT_KEY } from "@/config/site";
+import { site, AD_VISIT_KEY, AD_VISIT_COOKIE } from "@/config/site";
 import { SITE_URL } from "@/lib/seoConfig";
 import { getNavCityMenu } from "@/lib/seo";
 import "./globals.css";
@@ -62,7 +62,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* Ad visit (came in via a /GA link): flag <html> before first paint so the header and hero stay hidden on every later page. */}
-        <script dangerouslySetInnerHTML={{ __html: `try{if(sessionStorage.getItem(${JSON.stringify(AD_VISIT_KEY)}))document.documentElement.dataset.ad="1"}catch(e){}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `try{var k=${JSON.stringify(AD_VISIT_KEY)};if(!sessionStorage.getItem(k)){var m=document.cookie.match(/(?:^|; )${AD_VISIT_COOKIE}=([^;]*)/);if(m)sessionStorage.setItem(k,decodeURIComponent(m[1]))}if(sessionStorage.getItem(k))document.documentElement.dataset.ad="1"}catch(e){}` }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
