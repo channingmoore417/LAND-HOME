@@ -190,6 +190,10 @@ export const adPages: AdPage[] = [
 // src/middleware.ts serves the normal page for the URL minus the suffix.
 export const adSuffix = "ga";
 
+// Listing capture gate (components/CaptureGate.tsx). false = every signed-out
+// visitor who opens a listing sees the quiz; true = only Google Ads visitors.
+export const leadGate = { adsOnly: false };
+
 // sessionStorage key flagging an ad visit. Set when a /GA page loads; while set,
 // the header and index hero stay hidden on every page (filters, searches and
 // property clicks all navigate away from the /GA URL).
