@@ -20,6 +20,10 @@ export const FEATURE_COLUMN: Record<string, string> = {
   updated: "is_updated_remodeled",
   single_story: "is_single_story",
   acre_plus: "has_acre_plus",
+  shop: "has_shop",
+  fixer: "is_fixer_upper",
+  golf: "is_golf_course",
+  owner_financing: "has_owner_financing",
 };
 
 export interface ListingCriteria {

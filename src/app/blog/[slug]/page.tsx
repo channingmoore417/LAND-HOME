@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getPost, getPosts, categorySlug } from "@/lib/blog";
 import { photo } from "@/lib/images";
 import { site } from "@/config/site";
-import BlogBody from "@/components/BlogBody";
+import BlogContent from "@/components/BlogContent";
 import BlogCover from "@/components/BlogCover";
 import AuthorCard from "@/components/AuthorCard";
 import JsonLd from "@/components/JsonLd";
@@ -89,7 +89,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             <img className="article__cover" src={photo(post.cover_image, 1400)} alt={post.title} />
           )}
 
-          <BlogBody markdown={post.body} />
+          <BlogContent markdown={post.body} />
 
           <AuthorCard />
 
