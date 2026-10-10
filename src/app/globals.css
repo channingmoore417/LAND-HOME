@@ -1583,6 +1583,7 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 .qg__chip:active{transform:scale(.98);}
 .qg__input{width:100%;box-sizing:border-box;min-height:58px;font-size:18px;padding:14px 16px;border:2px solid var(--line);border-radius:14px;font-family:inherit;background:#fff;color:var(--ink);}
 .qg__input:focus{outline:0;border-color:var(--aqua);}
+.qg__input--2nd{margin-top:10px;}
 .qg__sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 .qg__cta{display:block;width:100%;min-height:56px;margin-top:14px;border:0;border-radius:14px;background:var(--teal);color:#fff;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;touch-action:manipulation;}
 .qg__cta:disabled{opacity:.45;cursor:default;}

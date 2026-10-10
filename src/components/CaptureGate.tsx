@@ -24,15 +24,14 @@ const OWNERSHIP = [
 
 // Easy single-tap questions first; the 13-town list comes after they are invested.
 const QUESTIONS = ["price", "size", "communities", "style", "owns"] as const;
-const CONTACT = A2P_REVIEW_MODE ? (["firstName", "lastName", "email"] as const) : (["firstName", "lastName", "email", "phone"] as const);
+const CONTACT = A2P_REVIEW_MODE ? (["name", "email"] as const) : (["name", "email", "phone"] as const);
 const STEPS = [...QUESTIONS, ...CONTACT] as const;
 type Step = (typeof STEPS)[number];
 
 const COPY = {
-  firstName: { h: "What's your first name?", p: "Your agent will use it when they follow up on this home.", label: "First name", type: "text", auto: "given-name", mode: "text" },
-  lastName: { h: "And your last name?", p: "This sets up your free account, so your saved homes and alerts are all in one place.", label: "Last name", type: "text", auto: "family-name", mode: "text" },
-  email: { h: "Where should we send your matches?", p: "Your matches and every new listing land here the day they're listed.", label: "Email", type: "email", auto: "email", mode: "email" },
-  phone: { h: "Last step: your phone number", p: "It's also your password, so there's nothing extra to remember. Then you're straight into this home.", label: "Phone number", type: "tel", auto: "tel", mode: "tel" },
+  name: { h: "What's your name?", p: "Your agent will use it when they follow up on this home.", label: "First name", type: "text", auto: "given-name", mode: "text" },
+  email: { h: "Where should we send your matches?", p: "Your matches land here the day they're listed.", label: "Email", type: "email", auto: "email", mode: "email" },
+  phone: { h: "Last step: your phone number", p: "It's also your password, so there's nothing extra to remember.", label: "Phone number", type: "tel", auto: "tel", mode: "tel" },
 } as const;
 
 interface Answers {
@@ -48,7 +47,8 @@ const digits = (v: string) => v.replace(/\D/g, "");
 // Lead-capture quiz for listing pages. Signed-out visitors can't dismiss it:
 // questions first (locations, price, beds/baths, must-haves, own a home), then
 // first name, last name, email and phone, one per screen. Mobile: full-screen
-// sheet. Completing it saves the lead (form_id "ad_capture", same pipeline and
+// sheet. Completing it saves the lead (form_id "ad_capture" for ad visitors, which has its
+// own GHL webhook; "buyer_quiz" for everyone else; same pipeline and
 // spam guard as before), creates the free account (phone = password) and
 // saves their answers as a search. Gates every visitor unless
 // leadGate.adsOnly is true (then only Google Ads visitors: /GA, gclid, UTMs).
@@ -138,8 +138,7 @@ export default function CaptureGate() {
     name === "communities" ? a.communities.length > 0
     : name === "price" ? !!a.price
     : name === "owns" ? !!a.owns
-    : name === "firstName" ? !!a.firstName.trim()
-    : name === "lastName" ? !!a.lastName.trim()
+    : name === "name" ? !!a.firstName.trim() && !!a.lastName.trim()
     : name === "email" ? /\S+@\S+\.\S+/.test(a.email.trim())
     : name === "phone" ? digits(a.phone).length >= 10
     : true;
@@ -185,12 +184,14 @@ export default function CaptureGate() {
       const owns = OWNERSHIP.find((o) => o.key === a.owns)?.label ?? "—";
       const feats = a.features.map((k) => SHORT[k]).filter(Boolean).join(", ") || "no must-haves";
       const ok = await guard.submit({
-        form_id: "ad_capture",
+        // Only Google Ads visitors go to the ad GHL webhook; organic visitors who
+        // finish the quiz are saved as a normal buyer_quiz lead.
+        form_id: onAdPage || adVisit ? "ad_capture" : "buyer_quiz",
         listing_key: listingKey,
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
-        message: `Inquiry about listing ${listingKey} (listing gate quiz) · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bd / ${a.baths} ba · ${feats} · Owns home: ${owns} · wants new-listing alerts`,
+        message: `Inquiry about listing ${listingKey} (listing gate quiz${onAdPage || adVisit ? ", Google Ads visitor" : ""}) · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bd / ${a.baths} ba · ${feats} · Owns home: ${owns} · wants new-listing alerts`,
         criteria: {
           communities: a.communities, price: a.price, beds: a.beds, baths: a.baths,
           features: a.features, owns_home: a.owns, quiz_source: "listing_gate", listing_alerts: true,
@@ -215,8 +216,7 @@ export default function CaptureGate() {
     size: "Next: choose your areas →",
     communities: "Next: your must-haves →",
     style: a.features.length ? "Next →" : "Skip, I'm flexible →",
-    firstName: "Next →",
-    lastName: "Next →",
+    name: "Next →",
     email: "Next: last step →",
   };
   const btnLabel = isLast ? (busy ? "One moment…" : "Show me this home →") : NEXT[name] ?? "Continue";
@@ -245,7 +245,7 @@ export default function CaptureGate() {
 
           {name === "communities" && (<>
             <h2 className="qg__q">Which areas do you want?</h2>
-            <p className="qg__hint">Pick every town you&apos;d consider. You&apos;ll get an email the day a new home lists there.</p>
+            <p className="qg__hint">Pick every town you&apos;d consider.</p>
             <div className="qg__grid">
               {COMMUNITIES.map((x) => (
                 <button type="button" key={x} className={`qg__chip${a.communities.includes(x) ? " is-on" : ""}`} aria-pressed={a.communities.includes(x)} onClick={() => toggle("communities", x)}>{x}</button>
@@ -256,7 +256,7 @@ export default function CaptureGate() {
           {name === "price" && (<>
             <p className="qg__eyebrow">Unlock this home + every listing</p>
             <h2 className="qg__q">What&apos;s your price range?</h2>
-            <p className="qg__hint">We&apos;ll show you homes you can actually afford and alert you the day one drops in your range.</p>
+            <p className="qg__hint">We&apos;ll show you homes you can afford and alert you the day one drops in your range.</p>
             <div className="qg__grid qg__grid--1">
               {PRICE_BANDS.map((p) => (
                 <button type="button" key={p.label} className={`qg__chip${a.price === p.label ? " is-on" : ""}`} onClick={() => pick({ price: p.label })}>{p.label}</button>
@@ -289,7 +289,7 @@ export default function CaptureGate() {
 
           {name === "owns" && (<>
             <h2 className="qg__q">Do you currently own a home?</h2>
-            <p className="qg__hint">Owners also get a free estimate of what their home could sell for, so you know your buying power.</p>
+            <p className="qg__hint">Owners also get a free estimate of what their home could sell for.</p>
             <div className="qg__grid qg__grid--1">
               {OWNERSHIP.map((o) => (
                 <button type="button" key={o.key} className={`qg__chip${a.owns === o.key ? " is-on" : ""}`} onClick={() => pick({ owns: o.key })}>{o.label}</button>
@@ -301,14 +301,30 @@ export default function CaptureGate() {
             <p className="qg__eyebrow">{CONTACT.indexOf(name as never) + 1} of {CONTACT.length}</p>
             <h2 className="qg__q">{c.h}</h2>
             {c.p && <p className="qg__hint">{c.p}</p>}
-            <label className="qg__sr" htmlFor="qg-in">{c.label}</label>
-            <input
-              id="qg-in" className="qg__input" type={c.type} autoComplete={c.auto} inputMode={c.mode}
-              enterKeyHint={isLast ? "go" : "next"} autoCapitalize={name === "email" ? "none" : "words"}
-              autoCorrect="off" spellCheck={false} autoFocus placeholder={c.label}
-              value={a[name as "firstName" | "lastName" | "email" | "phone"]}
-              onChange={(e) => set({ [name]: e.target.value } as Partial<Answers>)}
-            />
+            {name === "name" ? (<>
+              <label className="qg__sr" htmlFor="qg-first">First name</label>
+              <input
+                id="qg-first" className="qg__input" type="text" autoComplete="given-name" enterKeyHint="next"
+                autoCapitalize="words" autoCorrect="off" spellCheck={false} autoFocus placeholder="First name"
+                value={a.firstName} onChange={(e) => set({ firstName: e.target.value })}
+                onKeyDown={(e) => { if (e.key === "Enter" && !a.lastName.trim()) { e.preventDefault(); document.getElementById("qg-last")?.focus(); } }}
+              />
+              <label className="qg__sr" htmlFor="qg-last">Last name</label>
+              <input
+                id="qg-last" className="qg__input qg__input--2nd" type="text" autoComplete="family-name" enterKeyHint="next"
+                autoCapitalize="words" autoCorrect="off" spellCheck={false} placeholder="Last name"
+                value={a.lastName} onChange={(e) => set({ lastName: e.target.value })}
+              />
+            </>) : (<>
+              <label className="qg__sr" htmlFor="qg-in">{c.label}</label>
+              <input
+                id="qg-in" className="qg__input" type={c.type} autoComplete={c.auto} inputMode={c.mode}
+                enterKeyHint={isLast ? "go" : "next"} autoCapitalize={name === "email" ? "none" : "words"}
+                autoCorrect="off" spellCheck={false} autoFocus placeholder={c.label}
+                value={a[name as "email" | "phone"]}
+                onChange={(e) => set({ [name]: e.target.value } as Partial<Answers>)}
+              />
+            </>)}
             {err && <p className="hv-err" style={{ marginTop: 10 }}>{err}</p>}
             {/* Button sits under the field (not pinned) so the phone keyboard never covers it. */}
             {cta}

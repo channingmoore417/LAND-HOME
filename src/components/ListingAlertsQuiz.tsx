@@ -221,7 +221,7 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
           {name === "area" && (
             <>
               <h3 className="wiz__q">Where are you looking?</h3>
-              <p className="lqz__hint">Pick every town you&apos;d consider. You&apos;ll hear the day a new home lists there.</p>
+              <p className="lqz__hint">Pick every town you&apos;d consider.</p>
               <div className="quiz-grid lqz__grid">
                 {COMMUNITIES.map((c) => (
                   <button key={c} className={`quiz-chip${a.communities.includes(c) ? " is-on" : ""}`} onClick={() => toggle("communities", c)}>{c}</button>
