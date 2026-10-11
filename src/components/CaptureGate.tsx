@@ -93,6 +93,12 @@ export default function CaptureGate() {
 
   useEffect(() => {
     try {
+      // Every fresh ad click starts over: a "done" marker left in this tab by an
+      // earlier submission must not let an ad visitor skip the gate.
+      const q = new URLSearchParams(window.location.search);
+      if (q.has("gclid") || q.has("gbraid") || q.has("wbraid") || q.has("gad_source") || /\/ga\/?$/i.test(window.location.pathname)) {
+        window.sessionStorage.removeItem(KEY);
+      }
       setCaptured(window.sessionStorage.getItem(KEY) === "1");
       const v = window.sessionStorage.getItem(AD_KEY);
       setAdVisit(!!v);
