@@ -21,8 +21,6 @@ function track(event: string, params: Record<string, string | number> = {}) {
 }
 const DRAFT_KEY = "lhg_gate_draft";
 const PROPERTY = /^\/listings\/[^/]+/;
-// Site-wide: every page is gated for signed-out visitors except these.
-const EXEMPT = /^\/(admin|privacy|terms|a2p|unsubscribe)(\/|$)/i;
 
 const SHORT: Record<string, string> = {
   pool: "Pool", acreage: "Acreage", waterfront: "Waterfront", newconstruction: "New construction", singlestory: "Single story",
@@ -132,9 +130,9 @@ export default function CaptureGate() {
     else delete document.documentElement.dataset.ad;
   }, [checked, adVisit, onAdPage, captured, user, pathname]);
 
-  // Gate every page (strip a trailing /GA first); only signed-in users bypass.
+  // Gate every individual property page (/listings/<key>) for any signed-out visitor, ad or not; only signed-in users bypass. Strip a trailing /GA first.
   const base = (pathname ?? "").replace(/\/ga\/?$/i, "");
-  const enabled = !EXEMPT.test(base) && (!leadGate.adsOnly || onAdPage || adVisit);
+  const enabled = PROPERTY.test(base) && (!leadGate.adsOnly || onAdPage || adVisit);
   const locked = enabled && !captured && !user;
 
   // One "gate_step" event per screen shown (step_name tells you where people stop).
