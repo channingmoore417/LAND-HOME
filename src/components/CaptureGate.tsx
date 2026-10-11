@@ -198,16 +198,30 @@ export default function CaptureGate() {
     setBusy(false);
   }
 
-  if (!enabled || (checked && ready && (captured || user))) return null;
+  // Diagnostic: add ?gatedebug=1 to any URL to see why the gate is / isn't showing.
+  const debug = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("gatedebug") === "1" ? (
+    <div style={{ position: "fixed", left: 8, bottom: 8, zIndex: 100000, background: "#000", color: "#0f0", font: "12px/1.4 monospace", padding: "8px 10px", borderRadius: 8, maxWidth: "92vw" }}>
+      gate path: {base || "/"}<br />
+      property page: {String(PROPERTY.test(base))} · enabled: {String(enabled)}<br />
+      signed in: {String(!!user)} · session-done: {String(captured)}<br />
+      auth ready: {String(ready)} · checked: {String(checked)}<br />
+      SHOWING: {String(enabled && !(checked && ready && (captured || user)))}
+    </div>
+  ) : null;
+
+  if (!enabled || (checked && ready && (captured || user))) return debug;
 
   if (leadGate.mode === "form") {
     return (
-      <div style={{ visibility: checked && ready ? "visible" : "hidden" }}>
-        <FormGate
-          a={a} set={set0} step={step} setStep={setStep} busy={busy} err={err} hpRef={guard.hpRef}
-          onSubmit={submitForm} onOAuth={startOAuth} providers={leadGate.oauth}
-        />
-      </div>
+      <>
+        <div style={{ visibility: checked && ready ? "visible" : "hidden" }}>
+          <FormGate
+            a={a} set={set0} step={step} setStep={setStep} busy={busy} err={err} hpRef={guard.hpRef}
+            onSubmit={submitForm} onOAuth={startOAuth} providers={leadGate.oauth}
+          />
+        </div>
+        {debug}
+      </>
     );
   }
 
