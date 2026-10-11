@@ -21,6 +21,8 @@ function track(event: string, params: Record<string, string | number> = {}) {
 }
 const DRAFT_KEY = "lhg_gate_draft";
 const PROPERTY = /^\/listings\/[^/]+/;
+// Site-wide: every page is gated for signed-out visitors except these.
+const EXEMPT = /^\/(admin|privacy|terms|a2p|unsubscribe)(\/|$)/i;
 
 const SHORT: Record<string, string> = {
   pool: "Pool", acreage: "Acreage", waterfront: "Waterfront", newconstruction: "New construction", singlestory: "Single story",
@@ -82,7 +84,7 @@ export default function CaptureGate() {
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get("gate") !== "reset") return;
     try {
-      window.localStorage.removeItem(KEY);
+      window.localStorage.removeItem(KEY); window.sessionStorage.removeItem(KEY);
       window.sessionStorage.removeItem(AD_KEY);
       window.sessionStorage.removeItem(DRAFT_KEY);
       document.cookie = `${AD_COOKIE}=; path=/; max-age=0`;
@@ -93,7 +95,7 @@ export default function CaptureGate() {
 
   useEffect(() => {
     try {
-      setCaptured(window.localStorage.getItem(KEY) === "1");
+      setCaptured(window.sessionStorage.getItem(KEY) === "1");
       const v = window.sessionStorage.getItem(AD_KEY);
       setAdVisit(!!v);
       if (v) landing.current = v;
@@ -130,9 +132,9 @@ export default function CaptureGate() {
     else delete document.documentElement.dataset.ad;
   }, [checked, adVisit, onAdPage, captured, user, pathname]);
 
-  // Gate only on a property page (strip a trailing /GA first).
+  // Gate every page (strip a trailing /GA first); only signed-in users bypass.
   const base = (pathname ?? "").replace(/\/ga\/?$/i, "");
-  const enabled = PROPERTY.test(base) && (!leadGate.adsOnly || onAdPage || adVisit);
+  const enabled = !EXEMPT.test(base) && (!leadGate.adsOnly || onAdPage || adVisit);
   const locked = enabled && !captured && !user;
 
   // One "gate_step" event per screen shown (step_name tells you where people stop).
@@ -174,7 +176,7 @@ export default function CaptureGate() {
     setErr("");
     setBusy(true);
     try {
-      const listingKey = base.split("/")[2];
+      const listingKey = PROPERTY.test(base) ? base.split("/")[2] : undefined;
       const first = a.firstName.trim(), last = a.lastName.trim();
       const ok = await guard.submit({
         form_id: isAdTraffic ? "ad_capture" : "buyer_quiz",
@@ -182,12 +184,12 @@ export default function CaptureGate() {
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
-        message: `Inquiry about listing ${listingKey} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
+        message: `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
         criteria: { quiz_source: "listing_gate_form", listing_alerts: true },
       });
       if (!ok) throw new Error("bad");
       await createAccount();
-      try { window.localStorage.setItem(KEY, "1"); } catch { /* ignore */ }
+      try { window.sessionStorage.setItem(KEY, "1"); } catch { /* ignore */ }
       track("gate_complete", { traffic: isAdTraffic ? "ad" : "organic", gate_mode: "form" });
       track("generate_lead", { traffic: isAdTraffic ? "ad" : "organic", method: "listing_gate_form" });
       window.dispatchEvent(new Event("lhg:captured"));
@@ -265,7 +267,7 @@ export default function CaptureGate() {
     setErr("");
     setBusy(true);
     try {
-      const listingKey = base.split("/")[2];
+      const listingKey = PROPERTY.test(base) ? base.split("/")[2] : undefined;
       const first = a.firstName.trim(), last = a.lastName.trim();
       const owns = OWNERSHIP.find((o) => o.key === a.owns)?.label ?? "—";
       const feats = a.features.map((k) => SHORT[k]).filter(Boolean).join(", ") || "no must-haves";
@@ -277,7 +279,7 @@ export default function CaptureGate() {
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
-        message: `Inquiry about listing ${listingKey} (listing gate quiz${onAdPage || adVisit ? ", Google Ads visitor" : ""}) · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bd / ${a.baths} ba · ${feats} · Owns home: ${owns} · wants new-listing alerts`,
+        message: `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`} (listing gate quiz${onAdPage || adVisit ? ", Google Ads visitor" : ""}) · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bd / ${a.baths} ba · ${feats} · Owns home: ${owns} · wants new-listing alerts`,
         criteria: {
           communities: a.communities, price: a.price, beds: a.beds, baths: a.baths,
           features: a.features, owns_home: a.owns, quiz_source: "listing_gate", listing_alerts: true,
@@ -287,7 +289,7 @@ export default function CaptureGate() {
       // Lead is captured; now create the account. Best effort: a failure here
       // (e.g. email already registered with a different phone) never blocks them.
       await createAccount();
-      try { window.localStorage.setItem(KEY, "1"); window.sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+      try { window.sessionStorage.setItem(KEY, "1"); window.sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       track("gate_complete", { traffic: onAdPage || adVisit ? "ad" : "organic" });
       track("generate_lead", { traffic: onAdPage || adVisit ? "ad" : "organic", method: "listing_gate_quiz" });
       window.dispatchEvent(new Event("lhg:captured")); // header + hero come back
