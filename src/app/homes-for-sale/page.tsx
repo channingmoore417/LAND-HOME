@@ -11,6 +11,7 @@ import ListingsControls from "@/components/ListingsControls";
 import SortSelect from "@/components/SortSelect";
 import NotifyBand from "@/components/NotifyBand";
 import ListingCard from "@/components/ListingCard";
+import InfiniteListings from "@/components/InfiniteListings";
 import MapSearch from "@/components/MapSearch";
 import FilterDrawer from "@/components/FilterDrawer";
 import TrackSearch from "@/components/TrackSearch";
@@ -148,7 +149,6 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
                 <div className="meta">
                   {total > 0 ? (
                     <>
-                      Showing <b>{startIdx + 1}–{Math.min(startIdx + rows.length, total)}</b> of{" "}
                       <b>{total.toLocaleString()}</b> homes
                     </>
                   ) : (
@@ -177,7 +177,18 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
                 )}
               </div>
 
+              {rows.length > 0 && startIdx + rows.length < total && (
+                <InfiniteListings
+                  params={apiQuery.toString()}
+                  offset={startIdx + rows.length}
+                  total={total}
+                  noun="homes"
+                  seeAllHref="/homes-for-sale?view=split"
+                />
+              )}
+
               {pages > 1 && (
+                <noscript>
                 <nav className="pager" aria-label="Pagination">
                   {page > 1 ? <Link href={pageHref(page - 1)}>&lsaquo;</Link> : <span className="disabled">&lsaquo;</span>}
                   {Array.from({ length: pages }, (_, i) => i + 1)
@@ -198,6 +209,7 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
                     )}
                   {page < pages ? <Link href={pageHref(page + 1)}>&rsaquo;</Link> : <span className="disabled">&rsaquo;</span>}
                 </nav>
+                </noscript>
               )}
             </div>
           </div>

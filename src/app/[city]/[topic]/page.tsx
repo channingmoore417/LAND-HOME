@@ -15,6 +15,7 @@ import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
 import { pageMetadata } from "@/lib/seoMeta";
 import { photo } from "@/lib/images";
 import ListingCard from "@/components/ListingCard";
+import InfiniteListings from "@/components/InfiniteListings";
 import JsonLd from "@/components/JsonLd";
 import Testimonials from "@/components/Testimonials";
 import AreaShowcase from "@/components/AreaShowcase";
@@ -248,6 +249,15 @@ export default async function SeoLandingPage({
                       { kind: "link", label: "Take the Buyer Quiz", href: "/buyer-quiz" },
                     ]}
                   />
+                  {stats.count > rows.length && (
+                    <InfiniteListings
+                      params={`slug=${slug}`}
+                      offset={rows.length}
+                      total={stats.count}
+                      noun={isArea ? `homes in ${place}` : `${topicLabel.toLowerCase()} in ${cityLabel}`}
+                      seeAllHref={seeAll}
+                    />
+                  )}
                   {stats.count > rows.length && (
                     <div className="seo-cta">
                       <Link className="btn btn--primary" href={seeAll} style={{ maxWidth: 360, margin: "0 auto" }}>

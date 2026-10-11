@@ -120,7 +120,6 @@ export default function BuyerQuizClient() {
             <>
               <div className="quiz-eyebrow">Question 2 of 7</div>
               <h2 className="wiz__q">What&apos;s your price range?</h2>
-              <p className="prose" style={{ color: "var(--ink-muted)" }}>A rough band is fine — it just helps us match the right listings.</p>
               <div className="quiz-grid">
                 {PRICE_BANDS.map((p) => (
                   <button key={p.label} className={`quiz-chip${a.price === p.label ? " is-on" : ""}`} onClick={() => pick({ price: p.label })}>{p.label}</button>
