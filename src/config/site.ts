@@ -192,7 +192,13 @@ export const adSuffix = "ga";
 
 // Listing capture gate (components/CaptureGate.tsx). false = every signed-out
 // visitor who opens a listing sees the quiz; true = only Google Ads visitors.
-export const leadGate = { adsOnly: false };
+// mode "form" = two-step form (email/Google, then name + phone); "quiz" = the long buyer quiz.
+// oauth: which one-tap sign-in buttons show. Turn a provider on only after it works in Supabase.
+export const leadGate: { adsOnly: boolean; mode: "form" | "quiz"; oauth: { google: boolean; facebook: boolean } } = {
+  adsOnly: false,
+  mode: "form",
+  oauth: { google: true, facebook: false },
+};
 
 // sessionStorage key flagging an ad visit. Set when a /GA page loads; while set,
 // the header and index hero stay hidden on every page (filters, searches and

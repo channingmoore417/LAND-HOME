@@ -8,6 +8,7 @@ import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { BATHS, BEDS, COMMUNITIES, FEATURES, PRICE_BANDS, matchHref } from "@/lib/buyerMatch";
+import FormGate from "@/components/FormGate";
 
 const KEY = "lhg_captured";
 
@@ -96,7 +97,7 @@ export default function CaptureGate() {
       const v = window.sessionStorage.getItem(AD_KEY);
       setAdVisit(!!v);
       if (v) landing.current = v;
-      const d = JSON.parse(window.sessionStorage.getItem(DRAFT_KEY) || "null");
+      const d = leadGate.mode === "quiz" ? JSON.parse(window.sessionStorage.getItem(DRAFT_KEY) || "null") : null;
       if (d?.a) { setA((p) => ({ ...p, ...d.a })); if (d.step > 0) setStep(Math.min(d.step, QUESTIONS.length - 1)); }
     } catch { /* private mode */ }
     setChecked(true);
@@ -112,6 +113,7 @@ export default function CaptureGate() {
 
   // Keep quiz answers (never contact details) across a refresh.
   useEffect(() => {
+    if (leadGate.mode !== "quiz") return;
     try {
       const { firstName: _f, lastName: _l, email: _e, phone: _p, ...answers } = a;
       window.sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ step: Math.min(step, QUESTIONS.length - 1), a: answers }));
@@ -141,7 +143,8 @@ export default function CaptureGate() {
     shownSteps.current.add(step);
     const traffic = adVisit || onAdPage ? "ad" : "organic";
     if (shownSteps.current.size === 1) track("gate_view", { traffic });
-    track("gate_step", { step_name: STEPS[step], step_number: step + 1, steps_total: STEPS.length, traffic });
+    const names: readonly string[] = leadGate.mode === "form" ? ["email", "details"] : STEPS;
+    track("gate_step", { step_name: names[step], step_number: step + 1, steps_total: names.length, traffic, gate_mode: leadGate.mode });
   }, [locked, checked, ready, step, adVisit, onAdPage]);
 
   useEffect(() => {
@@ -151,7 +154,62 @@ export default function CaptureGate() {
     return () => { document.body.style.overflow = prev; };
   }, [locked]);
 
+  const set0 = (p: Partial<Answers>) => setA((s) => ({ ...s, ...p }));
+  const isAdTraffic = onAdPage || adVisit;
+
+  // Google / Facebook one-tap sign-in. The visitor comes back signed in; the
+  // "add your phone" step (CompletePhoneModal) then sends their lead.
+  async function startOAuth(provider: "google" | "facebook") {
+    setErr("");
+    track("gate_oauth_click", { provider, traffic: isAdTraffic ? "ad" : "organic" });
+    try { window.sessionStorage.setItem("lhg_gate_oauth", "1"); } catch { /* ignore */ }
+    const { error } = await getBrowserClient().auth.signInWithOAuth({
+      provider, options: { redirectTo: window.location.href },
+    });
+    if (error) setErr(`${provider === "google" ? "Google" : "Facebook"} sign-in isn't available right now. Use your email below.`);
+  }
+
+  // Two-step form submit: save the lead, create the account, let them in.
+  async function submitForm() {
+    setErr("");
+    setBusy(true);
+    try {
+      const listingKey = base.split("/")[2];
+      const first = a.firstName.trim(), last = a.lastName.trim();
+      const ok = await guard.submit({
+        form_id: isAdTraffic ? "ad_capture" : "buyer_quiz",
+        listing_key: listingKey,
+        source_url: landing.current || window.location.pathname,
+        name: `${first} ${last}`.trim(), first_name: first, last_name: last,
+        phone: a.phone, email: a.email.trim(),
+        message: `Inquiry about listing ${listingKey} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
+        criteria: { quiz_source: "listing_gate_form", listing_alerts: true },
+      });
+      if (!ok) throw new Error("bad");
+      await createAccount();
+      try { window.localStorage.setItem(KEY, "1"); } catch { /* ignore */ }
+      track("gate_complete", { traffic: isAdTraffic ? "ad" : "organic", gate_mode: "form" });
+      track("generate_lead", { traffic: isAdTraffic ? "ad" : "organic", method: "listing_gate_form" });
+      window.dispatchEvent(new Event("lhg:captured"));
+      setCaptured(true);
+    } catch {
+      setErr(`Something went wrong. Please call us at ${site.phone}.`);
+    }
+    setBusy(false);
+  }
+
   if (!enabled || (checked && ready && (captured || user))) return null;
+
+  if (leadGate.mode === "form") {
+    return (
+      <div style={{ visibility: checked && ready ? "visible" : "hidden" }}>
+        <FormGate
+          a={a} set={set0} step={step} setStep={setStep} busy={busy} err={err} hpRef={guard.hpRef}
+          onSubmit={submitForm} onOAuth={startOAuth} providers={leadGate.oauth}
+        />
+      </div>
+    );
+  }
 
   const name: Step = STEPS[step];
   const set = (p: Partial<Answers>) => setA((s) => ({ ...s, ...p }));
@@ -187,6 +245,7 @@ export default function CaptureGate() {
       const uid = data.user?.id;
       if (!uid) return;
       await supabase.from("profiles").update({ full_name, phone: a.phone }).eq("id", uid);
+      if (!a.communities.length) return; // two-step form has no search criteria
       await supabase.from("saved_searches").insert({
         user_id: uid, email, name: `My search · ${a.communities.slice(0, 2).join(", ")}${a.communities.length > 2 ? " +" : ""}`,
         criteria: {
