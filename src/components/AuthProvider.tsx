@@ -42,9 +42,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     // storage, in-app browsers), treat the visitor as signed out so the
     // capture gate still appears instead of silently staying hidden.
     const fallback = window.setTimeout(() => { if (mounted) setReady(true); }, 2500);
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
-      setUser(data.session?.user ?? null);
+      let u = data.session?.user ?? null;
+      // A cached session cookie is not proof of a real login (expired, revoked or
+      // deleted accounts leave one behind). Confirm with the auth server; if it
+      // rejects, treat the visitor as signed out so the capture gate shows.
+      if (u) {
+        const v = await supabase.auth.getUser().catch(() => null);
+        if (v && (v.error || !v.data.user)) { u = null; supabase.auth.signOut().catch(() => {}); }
+      }
+      if (mounted) setUser(u);
     }).catch(() => {}).finally(() => { if (mounted) setReady(true); });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
