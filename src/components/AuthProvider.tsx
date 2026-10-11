@@ -38,15 +38,18 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     let mounted = true;
+    // Never leave `ready` false: if the session lookup fails or hangs (blocked
+    // storage, in-app browsers), treat the visitor as signed out so the
+    // capture gate still appears instead of silently staying hidden.
+    const fallback = window.setTimeout(() => { if (mounted) setReady(true); }, 2500);
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setUser(data.session?.user ?? null);
-      setReady(true);
-    });
+    }).catch(() => {}).finally(() => { if (mounted) setReady(true); });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
     });
-    return () => { mounted = false; sub.subscription.unsubscribe(); };
+    return () => { mounted = false; window.clearTimeout(fallback); sub.subscription.unsubscribe(); };
   }, [supabase]);
 
   // Load the user's saved listing keys whenever they sign in/out, and replay a
