@@ -53,6 +53,27 @@ const EMPTY: Answers = {
 };
 const digits = (v: string) => v.replace(/\D/g, "");
 
+// Full street address for the listing the gate sits over (public-read, anon
+// key). Honors internet_address_yn: a hidden address falls back to city/state.
+// Best effort: never blocks the lead, returns "" when it can't be resolved.
+async function propertyAddress(listingKey?: string): Promise<string> {
+  if (!listingKey) return "";
+  try {
+    const { data } = await getBrowserClient()
+      .from("listings")
+      .select("unparsed_address, street_number, street_name, street_suffix, city, state_or_province, postal_code, internet_address_yn")
+      .eq("listing_key", listingKey)
+      .maybeSingle();
+    if (!data) return "";
+    const cityState = [data.city, [data.state_or_province ?? "LA", data.postal_code].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+    if (data.internet_address_yn === false) return [data.city, data.state_or_province ?? "LA"].filter(Boolean).join(", ");
+    const street = data.unparsed_address ?? [data.street_number, data.street_name, data.street_suffix].filter(Boolean).join(" ");
+    return [street, cityState].filter(Boolean).join(", ");
+  } catch {
+    return "";
+  }
+}
+
 // Lead-capture quiz for listing pages. Signed-out visitors can't dismiss it:
 // questions first (locations, price, beds/baths, must-haves, own a home), then
 // first name, last name, email and phone, one per screen. Mobile: full-screen
@@ -182,13 +203,15 @@ export default function CaptureGate() {
     try {
       const listingKey = PROPERTY.test(base) ? base.split("/")[2] : undefined;
       const first = a.firstName.trim(), last = a.lastName.trim();
+      const address = await propertyAddress(listingKey);
       const ok = await guard.submit({
         form_id: isAdTraffic ? "ad_capture" : "buyer_quiz",
         listing_key: listingKey,
+        property_address: address || undefined,
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
-        message: `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
+        message: `Inquiry ${listingKey ? `about ${address || `listing ${listingKey}`}` : `from ${base || "/"}`} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
         criteria: { quiz_source: "listing_gate_form", listing_alerts: true },
       });
       if (!ok) throw new Error("bad");
@@ -289,15 +312,17 @@ export default function CaptureGate() {
       const first = a.firstName.trim(), last = a.lastName.trim();
       const owns = OWNERSHIP.find((o) => o.key === a.owns)?.label ?? "—";
       const feats = a.features.map((k) => SHORT[k]).filter(Boolean).join(", ") || "no must-haves";
+      const address = await propertyAddress(listingKey);
       const ok = await guard.submit({
         // Only Google Ads visitors go to the ad GHL webhook; organic visitors who
         // finish the quiz are saved as a normal buyer_quiz lead.
         form_id: onAdPage || adVisit ? "ad_capture" : "buyer_quiz",
         listing_key: listingKey,
+        property_address: address || undefined,
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
-        message: `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`} (listing gate quiz${onAdPage || adVisit ? ", Google Ads visitor" : ""}) · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bd / ${a.baths} ba · ${feats} · Owns home: ${owns} · wants new-listing alerts`,
+        message: `Inquiry ${listingKey ? `about ${address || `listing ${listingKey}`}` : `from ${base || "/"}`} (listing gate quiz${onAdPage || adVisit ? ", Google Ads visitor" : ""}) · ${a.communities.join(", ")} · ${a.price || "any price"} · ${a.beds} bd / ${a.baths} ba · ${feats} · Owns home: ${owns} · wants new-listing alerts`,
         criteria: {
           communities: a.communities, price: a.price, beds: a.beds, baths: a.baths,
           features: a.features, owns_home: a.owns, quiz_source: "listing_gate", listing_alerts: true,
