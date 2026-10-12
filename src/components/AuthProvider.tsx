@@ -38,15 +38,26 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    // Never leave `ready` false: if the session lookup fails or hangs (blocked
+    // storage, in-app browsers), treat the visitor as signed out so the
+    // capture gate still appears instead of silently staying hidden.
+    const fallback = window.setTimeout(() => { if (mounted) setReady(true); }, 2500);
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!mounted) return;
-      setUser(data.session?.user ?? null);
-      setReady(true);
-    });
+      let u = data.session?.user ?? null;
+      // A cached session cookie is not proof of a real login (expired, revoked or
+      // deleted accounts leave one behind). Confirm with the auth server; if it
+      // rejects, treat the visitor as signed out so the capture gate shows.
+      if (u) {
+        const v = await supabase.auth.getUser().catch(() => null);
+        if (v && (v.error || !v.data.user)) { u = null; supabase.auth.signOut().catch(() => {}); }
+      }
+      if (mounted) setUser(u);
+    }).catch(() => {}).finally(() => { if (mounted) setReady(true); });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
     });
-    return () => { mounted = false; sub.subscription.unsubscribe(); };
+    return () => { mounted = false; window.clearTimeout(fallback); sub.subscription.unsubscribe(); };
   }, [supabase]);
 
   // Load the user's saved listing keys whenever they sign in/out, and replay a
@@ -76,6 +87,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!user) { setNeedsPhone(false); return; }
     let mounted = true;
+    // Accounts made by the sign-up form / capture gate already carry the phone
+    // in auth metadata (the profile row write can land a moment later), so
+    // trust that and never nag someone who just typed their number.
+    const metaDigits = String((user.user_metadata as { phone?: string } | null)?.phone ?? "").replace(/\D/g, "");
+    if (metaDigits.length >= 7) {
+      setNeedsPhone(false);
+      supabase.from("profiles").upsert({ id: user.id, email: user.email ?? null, phone: metaDigits }).then(() => {});
+      return () => { mounted = false; };
+    }
     supabase.from("profiles").select("phone").eq("id", user.id).maybeSingle().then(({ data }) => {
       if (!mounted) return;
       const digits = ((data?.phone as string | null) ?? "").replace(/\D/g, "");

@@ -10,7 +10,7 @@ import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { COMMUNITIES, FEATURES, PRICE_BANDS, BEDS, BATHS, matchHref } from "@/lib/buyerMatch";
 
 // "Be first in line for new homes" popup on blog posts. A short buyer-match
-// quiz (area → price → beds → baths → must-haves → contact) that submits as a
+// quiz (price → beds → baths → area → must-haves → contact; easy taps first) that submits as a
 // buyer_quiz lead flagged listing_alerts, so it lands in GHL with the same
 // mapped fields as the /buyer-quiz page.
 //
@@ -41,7 +41,7 @@ const AUTO_SCROLL = 0.5;
 // Phones skip the scroll trigger; it interrupts reading on a small screen.
 const MOBILE_QUERY = "(max-width: 768px)";
 
-const STEPS = ["area", "price", "beds", "baths", "features", "contact", "done"] as const;
+const STEPS = ["price", "beds", "baths", "area", "features", "contact", "done"] as const;
 
 interface Answers {
   communities: string[]; price: string; beds: string; baths: string; features: string[];
@@ -222,8 +222,8 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
 
         {name !== "done" && (
           <div className="lqz__head">
-            <span className="script">{exit ? "before you go" : "new homes, first"}</span>
-            <h2 id="lqz-title">{exit ? "WAIT! Don\u2019t Miss Out On New Homes" : "Be first in line for new homes"}</h2>
+            <span className="script">new homes, first</span>
+            <h2 id="lqz-title">Be first in line for new homes</h2>
             <p>Answer a few quick questions and we&apos;ll send you new listings that fit, as soon as they hit the market.</p>
             <div className="wiz__bar"><div className="wiz__fill" style={{ width: `${fillPct}%` }} /></div>
           </div>
@@ -233,31 +233,33 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
           {name === "area" && (
             <>
               <h3 className="wiz__q">Where are you looking?</h3>
-              <p className="lqz__hint">Pick as many as you like.</p>
+              <p className="lqz__hint">Pick every town you&apos;d consider.</p>
               <div className="quiz-grid lqz__grid">
                 {COMMUNITIES.map((c) => (
                   <button key={c} className={`quiz-chip${a.communities.includes(c) ? " is-on" : ""}`} onClick={() => toggle("communities", c)}>{c}</button>
                 ))}
               </div>
-              <Nav onNext={next} canNext={a.communities.length > 0} />
+              <Nav onBack={back} onNext={next} canNext={a.communities.length > 0} />
             </>
           )}
 
           {name === "price" && (
             <>
               <h3 className="wiz__q">What&apos;s your price range?</h3>
+              <p className="lqz__hint">We&apos;ll only alert you about homes you can actually afford.</p>
               <div className="quiz-grid lqz__grid">
                 {PRICE_BANDS.map((p) => (
                   <button key={p.label} className={`quiz-chip${a.price === p.label ? " is-on" : ""}`} onClick={() => pick({ price: p.label })}>{p.label}</button>
                 ))}
               </div>
-              <Nav onBack={back} hideNext />
+              <Nav hideNext />
             </>
           )}
 
           {name === "beds" && (
             <>
               <h3 className="wiz__q">How many bedrooms?</h3>
+              <p className="lqz__hint">So you never see a home that&apos;s too small.</p>
               <div className="quiz-grid quiz-grid--compact">
                 {BEDS.map((b) => (
                   <button key={b} className={`quiz-chip${a.beds === b ? " is-on" : ""}`} onClick={() => pick({ beds: b })}>{b}</button>
@@ -270,6 +272,7 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
           {name === "baths" && (
             <>
               <h3 className="wiz__q">How many bathrooms?</h3>
+              <p className="lqz__hint">One more tap and your alerts match what you need.</p>
               <div className="quiz-grid quiz-grid--compact">
                 {BATHS.map((b) => (
                   <button key={b} className={`quiz-chip${a.baths === b ? " is-on" : ""}`} onClick={() => pick({ baths: b })}>{b}</button>
@@ -282,7 +285,7 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
           {name === "features" && (
             <>
               <h3 className="wiz__q">Any must-haves?</h3>
-              <p className="lqz__hint">Pick any that matter, or skip if you&apos;re flexible.</p>
+              <p className="lqz__hint">Tell us your deal-breakers and we&apos;ll skip every home without them.</p>
               <div className="quiz-rows lqz__rows">
                 {FEATURES.map((f) => (
                   <button key={f.key} className={`quiz-row${a.features.includes(f.key) ? " is-on" : ""}`} onClick={() => toggle("features", f.key)} aria-pressed={a.features.includes(f.key)}>
@@ -301,6 +304,7 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
           {name === "contact" && (
             <>
               <h3 className="wiz__q">Where should we send them?</h3>
+              <p className="lqz__hint">New homes that fit, in your inbox the day they&apos;re listed.</p>
               <HoneypotField inputRef={guard.hpRef} />
               <div className="hv-grid hv-grid--2">
                 <div className="field"><label htmlFor="lqz-fn">First Name</label>

@@ -190,10 +190,35 @@ export const adPages: AdPage[] = [
 // src/middleware.ts serves the normal page for the URL minus the suffix.
 export const adSuffix = "ga";
 
+// Listing capture gate (components/CaptureGate.tsx). false = every signed-out
+// visitor who opens a listing sees the quiz; true = only Google Ads visitors.
+// mode "form" = two-step form (email/Google, then name + phone); "quiz" = the long buyer quiz.
+// oauth: which one-tap sign-in buttons show. Turn a provider on only after it works in Supabase.
+export const leadGate: { adsOnly: boolean; mode: "form" | "quiz"; oauth: { google: boolean; facebook: boolean } } = {
+  adsOnly: false,
+  mode: "form",
+  oauth: { google: false, facebook: false },
+};
+
 // sessionStorage key flagging an ad visit. Set when a /GA page loads; while set,
 // the header and index hero stay hidden on every page (filters, searches and
 // property clicks all navigate away from the /GA URL).
 export const AD_VISIT_KEY = "lhg_ad_visit";
+// Same flag as a cookie, set by middleware on any ad click (survives new tabs).
+export const AD_VISIT_COOKIE = "lhg_ad_visit";
+
+// City slugs whose /[city]/[topic] pages are the ad landing pages (homes for
+// sale in a city, mobile homes in a city, ...). For ad visitors ONLY these
+// pages hide the header and hero; every other page shows them normally.
+export const adLandingCities = [
+  "lake-charles", "sulphur", "moss-bluff", "iowa", "vinton", "cameron", "ragley",
+  "dequincy", "deridder", "jennings", "welsh", "carlyss", "westlake",
+];
+
+export function isAdLandingPath(pathname: string | null): boolean {
+  const segs = (pathname ?? "").replace(/\/ga\/?$/i, "").split("/").filter(Boolean);
+  return segs.length === 2 && adLandingCities.includes(segs[0]);
+}
 
 export function hasAdSuffix(pathname: string): boolean {
   const last = pathname.replace(/\/+$/, "").split("/").pop() ?? "";

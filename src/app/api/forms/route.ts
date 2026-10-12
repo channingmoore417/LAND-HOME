@@ -5,6 +5,12 @@ import { clientIp, evaluateSpam } from "@/lib/spam";
 
 export const runtime = "nodejs";
 
+// Google Ads capture gate (form_id "ad_capture") has its own GHL webhook.
+// AD_CAPTURE_WEBHOOK_URL overrides it without a code change.
+const AD_CAPTURE_WEBHOOK =
+  process.env.AD_CAPTURE_WEBHOOK_URL ||
+  "https://services.leadconnectorhq.com/hooks/xdGkCWotXaek58gmTbxt/webhook-trigger/57bb623b-34ac-46e6-a6f6-a21eddd9e56d";
+
 // ============================================================
 // ONE webhook for EVERY form on the site.
 // Each submission carries a stable `form_id`. This route:
@@ -194,7 +200,7 @@ export async function POST(req: Request) {
 
   // 2) Forward the same payload to the single external webhook (if set).
   let webhookOk: boolean | null = null;
-  const url = process.env.FORMS_WEBHOOK_URL;
+  const url = payload.form_id === "ad_capture" ? AD_CAPTURE_WEBHOOK : process.env.FORMS_WEBHOOK_URL;
   if (url) {
     try {
       const res = await fetch(url, {

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
-import { site } from "@/config/site";
+import { site, AD_VISIT_KEY } from "@/config/site";
+import { useFormGuard } from "@/components/FormGuard";
 
 // Shown to a signed-in user whose profile has no phone number — in practice,
 // anyone who registered through Google OAuth, which skips the regular sign-up
@@ -10,6 +11,7 @@ import { site } from "@/config/site";
 // Deliberately not dismissible: the account isn't complete without a phone.
 export default function CompletePhoneModal({ onDone }: { onDone: () => void }) {
   const supabase = getBrowserClient();
+  const guard = useFormGuard();
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
@@ -34,11 +36,31 @@ export default function CompletePhoneModal({ onDone }: { onDone: () => void }) {
     const { error } = await supabase
       .from("profiles")
       .upsert({ id: u.id, email: u.email ?? null, phone: digits });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       setErr("We couldn't save that — please try again.");
       return;
     }
+    // One-tap sign-ups skip the lead form, so send the lead now that we have a phone.
+    try {
+      const full = String(u.user_metadata?.full_name ?? u.user_metadata?.name ?? "").trim();
+      const [first, ...rest] = full.split(/\s+/);
+      const m = window.location.pathname.match(/^\/listings\/([^/]+)/);
+      let isAd = false;
+      try { isAd = !!window.sessionStorage.getItem(AD_VISIT_KEY); } catch { /* ignore */ }
+      await guard.submit({
+        form_id: isAd ? "ad_capture" : "buyer_quiz",
+        listing_key: m?.[1],
+        name: full, first_name: first ?? "", last_name: rest.join(" "),
+        phone: digits, email: u.email ?? "",
+        message: `Inquiry about listing ${m?.[1] ?? "(site)"} (Google/Facebook sign-in${isAd ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
+        criteria: { quiz_source: "listing_gate_oauth", listing_alerts: true },
+      });
+      try { window.localStorage.setItem("lhg_captured", "1"); } catch { /* ignore */ }
+      (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "generate_lead", { method: "oauth", traffic: isAd ? "ad" : "organic" });
+      window.dispatchEvent(new Event("lhg:captured"));
+    } catch { /* never block the account on the lead post */ }
+    setLoading(false);
     onDone();
   }
 
