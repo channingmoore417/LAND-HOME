@@ -5,6 +5,7 @@ import Link from "next/link";
 import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
+import TrackedForm from "@/components/TrackedForm";
 
 const BAYOU_APPLY = "/contact";
 
@@ -213,27 +214,36 @@ export default function GetPreApprovedClient() {
           {name === "employment" && <SelStep n={12} q="What&apos;s your employment status?" opts={EMPLOY} val={a.employment} onPick={(v) => pick({ employment: v })} onBack={back} />}
 
           {name === "contact" && (
-            <div className="wiz__step">
+            <TrackedForm
+              name="Pre-Approval-Check"
+              className="wiz__step"
+              onSubmit={finish}
+              fields={{
+                timeframe: a.timeframe, housing: a.housing, first_time_buyer: a.firstTime, military: a.military,
+                property_type: a.property, zip: a.zip, price: a.price, down_payment: a.down, credit: a.credit,
+                income: a.income, monthly_debts: a.debts, employment: a.employment,
+              }}
+            >
               <div className="quiz-eyebrow">Step 13 of {QCOUNT}</div>
               <h2 className="wiz__q">Where should we send your results?</h2>
               <HoneypotField inputRef={guard.hpRef} />
               <p className="prose" style={{ color: "var(--ink-muted)", marginTop: 0 }}>A {site.bayou.name} loan officer will follow up with your options — no pressure.</p>
               <div className="hv-grid hv-grid--2" style={{ marginTop: 18 }}>
-                <div className="field"><label>First Name</label><input className="input" type="text" autoComplete="given-name" value={a.firstName} onChange={(e) => set({ firstName: e.target.value })} /></div>
-                <div className="field"><label>Last Name</label><input className="input" type="text" autoComplete="family-name" value={a.lastName} onChange={(e) => set({ lastName: e.target.value })} /></div>
+                <div className="field"><label>First Name</label><input className="input" name="first_name" type="text" autoComplete="given-name" value={a.firstName} onChange={(e) => set({ firstName: e.target.value })} /></div>
+                <div className="field"><label>Last Name</label><input className="input" name="last_name" type="text" autoComplete="family-name" value={a.lastName} onChange={(e) => set({ lastName: e.target.value })} /></div>
               </div>
               <div className="hv-grid hv-grid--2">
-                <div className="field"><label>Email</label><input className="input" type="email" autoComplete="email" value={a.email} onChange={(e) => set({ email: e.target.value })} /></div>
+                <div className="field"><label>Email</label><input className="input" name="email" type="email" autoComplete="email" value={a.email} onChange={(e) => set({ email: e.target.value })} /></div>
                 {!A2P_REVIEW_MODE && (
-                  <div className="field"><label>Phone</label><input className="input" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
+                  <div className="field"><label>Phone</label><input className="input" name="phone" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
                 )}
               </div>
               {err && <p className="hv-err">{err}</p>}
               <div className="quiz-nav">
-                <button className="quiz-back" onClick={back}>← Back</button>
-                <button className="btn btn--primary" style={{ width: "auto", padding: "13px 26px" }} onClick={finish} disabled={submitting}>{submitting ? "Checking…" : "See my eligibility →"}</button>
+                <button type="button" className="quiz-back" onClick={back}>← Back</button>
+                <button type="submit" className="btn btn--primary" style={{ width: "auto", padding: "13px 26px" }} disabled={submitting}>{submitting ? "Checking…" : "See my eligibility →"}</button>
               </div>
-            </div>
+            </TrackedForm>
           )}
 
           {name === "done" && (

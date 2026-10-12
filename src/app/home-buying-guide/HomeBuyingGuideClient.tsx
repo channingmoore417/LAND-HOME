@@ -6,6 +6,7 @@ import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
+import TrackedForm from "@/components/TrackedForm";
 
 // The downloadable buyer's guide (PDF). Page captures the lead, then opens it.
 const GUIDE_URL =
@@ -79,37 +80,37 @@ export default function HomeBuyingGuideClient() {
 
             <div className="hv-card guidehero__form">
               {!done ? (
-                <>
+                <TrackedForm name="Buyer-Guide" onSubmit={submit} fields={{}}>
                   <h2 className="wiz__q">Get the free guide</h2>
                   <HoneypotField inputRef={guard.hpRef} />
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>First Name</label>
-                      <input className="input" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
+                      <input className="input" name="first_name" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
                     <div className="field"><label>Last Name</label>
-                      <input className="input" type="text" autoComplete="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
+                      <input className="input" name="last_name" type="text" autoComplete="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
                   </div>
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>Email</label>
-                      <input className="input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+                      <input className="input" name="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                     {!A2P_REVIEW_MODE && (
                       <div className="field"><label>Phone</label>
-                        <input className="input" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
+                        <input className="input" name="phone" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
                     )}
                   </div>
                   <div className="field"><label>When are you looking to buy?</label>
                     <div className="qsel" style={{ width: "100%" }}>
-                      <select value={timeline} style={{ width: "100%" }} onChange={(e) => setTimeline(e.target.value)}>
+                      <select name="timeline" value={timeline} style={{ width: "100%" }} onChange={(e) => setTimeline(e.target.value)}>
                         <option value="">Select…</option>
                         {TIMELINES.map((t) => <option key={t}>{t}</option>)}
                       </select>
                     </div>
                   </div>
                   {err && <p className="hv-err">{err}</p>}
-                  <button type="button" className="btn btn--primary" onClick={submit} disabled={loading} style={{ width: "100%" }}>
+                  <button type="submit" className="btn btn--primary" disabled={loading} style={{ width: "100%" }}>
                     {loading ? "Preparing your guide…" : "Download the Free Guide"}
                   </button>
                   <p className="hv-fine">By submitting you agree to be contacted by {site.name}. No spam, opt out anytime.</p>
-                </>
+                </TrackedForm>
               ) : (
                 <div style={{ textAlign: "center" }}>
                   <span className="script" style={{ fontSize: "1.6rem" }}>thank you, {firstName}!</span>

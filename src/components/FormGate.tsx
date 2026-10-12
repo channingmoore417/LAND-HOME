@@ -3,6 +3,7 @@
 import { HoneypotField } from "@/components/FormGuard";
 import { site } from "@/config/site";
 import PropertyFields from "@/components/PropertyFields";
+import HiddenField from "@/components/HiddenField";
 import type { PropertyInfo } from "@/lib/propertyInfo";
 
 interface Contact { email: string; firstName: string; lastName: string; phone: string }
@@ -80,7 +81,7 @@ export default function FormGate({
 
           {step === 1 && (<>
             {/* The email input is unmounted on this step; keep it in the form so the submitted fields include it. */}
-            <input type="hidden" name="email" value={a.email.trim()} />
+            <HiddenField name="email" value={a.email.trim()} />
             <h2 id="capture-title" className="qg__q">Last step: where can we reach you?</h2>
             <p className="qg__hint">Your phone number is also your password.</p>
             <label className="qg__sr" htmlFor="qg-first">First name</label>
