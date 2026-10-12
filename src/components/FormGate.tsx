@@ -3,6 +3,7 @@
 import { HoneypotField } from "@/components/FormGuard";
 import { site } from "@/config/site";
 import PropertyFields from "@/components/PropertyFields";
+import HiddenField from "@/components/HiddenField";
 import type { PropertyInfo } from "@/lib/propertyInfo";
 
 interface Contact { email: string; firstName: string; lastName: string; phone: string }
@@ -38,6 +39,8 @@ export default function FormGate({
           e.preventDefault();
           if (step === 0) { if (emailOk) setStep(1); } else if (detailsOk && !busy) onSubmit();
         }}
+        // Step 1 is a plain button, never a submit, so GoHighLevel's tracker sees
+        // exactly ONE form submission per visitor (the last step), not two.
       >
         <header className="qg__top">
           {step > 0 ? <button type="button" className="qg__icon" onClick={() => setStep(0)} aria-label="Back">←</button> : <span className="qg__icon" />}
@@ -72,15 +75,16 @@ export default function FormGate({
               id="qg-email" name="email" className="qg__input" type="email" autoComplete="email" inputMode="email"
               enterKeyHint="next" autoCapitalize="none" autoCorrect="off" spellCheck={false}
               placeholder="Email address" value={a.email} onChange={(e) => set({ email: e.target.value })}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (emailOk) setStep(1); } }}
             />
             {err && <p className="hv-err" style={{ marginTop: 10 }}>{err}</p>}
-            <button type="submit" className="qg__cta" disabled={!emailOk}>Continue with email →</button>
+            <button type="button" className="qg__cta" disabled={!emailOk} onClick={() => setStep(1)}>Continue with email →</button>
             <p className="qg__legal">Already signed up? Continue with your email and phone and we&apos;ll log you in.</p>
           </>)}
 
           {step === 1 && (<>
             {/* The email input is unmounted on this step; keep it in the form so the submitted fields include it. */}
-            <input type="hidden" name="email" value={a.email.trim()} />
+            <HiddenField name="email" value={a.email.trim()} />
             <h2 id="capture-title" className="qg__q">Last step: where can we reach you?</h2>
             <p className="qg__hint">Your phone number is also your password.</p>
             <label className="qg__sr" htmlFor="qg-first">First name</label>

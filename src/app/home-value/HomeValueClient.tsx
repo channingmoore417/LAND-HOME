@@ -6,6 +6,7 @@ import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
+import TrackedForm from "@/components/TrackedForm";
 
 interface GeoResult { address: string; street?: string; lat: number | null; lng: number | null; city: string; state: string; zip: string }
 interface Estimate {
@@ -284,38 +285,52 @@ export default function HomeValueClient() {
               )}
 
               {step === 4 && (
-                <div className="wiz__step">
+                <TrackedForm
+                  name="Home-Value"
+                  className="wiz__step"
+                  onSubmit={submit}
+                  fields={{
+                    property_address: picked?.address, property_city: picked?.city, property_zip: picked?.zip,
+                    property_bedrooms: beds, property_bathrooms: baths, property_sqft: sqft, year_built: year,
+                    condition, timeframe, notes,
+                  }}
+                >
                   <h2 className="wiz__q">Where should we send your report?</h2>
                   <HoneypotField inputRef={guard.hpRef} />
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>First Name</label>
-                      <input className="input" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
+                      <input className="input" name="first_name" type="text" autoComplete="given-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required /></div>
                     <div className="field"><label>Last Name</label>
-                      <input className="input" type="text" autoComplete="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
+                      <input className="input" name="last_name" type="text" autoComplete="family-name" value={lastName} onChange={(e) => setLastName(e.target.value)} required /></div>
                   </div>
                   <div className="hv-grid hv-grid--2">
                     <div className="field"><label>Email</label>
-                      <input className="input" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+                      <input className="input" name="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
                     {!A2P_REVIEW_MODE && (
                       <div className="field"><label>Phone</label>
-                        <input className="input" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
+                        <input className="input" name="phone" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required /></div>
                     )}
                   </div>
                   <p className="hv-fine">By submitting you agree to be contacted by The Land &amp; Home Group about your home. Consent is not a condition of any purchase or sale.</p>
-                </div>
+                  {err && <p className="hv-err">{err}</p>}
+                  <div className="wiz__nav">
+                    <button type="button" className="btn btn--ghost" onClick={back}>Back</button>
+                    <button type="submit" className="btn btn--primary" disabled={loading}>{loading ? "Building your report…" : "Get My Home Value Report"}</button>
+                  </div>
+                </TrackedForm>
               )}
 
-              {err && <p className="hv-err">{err}</p>}
-              <div className="wiz__nav">
+              {step !== 4 && err && <p className="hv-err">{err}</p>}
+              {step !== 4 && <div className="wiz__nav">
                 {step > 1 ? <button type="button" className="btn btn--ghost" onClick={back}>Back</button> : <span />}
                 {step === 1 ? (
                   <button type="button" className="btn btn--primary" onClick={next} disabled={!picked}>Continue</button>
                 ) : (
                   <button type="button" className="btn btn--primary" onClick={next} disabled={loading}>
-                    {step === 4 ? (loading ? "Building your report…" : "Get My Home Value Report") : "Next"}
+                    Next
                   </button>
                 )}
-              </div>
+              </div>}
             </div>
           )}
 

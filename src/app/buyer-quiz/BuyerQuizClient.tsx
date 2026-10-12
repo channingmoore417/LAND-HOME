@@ -6,6 +6,7 @@ import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { logActivity } from "@/lib/activity";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
+import TrackedForm from "@/components/TrackedForm";
 import { COMMUNITIES, FEATURES, PRICE_BANDS, BEDS, BATHS, matchHref as buildMatchHref } from "@/lib/buyerMatch";
 
 const TIMELINES = [
@@ -186,28 +187,36 @@ export default function BuyerQuizClient() {
           )}
 
           {name === "contact" && (
-            <>
+            <TrackedForm
+              name="Buyer-Quiz"
+              onSubmit={finish}
+              fields={{
+                communities: a.communities.join(", "), price: a.price, beds: a.beds, baths: a.baths,
+                features: a.features.map((f) => FEATURES.find((x) => x.key === f)?.label).join(", "),
+                timeline: TIMELINES.find((t) => t.key === a.timeline)?.label,
+              }}
+            >
               <div className="quiz-eyebrow">Question 7 of 7</div>
               <h2 className="wiz__q">Where should we send your matches?</h2>
               <HoneypotField inputRef={guard.hpRef} />
               <p className="prose" style={{ color: "var(--ink-muted)" }}>We&apos;ll put together a personalized list and reach out — no spam, no pressure.</p>
               <div className="hv-grid hv-grid--2" style={{ marginTop: 18 }}>
                 <div className="field"><label>First Name</label>
-                  <input className="input" type="text" autoComplete="given-name" value={a.firstName} onChange={(e) => set({ firstName: e.target.value })} /></div>
+                  <input className="input" name="first_name" type="text" autoComplete="given-name" value={a.firstName} onChange={(e) => set({ firstName: e.target.value })} /></div>
                 <div className="field"><label>Last Name</label>
-                  <input className="input" type="text" autoComplete="family-name" value={a.lastName} onChange={(e) => set({ lastName: e.target.value })} /></div>
+                  <input className="input" name="last_name" type="text" autoComplete="family-name" value={a.lastName} onChange={(e) => set({ lastName: e.target.value })} /></div>
               </div>
               <div className="hv-grid hv-grid--2">
                 <div className="field"><label>Email</label>
-                  <input className="input" type="email" autoComplete="email" value={a.email} onChange={(e) => set({ email: e.target.value })} /></div>
+                  <input className="input" name="email" type="email" autoComplete="email" value={a.email} onChange={(e) => set({ email: e.target.value })} /></div>
                 {!A2P_REVIEW_MODE && (
                   <div className="field"><label>Phone</label>
-                    <input className="input" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
+                    <input className="input" name="phone" type="tel" autoComplete="tel" value={a.phone} onChange={(e) => set({ phone: e.target.value })} /></div>
                 )}
               </div>
-              <Nav onBack={back} onNext={finish} canNext={canAdvance() && !submitting} nextLabel={submitting ? "Matching…" : "See my matches →"} />
+              <Nav onBack={back} submit canNext={canAdvance() && !submitting} nextLabel={submitting ? "Matching…" : "See my matches →"} />
               <p className="hv-fine">By submitting you agree to be contacted by {site.name} about your search. Opt out anytime.</p>
-            </>
+            </TrackedForm>
           )}
 
           {name === "done" && (
@@ -235,14 +244,14 @@ export default function BuyerQuizClient() {
   );
 }
 
-function Nav({ onBack, onNext, canNext, nextLabel = "Continue", hideNext }: { onBack: () => void; onNext?: () => void; canNext?: boolean; nextLabel?: string; hideNext?: boolean }) {
+function Nav({ onBack, onNext, canNext, nextLabel = "Continue", hideNext, submit }: { onBack: () => void; onNext?: () => void; canNext?: boolean; nextLabel?: string; hideNext?: boolean; submit?: boolean }) {
   return (
     <div className="quiz-nav">
-      <button className="quiz-back" onClick={onBack}>← Back</button>
+      <button type="button" className="quiz-back" onClick={onBack}>← Back</button>
       {hideNext ? (
         <span className="quiz-autohint">Tap an option to continue</span>
       ) : (
-        <button className="btn btn--primary" style={{ width: "auto", padding: "13px 26px" }} onClick={canNext ? onNext : undefined} disabled={!canNext}>{nextLabel}</button>
+        <button type={submit ? "submit" : "button"} className="btn btn--primary" style={{ width: "auto", padding: "13px 26px" }} onClick={submit ? undefined : canNext ? onNext : undefined} disabled={!canNext}>{nextLabel}</button>
       )}
     </div>
   );
