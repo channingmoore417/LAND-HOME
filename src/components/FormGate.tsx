@@ -2,6 +2,8 @@
 
 import { HoneypotField } from "@/components/FormGuard";
 import { site } from "@/config/site";
+import PropertyFields from "@/components/PropertyFields";
+import type { PropertyInfo } from "@/lib/propertyInfo";
 
 interface Contact { email: string; firstName: string; lastName: string; phone: string }
 
@@ -10,7 +12,7 @@ interface Contact { email: string; firstName: string; lastName: string; phone: s
 //   step 2  "Last step": first + last name and phone (phone is also the password)
 // Presentational: CaptureGate owns the state, the lead POST and account creation.
 export default function FormGate({
-  a, set, step, setStep, busy, err, hpRef, onSubmit, onOAuth, providers,
+  a, set, step, setStep, busy, err, hpRef, onSubmit, onOAuth, providers, property,
 }: {
   a: Contact;
   set: (p: Partial<Contact>) => void;
@@ -22,6 +24,7 @@ export default function FormGate({
   onSubmit: () => void;
   onOAuth: (provider: "google" | "facebook") => void;
   providers: { google: boolean; facebook: boolean };
+  property: PropertyInfo | null;
 }) {
   const emailOk = /\S+@\S+\.\S+/.test(a.email.trim());
   const detailsOk = !!a.firstName.trim() && !!a.lastName.trim() && a.phone.replace(/\D/g, "").length >= 10;
@@ -29,6 +32,7 @@ export default function FormGate({
   return (
     <div className="qg" role="dialog" aria-modal="true" aria-labelledby="capture-title">
       <form
+        name="Property Inquiry" id="gate-property-inquiry"
         className="qg__sheet"
         onSubmit={(e) => {
           e.preventDefault();
@@ -43,6 +47,8 @@ export default function FormGate({
 
         <div className="qg__body" key={step}>
           <HoneypotField inputRef={hpRef} />
+          {/* Named fields: GoHighLevel tracking reads these on submit. */}
+          <PropertyFields p={property} inquiry="Property Inquiry" />
 
           {step === 0 && (<>
             <p className="qg__eyebrow">Unlock this home + every listing</p>
@@ -63,7 +69,7 @@ export default function FormGate({
 
             <label className="qg__sr" htmlFor="qg-email">Email address</label>
             <input
-              id="qg-email" className="qg__input" type="email" autoComplete="email" inputMode="email"
+              id="qg-email" name="email" className="qg__input" type="email" autoComplete="email" inputMode="email"
               enterKeyHint="next" autoCapitalize="none" autoCorrect="off" spellCheck={false}
               placeholder="Email address" value={a.email} onChange={(e) => set({ email: e.target.value })}
             />
@@ -73,23 +79,25 @@ export default function FormGate({
           </>)}
 
           {step === 1 && (<>
+            {/* The email input is unmounted on this step; keep it in the form so the submitted fields include it. */}
+            <input type="hidden" name="email" value={a.email.trim()} />
             <h2 id="capture-title" className="qg__q">Last step: where can we reach you?</h2>
             <p className="qg__hint">Your phone number is also your password.</p>
             <label className="qg__sr" htmlFor="qg-first">First name</label>
             <input
-              id="qg-first" className="qg__input" type="text" autoComplete="given-name" enterKeyHint="next"
+              id="qg-first" name="first_name" className="qg__input" type="text" autoComplete="given-name" enterKeyHint="next"
               autoCapitalize="words" autoCorrect="off" spellCheck={false} autoFocus placeholder="First name"
               value={a.firstName} onChange={(e) => set({ firstName: e.target.value })}
             />
             <label className="qg__sr" htmlFor="qg-last">Last name</label>
             <input
-              id="qg-last" className="qg__input qg__input--2nd" type="text" autoComplete="family-name" enterKeyHint="next"
+              id="qg-last" name="last_name" className="qg__input qg__input--2nd" type="text" autoComplete="family-name" enterKeyHint="next"
               autoCapitalize="words" autoCorrect="off" spellCheck={false} placeholder="Last name"
               value={a.lastName} onChange={(e) => set({ lastName: e.target.value })}
             />
             <label className="qg__sr" htmlFor="qg-phone">Phone number</label>
             <input
-              id="qg-phone" className="qg__input qg__input--2nd" type="tel" autoComplete="tel" inputMode="tel" enterKeyHint="go"
+              id="qg-phone" name="phone" className="qg__input qg__input--2nd" type="tel" autoComplete="tel" inputMode="tel" enterKeyHint="go"
               placeholder="Phone number" value={a.phone} onChange={(e) => set({ phone: e.target.value })}
             />
             {err && <p className="hv-err" style={{ marginTop: 10 }}>{err}</p>}

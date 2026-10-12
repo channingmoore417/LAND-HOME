@@ -9,6 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { BATHS, BEDS, COMMUNITIES, FEATURES, PRICE_BANDS, matchHref } from "@/lib/buyerMatch";
 import FormGate from "@/components/FormGate";
+import { propertySummary, useCurrentProperty } from "@/lib/propertyInfo";
 
 const KEY = "lhg_captured";
 
@@ -73,6 +74,7 @@ export default function CaptureGate() {
   const [step, setStep] = useState(0);
   const [a, setA] = useState<Answers>(EMPTY);
   const guard = useFormGuard();
+  const property = useCurrentProperty();
   const landing = useRef<string>("");
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -188,7 +190,7 @@ export default function CaptureGate() {
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
-        message: `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
+        message: `${property ? `Property inquiry: ${propertySummary(property)}` : `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`}`} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
         criteria: { quiz_source: "listing_gate_form", listing_alerts: true },
       });
       if (!ok) throw new Error("bad");
@@ -224,6 +226,7 @@ export default function CaptureGate() {
           <FormGate
             a={a} set={set0} step={step} setStep={setStep} busy={busy} err={err} hpRef={guard.hpRef}
             onSubmit={submitForm} onOAuth={startOAuth} providers={leadGate.oauth}
+            property={property}
           />
         </div>
         {debug}

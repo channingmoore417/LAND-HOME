@@ -14,6 +14,8 @@ import type { Listing, ListingMedia } from "@/lib/types";
 import Gallery, { type Photo } from "@/components/Gallery";
 import MortgageCalculator from "@/components/MortgageCalculator";
 import PropertyInteractive from "@/components/PropertyInteractive";
+import ListingContext from "@/components/ListingContext";
+import type { PropertyInfo } from "@/lib/propertyInfo";
 import PropertyMap from "@/components/PropertyMap";
 import LocalMap from "@/components/LocalMap";
 import Testimonials from "@/components/Testimonials";
@@ -189,6 +191,16 @@ export default async function ListingPage({
     ? `${addressLine}, ${cityState}`
     : `${titleCase(listing.city)}, ${listing.state_or_province ?? "LA"}`;
   const priceLabel = usd(listing.list_price);
+  const property: PropertyInfo = {
+    key: listing.listing_key,
+    address: fullLabel,
+    url: `${SITE_URL}/listings/${listing.listing_key}`,
+    price: priceLabel,
+    beds: listing.bedrooms_total ?? null,
+    baths: listing.bathrooms_total ?? null,
+    sqft: listing.living_area ?? null,
+    mls: listing.listing_id ?? null,
+  };
 
   const photos: Photo[] = media.map((m, idx) => ({
     url: photo(m.media_url, 1600),
@@ -415,10 +427,12 @@ export default async function ListingPage({
 
             {/* SIDEBAR */}
             <aside className="aside">
+              <ListingContext property={property} />
               <PropertyInteractive
                 listingKey={listing.listing_key}
                 address={fullLabel}
                 priceLabel={priceLabel}
+                property={property}
               />
 
               <div className="card">

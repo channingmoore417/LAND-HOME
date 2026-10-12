@@ -4,6 +4,8 @@ import { useState } from "react";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { namePayload } from "@/lib/formName";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
+import PropertyFields from "@/components/PropertyFields";
+import { propertySummary, type PropertyInfo } from "@/lib/propertyInfo";
 
 // All the lead-capture UI for a listing: sidebar lead card + message form,
 // the sticky mobile bar, and the Tour / Ask modals. Every form posts to the
@@ -13,6 +15,7 @@ interface Props {
   listingKey: string;
   address: string; // full label for modals, e.g. "123 Main St, Lake Charles, LA 70601"
   priceLabel: string; // e.g. "$424,500"
+  property: PropertyInfo; // full details, sent with every inquiry
 }
 
 function dateOptions() {
@@ -31,7 +34,8 @@ function dateOptions() {
   });
 }
 
-export default function PropertyInteractive({ listingKey, address, priceLabel }: Props) {
+export default function PropertyInteractive({ listingKey, address, priceLabel, property }: Props) {
+  const details = propertySummary(property);
   const [tourOpen, setTourOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [tourMode, setTourMode] = useState<"In-Person Tour" | "Video Chat Tour">("In-Person Tour");
@@ -72,7 +76,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
   // the MLS key.
   const withAddress = (msg: FormDataEntryValue | null) => {
     const text = String(msg ?? "").trim();
-    return text ? `Re: ${address} — ${text}` : `Inquiry about ${address}`;
+    return text ? `Re: ${address} — ${text}\nProperty: ${details}` : `Property inquiry: ${details}`;
   };
 
   async function handleMessage(e: React.FormEvent<HTMLFormElement>) {
@@ -102,7 +106,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
       phone: f.get("phone"),
       email: f.get("email"),
       preferred_times: `${tourMode} · ${dates[dateIdx].label}`,
-      message: `Tour request (${tourMode}) for ${address}`,
+      message: `Tour request (${tourMode}) · ${details}`,
     });
     setBusy(false);
     if (ok) setTourSent(true);
@@ -155,7 +159,8 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
           {msgSent ? (
             <p className="form__ok">Thanks — we&apos;ll be in touch shortly about this home.</p>
           ) : (
-            <form onSubmit={handleMessage}>
+            <form name="Property Inquiry" id="property-inquiry" onSubmit={handleMessage}>
+              <PropertyFields p={property} inquiry="Property Inquiry" />
               <HoneypotField inputRef={msgGuard.hpRef} />
               <div className="namerow">
                   <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
@@ -214,7 +219,8 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
             {tourSent ? (
               <p className="form__ok">Tour requested! We&apos;ll confirm your time by phone or email.</p>
             ) : (
-              <form onSubmit={handleTour}>
+              <form name="Tour Request" id="tour-request" onSubmit={handleTour}>
+                <PropertyFields p={property} inquiry="Tour Request" />
                 <HoneypotField inputRef={tourGuard.hpRef} />
                 <div className="tour__toggle">
                   {(["In-Person Tour", "Video Chat Tour"] as const).map((m) => (
@@ -279,7 +285,8 @@ export default function PropertyInteractive({ listingKey, address, priceLabel }:
             {askSent ? (
               <p className="form__ok">Got it — we&apos;ll answer your question shortly.</p>
             ) : (
-              <form onSubmit={handleAsk}>
+              <form name="Property Question" id="property-question" onSubmit={handleAsk}>
+                <PropertyFields p={property} inquiry="Property Question" />
                 <HoneypotField inputRef={askGuard.hpRef} />
                 <div className="namerow">
                   <input className="input" name="first_name" type="text" placeholder="First name" autoComplete="given-name" required />
