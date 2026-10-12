@@ -47,7 +47,7 @@ export default async function OurListingsPage({ searchParams }: { searchParams: 
 
   return (
     <>
-      <header className="hero hero--index">
+      <header className="hero hero--index hero--compact">
         <div className="wrap">
           <div className="hero__crumb">
             <Link href="/">Home</Link> &nbsp;/&nbsp; Our Listings

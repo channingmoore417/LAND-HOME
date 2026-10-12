@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { site } from "@/config/site";
 import { A2P_REVIEW_MODE } from "@/config/a2p";
+import { AD_VISIT_KEY, hasAdSuffix } from "@/config/site";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import { COMMUNITIES, FEATURES, PRICE_BANDS, BEDS, BATHS, matchHref } from "@/lib/buyerMatch";
 
@@ -52,6 +53,17 @@ function readStore(key: string): string | null {
 }
 function writeStore(key: string, val: string) {
   try { window.localStorage.setItem(key, val); } catch { /* private mode */ }
+}
+
+// Google Ads visitors (arrived via a /GA link) must not get the scroll / timer
+// popup: it gets in the way of the ad's one job. Checked when the trigger fires,
+// so it also covers the very first /GA load, before the flag is stored.
+function isAdVisit(): boolean {
+  if (hasAdSuffix(window.location.pathname)) return true;
+  return !!readSession(AD_VISIT_KEY);
+}
+function readSession(key: string): string | null {
+  try { return window.sessionStorage.getItem(key); } catch { return null; }
 }
 
 function autoOpenAllowed(): boolean {
@@ -140,13 +152,13 @@ export default function ListingAlertsQuiz({ city, source, global }: { city?: str
 
   // Automatic open: halfway down the post (desktop) or after a delay.
   useEffect(() => {
-    if (global || !autoOpenAllowed()) return;
+    if (global || !autoOpenAllowed() || isAdVisit()) return;
     let fired = false;
     const fire = () => {
       if (fired) return;
       fired = true;
       cleanup();
-      if (autoOpenAllowed()) setOpen(true);
+      if (autoOpenAllowed() && !isAdVisit()) setOpen(true);
     };
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;

@@ -77,6 +77,13 @@ export default async function RootLayout({
       <body>
         {/* Google tag (GA4 / Google Ads). Loads after the page is interactive; GA4 tracks client-side page changes on its own. */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=G-J59TGYC1RT" strategy="afterInteractive" />
+        {/* GoHighLevel external tracking: page views + form submissions into the contact's activity feed. Set NEXT_PUBLIC_LC_TRACKING_DEBUG=true in Vercel to log "[LC Tracking]" lines in the browser console. */}
+        <Script
+          src="https://link.msgsndr.com/js/external-tracking.js"
+          data-tracking-id="tk_4e825bf6f2cc4db580e229cb0ace996d"
+          data-debug={process.env.NEXT_PUBLIC_LC_TRACKING_DEBUG === "true" ? "true" : undefined}
+          strategy="afterInteractive"
+        />
         <Script id="gtag-init" strategy="afterInteractive">
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
