@@ -159,7 +159,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel, p
           {msgSent ? (
             <p className="form__ok">Thanks — we&apos;ll be in touch shortly about this home.</p>
           ) : (
-            <form name="Property Inquiry" id="property-inquiry" onSubmit={handleMessage}>
+            <form name="Property-Inquiry" id="Property-Inquiry" onSubmit={handleMessage}>
               <PropertyFields p={property} inquiry="Property Inquiry" />
               <HoneypotField inputRef={msgGuard.hpRef} />
               <div className="namerow">
@@ -219,7 +219,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel, p
             {tourSent ? (
               <p className="form__ok">Tour requested! We&apos;ll confirm your time by phone or email.</p>
             ) : (
-              <form name="Tour Request" id="tour-request" onSubmit={handleTour}>
+              <form name="Tour-Request" id="Tour-Request" onSubmit={handleTour}>
                 <PropertyFields p={property} inquiry="Tour Request" />
                 <HoneypotField inputRef={tourGuard.hpRef} />
                 <div className="tour__toggle">
@@ -285,7 +285,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel, p
             {askSent ? (
               <p className="form__ok">Got it — we&apos;ll answer your question shortly.</p>
             ) : (
-              <form name="Property Question" id="property-question" onSubmit={handleAsk}>
+              <form name="Property-Question" id="Property-Question" onSubmit={handleAsk}>
                 <PropertyFields p={property} inquiry="Property Question" />
                 <HoneypotField inputRef={askGuard.hpRef} />
                 <div className="namerow">

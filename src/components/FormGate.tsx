@@ -32,7 +32,7 @@ export default function FormGate({
   return (
     <div className="qg" role="dialog" aria-modal="true" aria-labelledby="capture-title">
       <form
-        name="Property Inquiry" id="gate-property-inquiry"
+        name="Property-Inquiry" id="Property-Inquiry"
         className="qg__sheet"
         onSubmit={(e) => {
           e.preventDefault();
