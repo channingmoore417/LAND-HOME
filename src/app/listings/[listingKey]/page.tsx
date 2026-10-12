@@ -194,6 +194,10 @@ export default async function ListingPage({
   const property: PropertyInfo = {
     key: listing.listing_key,
     address: fullLabel,
+    street: showAddress ? addressLine : null,
+    city: titleCase(listing.city) || null,
+    state: listing.state_or_province ?? "LA",
+    zip: listing.postal_code ?? null,
     url: `${SITE_URL}/listings/${listing.listing_key}`,
     price: priceLabel,
     beds: listing.bedrooms_total ?? null,

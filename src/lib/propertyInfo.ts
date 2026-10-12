@@ -7,12 +7,35 @@ import { useSyncExternalStore } from "react";
 export interface PropertyInfo {
   key: string;
   address: string; // full label, e.g. "123 Main St, Lake Charles, LA 70601"
-  url: string; // absolute listing URL
+  street: string | null; // "123 Main St" (null when the listing hides its address)
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  url: string; // clean absolute listing URL (no tracking parameters)
   price: string; // e.g. "$264,900"
   beds: number | null;
   baths: number | null;
   sqft: number | null;
   mls: string | null;
+}
+
+/** The property as separate webhook / form fields (street, city, state, zip, clean URL, price, ...). */
+export function propertyPayload(p: PropertyInfo): Record<string, string | number> {
+  const f: Record<string, string | number | null> = {
+    listing_key: p.key,
+    property_address: p.address,
+    property_street: p.street,
+    property_city: p.city,
+    property_state: p.state,
+    property_zip: p.zip,
+    property_url: p.url,
+    property_price: p.price,
+    property_bedrooms: p.beds,
+    property_bathrooms: p.baths,
+    property_sqft: p.sqft,
+    property_mls: p.mls,
+  };
+  return Object.fromEntries(Object.entries(f).filter(([, v]) => v != null && v !== "")) as Record<string, string | number>;
 }
 
 /** One-line description used in lead messages: address · price · beds/baths · sqft · MLS# · url */

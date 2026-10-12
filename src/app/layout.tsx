@@ -3,6 +3,7 @@ import Script from "next/script";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import CaptureGate from "@/components/CaptureGate";
+import AttributionCapture from "@/components/AttributionCapture";
 import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
 import SiteLocalBand from "@/components/SiteLocalBand";
 import AuthProvider from "@/components/AuthProvider";
@@ -96,6 +97,7 @@ gtag('config', 'G-J59TGYC1RT');`}
           <SiteLocalBand cities={cityMenu.map((c) => ({ label: c.label, href: c.href }))} />
           <SiteFooter cityMenu={cityMenu} />
           <CaptureGate />
+          <AttributionCapture />
           <ListingAlertsQuiz global source="site" />
         </AuthProvider>
       </body>

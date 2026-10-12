@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef } from "react";
 import { AD_VISIT_KEY } from "@/config/site";
+import { getAttribution } from "@/lib/attribution";
 
 // ============================================================
 // Client half of the spam filter. Every form on the site uses this so the
@@ -84,6 +85,8 @@ export function useFormGuard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           source_url: sourceUrl(),
+          // Real gclid / utm_* / landing_page fields, so the webhook can map them.
+          ...getAttribution(),
           ...payload,
           ...signals(),
         }),
