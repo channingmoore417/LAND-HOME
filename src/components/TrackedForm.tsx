@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AD_VISIT_KEY } from "@/config/site";
 import HiddenField from "@/components/HiddenField";
+import { useAttribution } from "@/components/useAttribution";
 
 // A real, named <form> around the LAST step of a multi-step quiz. GoHighLevel's
 // tracking script only sees native form submits, so each quiz keeps its screens
@@ -13,25 +12,6 @@ import HiddenField from "@/components/HiddenField";
 //     buttons outside the form, so nothing can submit early)
 // The handler still posts through /api/forms (spam filter, Supabase, BoldTrail,
 // the GHL webhook), so GHL gets ONE webhook post, not a second direct one.
-const ATTR_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_adgroup", "utm_term", "utm_content", "gclid", "fbclid"];
-
-function attribution(): Record<string, string> {
-  const out: Record<string, string> = {};
-  try {
-    const landing = window.sessionStorage.getItem(AD_VISIT_KEY); // full ad landing URL, if any
-    const here = new URLSearchParams(window.location.search);
-    let there = new URLSearchParams();
-    if (landing) { try { there = new URL(landing, window.location.origin).searchParams; } catch { /* ignore */ } }
-    for (const k of ATTR_KEYS) {
-      const v = here.get(k) || there.get(k);
-      if (v) out[k] = v;
-    }
-    out.landing_page = landing || window.location.pathname + window.location.search;
-    out.page_url = window.location.href;
-  } catch { /* storage blocked */ }
-  return out;
-}
-
 export default function TrackedForm({
   name, fields, onSubmit, children, className,
 }: {
@@ -41,8 +21,7 @@ export default function TrackedForm({
   children: React.ReactNode;
   className?: string;
 }) {
-  const [attr, setAttr] = useState<Record<string, string>>({});
-  useEffect(() => setAttr(attribution()), []);
+  const attr = useAttribution(); // gclid, utm_*, landing_page, ...
   const all: Record<string, string | number | null | undefined> = { inquiry_type: name, ...fields, ...attr };
   return (
     <form name={name} id={name} className={className} onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>

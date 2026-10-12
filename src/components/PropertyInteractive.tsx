@@ -5,7 +5,7 @@ import { A2P_REVIEW_MODE } from "@/config/a2p";
 import { namePayload } from "@/lib/formName";
 import { HoneypotField, useFormGuard } from "@/components/FormGuard";
 import PropertyFields from "@/components/PropertyFields";
-import { propertySummary, type PropertyInfo } from "@/lib/propertyInfo";
+import { propertyPayload, propertySummary, type PropertyInfo } from "@/lib/propertyInfo";
 
 // All the lead-capture UI for a listing: sidebar lead card + message form,
 // the sticky mobile bar, and the Tour / Ask modals. Every form posts to the
@@ -86,6 +86,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel, p
     const ok = await msgGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
+      ...propertyPayload(property),
       ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
@@ -102,6 +103,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel, p
     const ok = await tourGuard.submit({
       form_id: "showing_request",
       listing_key: listingKey,
+      ...propertyPayload(property),
       ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),
@@ -119,6 +121,7 @@ export default function PropertyInteractive({ listingKey, address, priceLabel, p
     const ok = await askGuard.submit({
       form_id: "listing_inquiry",
       listing_key: listingKey,
+      ...propertyPayload(property),
       ...namePayload(f),
       phone: f.get("phone"),
       email: f.get("email"),

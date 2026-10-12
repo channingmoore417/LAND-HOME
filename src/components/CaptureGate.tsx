@@ -9,7 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { BATHS, BEDS, COMMUNITIES, FEATURES, PRICE_BANDS, matchHref } from "@/lib/buyerMatch";
 import FormGate from "@/components/FormGate";
-import { propertySummary, useCurrentProperty } from "@/lib/propertyInfo";
+import { propertyPayload, propertySummary, useCurrentProperty } from "@/lib/propertyInfo";
 
 const KEY = "lhg_captured";
 
@@ -187,6 +187,7 @@ export default function CaptureGate() {
       const ok = await guard.submit({
         form_id: isAdTraffic ? "ad_capture" : "buyer_quiz",
         listing_key: listingKey,
+        ...(property ? propertyPayload(property) : {}),
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
@@ -297,6 +298,7 @@ export default function CaptureGate() {
         // finish the quiz are saved as a normal buyer_quiz lead.
         form_id: onAdPage || adVisit ? "ad_capture" : "buyer_quiz",
         listing_key: listingKey,
+        ...(property ? propertyPayload(property) : {}),
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
