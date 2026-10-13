@@ -140,6 +140,13 @@ Code is built (`/api/digest`, `digest_runs` table, `docs/behavior-signals.md`) b
 **Agent Recap Scheduler** (id 63b12261-e3c7-4991-86b6-29a91e145a50: weekdays 8am/12pm/4pm, Sat+Sun 4pm Central) and publish.
 4. Then test with `GET /api/digest?preview=1` (Bearer secret) before the first real send.
 
+## GHL tags (decided: tags, not dropdowns — a contact can hold several)
+Existing: past-client, past-buyer, past-seller, sphere, closed-2023/24/25, needs-lender, email-only, no-phone.
+Created: buyer, seller, investor, lead, client, top-50, laurens-sphere, partner, recruiting, google-ads.
+Auto-applied by workflows: buyer (buyer, tour, pre-approval, ads), seller (valuation / cash offer), google-ads (ads registration).
+Manual / by smart list or import: investor, lead, client, past-client, top-50, laurens-sphere, partner, recruiting, sphere.
+GHL notes keep HTML (color spans, links, bold) — notes are built in the DB by public.alert_note() and sent as `note_html`.
+
 ## NEXT (after the GHL audit pass) — contact classification in GHL
 User wants, once the current build is done:
 1. **Contact type** field: Buyer / Seller / Both (GHL already has multi-select `Deal Type`: Buyer, Seller, Investor, Renter, Vendor — extend or reuse; set automatically: buyer-side workflows -> Buyer, valuation/cash offer -> Seller).
