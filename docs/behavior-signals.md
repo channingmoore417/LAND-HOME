@@ -24,3 +24,15 @@ GHL workflow: "Website Behavior Signal" (draft, id c8d640db-c2c7-47d5-b718-2b90c
 (`forward_*_to_ghl`), so saves, saved searches, tour requests and quizzes already notify the team. `/api/signals` only sends
 the signals those triggers cannot see: `repeat_listing_view` and `return_visit`. Every property message uses the full address
 (`listing_address`, from `public.listing_address()`) and a clickable `listing_url` — never the MLS number.
+
+## Alerts: SMS only for high intent
+- **SMS (high intent):** tour request, property inquiry (both → GHL "New Property Tour Request"), pre-approval, home valuation, contact form.
+- **In-app notification only (low intent):** home saved, saved search, buyer quiz, buyer guide, registration gate, repeat views, returns.
+  Every event still adds a note to the contact.
+
+## Agent recap emails (`/api/digest`)
+Hourly Vercel cron; acts only at Lake Charles slots: Mon–Fri 8 AM / 12 PM / 4 PM, Sat & Sun 4 PM. For each GHL user it reads their
+assigned contacts (GHL API), summarizes site activity since the previous slot (Supabase), and posts one email per agent to
+`GHL_DIGEST_WEBHOOK_URL` (GHL workflow "Agent Recap Email" sends it). Agents with no activity get nothing.
+Env: `GHL_API_KEY` (Private Integration: contacts.readonly + users.readonly), `GHL_DIGEST_WEBHOOK_URL`, `CRON_SECRET`.
+Test without sending: `GET /api/digest?force=1&preview=1` with `Authorization: Bearer $CRON_SECRET`.
