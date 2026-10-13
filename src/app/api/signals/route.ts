@@ -24,6 +24,10 @@ const VIEW_DEBOUNCE_MS = 30 * 60 * 1000; // refreshes within 30 min are one view
 const RETURN_MIN_DAYS = 30;
 const RETURN_BAND_MAX_DAYS = 60;
 const VID_COOKIE = "lhg_vid";
+// GHL "Website Behavior Signal" inbound webhook. GHL_SIGNALS_WEBHOOK_URL overrides it without a code change.
+const SIGNALS_WEBHOOK =
+  process.env.GHL_SIGNALS_WEBHOOK_URL ||
+  "https://services.leadconnectorhq.com/hooks/xdGkCWotXaek58gmTbxt/webhook-trigger/9b2af318-2526-4ac6-8a05-722dee778f66";
 
 // Saves, saved searches and showing requests already reach GHL through the
 // database triggers (favorites_to_ghl, saved_searches_to_ghl, ...). Forwarding
@@ -133,7 +137,7 @@ async function recordSignal(
 
 // Deliver every unforwarded signal for this visitor/user to GHL.
 async function flushToGhl(db: Admin, a: Actor) {
-  const url = process.env.GHL_SIGNALS_WEBHOOK_URL;
+  const url = SIGNALS_WEBHOOK;
   if (!a.email) return;
   const filter = a.userId ? `visitor_id.eq.${a.visitorId},user_id.eq.${a.userId}` : `visitor_id.eq.${a.visitorId}`;
   const { data: pending } = await db
