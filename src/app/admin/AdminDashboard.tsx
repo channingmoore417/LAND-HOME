@@ -39,15 +39,25 @@ interface DashboardData {
 
 type Tab = "setup" | "leads" | "contacts" | "clients" | "showings" | "searches" | "favorites";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "setup", label: "Set Up a Client Search" },
-  { id: "leads", label: "Leads" },
-  { id: "contacts", label: "Contacts" },
-  { id: "clients", label: "Client Alerts" },
-  { id: "showings", label: "Showings" },
-  { id: "searches", label: "Saved Searches" },
-  { id: "favorites", label: "Saved Homes" },
+// The sidebar. Add a page = one line here (+ a render block below). A group
+// with `children` becomes a collapsible section; the one holding the open page auto-expands.
+type NavItem = { id: Tab; label: string } | { group: string; children: { id: Tab; label: string }[] };
+const NAV: NavItem[] = [
+  { group: "People", children: [
+    { id: "leads", label: "Leads" },
+    { id: "contacts", label: "Contacts" },
+  ] },
+  { group: "Buyer Activity", children: [
+    { id: "showings", label: "Showings" },
+    { id: "searches", label: "Saved Searches" },
+    { id: "favorites", label: "Saved Homes" },
+  ] },
+  { group: "Client Alerts", children: [
+    { id: "setup", label: "Set Up a Client Search" },
+    { id: "clients", label: "Client Alerts" },
+  ] },
 ];
+
 
 const NEW_WINDOW_MS = 48 * 60 * 60 * 1000;
 
@@ -67,6 +77,18 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("leads");
   const [contact, setContact] = useState<OpenContact | null>(null);
+  // Groups the user collapsed, remembered per browser (never required to render).
+  const [collapsed, setCollapsed] = useState<string[]>([]);
+  useEffect(() => {
+    try { setCollapsed(JSON.parse(localStorage.getItem("adm-collapsed") || "[]")); } catch { /* ignore */ }
+  }, []);
+  function toggleGroup(g: string) {
+    setCollapsed((cur) => {
+      const next = cur.includes(g) ? cur.filter((x) => x !== g) : [...cur, g];
+      try { localStorage.setItem("adm-collapsed", JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }
   // The ordered list the open contact came from, so the record can step
   // through it with previous / next arrows.
   const [navList, setNavList] = useState<OpenContact[]>([]);
@@ -194,16 +216,35 @@ export default function AdminDashboard() {
       <aside className="adm__side">
         <div className="adm__brand">Team Portal</div>
         <nav className="adm__nav">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              className={`adm__navbtn${tab === t.id && !contact ? " is-active" : ""}`}
-              onClick={() => { setTab(t.id); setContact(null); }}
-            >
-              {t.label}
-              {t.id === "leads" && newLeadCount > 0 && <span className="adm-badge">{newLeadCount}</span>}
-            </button>
-          ))}
+          {NAV.map((item) => {
+            const btn = (t: { id: Tab; label: string }, sub = false) => (
+              <button
+                key={t.id}
+                className={`adm__navbtn${sub ? " adm__navbtn--sub" : ""}${tab === t.id && !contact ? " is-active" : ""}`}
+                onClick={() => { setTab(t.id); setContact(null); }}
+              >
+                {t.label}
+                {t.id === "leads" && newLeadCount > 0 && <span className="adm-badge">{newLeadCount}</span>}
+              </button>
+            );
+            if ("id" in item) return btn(item);
+            // Always open while it holds the page being viewed.
+            const holdsActive = item.children.some((c) => c.id === tab);
+            const isOpen = holdsActive || !collapsed.includes(item.group);
+            return (
+              <div key={item.group} className="adm__group">
+                <button
+                  className="adm__grouphead"
+                  aria-expanded={isOpen}
+                  onClick={() => !holdsActive && toggleGroup(item.group)}
+                >
+                  {item.group}
+                  <i aria-hidden="true">{isOpen ? "▾" : "▸"}</i>
+                </button>
+                {isOpen && <div className="adm__sub">{item.children.map((c) => btn(c, true))}</div>}
+              </div>
+            );
+          })}
         </nav>
         <div className="adm__me">
           <span>{user.email}</span>
