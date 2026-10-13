@@ -25,6 +25,12 @@ const RETURN_MIN_DAYS = 30;
 const RETURN_BAND_MAX_DAYS = 60;
 const VID_COOKIE = "lhg_vid";
 
+// Saves, saved searches and showing requests already reach GHL through the
+// database triggers (favorites_to_ghl, saved_searches_to_ghl, ...). Forwarding
+// them here too would text the team twice, so only the signals GHL does NOT
+// already get are sent; the rest are recorded in Supabase only.
+const GHL_SIGNALS = new Set(["repeat_listing_view", "return_visit"]);
+
 const TAGS: Record<string, string[]> = {
   repeat_listing_view: ["intent:medium", "intent:repeat-listing-view"],
   listing_saved: ["intent:medium", "intent:saved-listing"],
@@ -143,7 +149,7 @@ async function flushToGhl(db: Admin, a: Actor) {
     if (s.listing_key) {
       const { data } = await db
         .from("listings")
-        .select("listing_key, unparsed_address, city, list_price, property_type")
+        .select("listing_key, unparsed_address, city, state_or_province, postal_code, list_price, internet_address_yn")
         .eq("listing_key", s.listing_key).maybeSingle();
       listing = data;
     }
@@ -164,13 +170,20 @@ async function flushToGhl(db: Admin, a: Actor) {
       phone: profile?.phone ?? null,
       listing_key: s.listing_key,
       listing_url: s.listing_key ? `${SITE_URL}/listings/${s.listing_key}` : null,
-      listing_address: listing?.unparsed_address ?? null,
+      // Full address (street, city, state ZIP) + a link the team can open.
+      listing_address:
+        listing && listing.internet_address_yn !== false && listing.unparsed_address
+          ? [listing.unparsed_address, listing.city,
+             `${listing.state_or_province ?? "LA"} ${listing.postal_code ?? ""}`.trim()].filter(Boolean).join(", ")
+          : null,
       listing_city: listing?.city ?? null,
       listing_price: listing?.list_price ?? null,
       ...s.meta,
     };
     let ok = false;
-    if (url) {
+    if (!GHL_SIGNALS.has(s.signal)) {
+      ok = true; // already delivered by the DB triggers; just mark done
+    } else if (url) {
       try {
         const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         ok = r.ok;

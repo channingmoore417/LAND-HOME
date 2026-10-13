@@ -18,3 +18,9 @@ listing_address, listing_city, listing_price`, plus per-signal extras (`view_cou
 `days_inactive`, `band`).
 
 GHL workflow: "Website Behavior Signal" (draft, id c8d640db-c2c7-47d5-b718-2b90c8a73f68) — Inbound Webhook trigger → create/update contact → note → SMS to contact owner. Copy its webhook URL into GHL_SIGNALS_WEBHOOK_URL, then publish. Tours, quizzes and other forms already use their own GHL workflows via /api/forms.
+
+## Already handled by database triggers (do not duplicate)
+`favorites`, `saved_searches`, `showing_requests` and `leads` inserts are forwarded to GHL by Postgres triggers
+(`forward_*_to_ghl`), so saves, saved searches, tour requests and quizzes already notify the team. `/api/signals` only sends
+the signals those triggers cannot see: `repeat_listing_view` and `return_visit`. Every property message uses the full address
+(`listing_address`, from `public.listing_address()`) and a clickable `listing_url` — never the MLS number.
