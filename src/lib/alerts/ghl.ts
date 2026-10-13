@@ -4,6 +4,7 @@
 //   email → send the email using email_subject / email_html
 //   sms   → send sms_text
 //   sync  → create/update the contact (tag, owner) and send NOTHING
+//   activity → note + in-app notification to the contact owner (client paused/resumed, etc.); sends nothing to the client
 //
 // Deliberately NOT any of the lead-form webhooks, so the new-buyer-lead
 // workflows (round-robin assign, speed-to-lead texts) can never fire from an
@@ -11,7 +12,7 @@
 // ============================================================
 
 export interface GhlAlertPayload {
-  channel: "email" | "sms" | "sync";
+  channel: "email" | "sms" | "sync" | "activity";
   form_id: "search_alert";
   source: "agent_client" | "site_visitor";
   submission_id: string;
@@ -31,6 +32,9 @@ export interface GhlAlertPayload {
   email_html?: string;
   sms_text?: string;
   tags?: string;
+  /** channel "activity": a client changed their alert settings — notify the contact owner. */
+  activity_title?: string;
+  activity_detail?: string;
 }
 
 export interface GhlResult { ok: boolean; status: number; detail: string }

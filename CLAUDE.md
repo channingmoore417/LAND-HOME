@@ -94,7 +94,7 @@ score + reasons.
 
 ## Client search alerts (agent sets up a client → site emails/texts matches)
 
-Realtors create a client + search in `/admin` → **Client Searches**. The site (not the
+Realtors create a client + search in `/admin` → **Set Up a Client Search** (list/manage under **Client Alerts**). The site (not the
 MLS portal) then emails new matches and, optionally, texts a weekly link — so every
 click lands on landhomegroup.com and is tied to that client.
 
@@ -116,12 +116,14 @@ client taps link → /m/<token> (their matches page)  /m/<token>/<listingKey> (t
   Slot-based schedule (`lib/alerts/schedule.ts`, Central time) so a missed hour self-heals.
   Overlapping runs can't double-send (optimistic claim); 3 failures/24h pauses a client.
 - **GHL:** ONE alert webhook (`GHL_ALERT_WEBHOOK_URL`), deliberately NOT a lead-form
-  webhook. `channel` = email | sms | sync. The `saved_searches_to_ghl` DB trigger skips
+  webhook. `channel` = email | sms | sync | activity (client paused/resumed/stopped texts → note + in-app notification to the contact owner; see `/api/alerts/prefs`). The `saved_searches_to_ghl` DB trigger skips
   `source in ('agent','auto')` so agent-created searches never re-run new-buyer-lead
   automations. Any speed-to-lead workflow must exclude tag `agent_client`.
 - **Texting** needs `clients.sms_consent_at` (agent attests consent in the form); sent
   8am–8pm Central only. Alerts to site visitors who predate this feature are OFF
   (`alerts_enabled=false`) until they opt in again.
+- **Email style:** deliberately plain (personal note, system fonts, text links, brand + tiny
+  "Unsubscribe" in the footer) so it stays out of Promotions/spam — keep it that way.
 - **Add a teammate:** set `agents.ghl_user_id`, add a branch in the GHL "Which agent?" step.
 - **Not built yet:** auto-generated searches from browsing/quiz (source `auto`), magic-link
   sign-in from alert links (favorites from an alert link aren't attributed to the client
