@@ -116,6 +116,8 @@ export function emailHtml(opts: {
   const all = matchesUrl(token);
   const n = matches.length;
   const allNew = matches.every((m) => m.event === "new");
+  const hasDrop = matches.some((m) => m.event === "price_drop");
+  const hasBack = matches.some((m) => m.event === "back_on_market");
   const phone = opts.agentPhone || site.phone;
   const agentFirst = (agentName ?? "").split(/\s+/)[0];
   const nap = site.nap;
@@ -126,6 +128,7 @@ export function emailHtml(opts: {
   <p style="${p}">${allNew
     ? `${n === 1 ? "A home just" : `${n} homes just`} hit the market that ${n === 1 ? "fits" : "fit"} your search.`
     : `Here ${n === 1 ? "is one update on a home that fits" : `are ${n} updates on homes that fit`} your search.`}</p>
+  <p style="${p}">We check the market for you around the clock, so you're seeing ${n === 1 ? "this one" : "these"} about as soon as ${n === 1 ? "it's" : "they're"} listed. ${hasDrop ? "One of these just came down in price, which is often a good time to take a closer look. " : ""}${hasBack ? "One is back on the market again. " : ""}Take a look at ${n === 1 ? "it" : "them"} below and see what stands out.</p>
 
   ${cards.map((m) => card(m, token)).join("")}
 
@@ -136,7 +139,7 @@ export function emailHtml(opts: {
 
   <p style="${p}">Not quite right? <a href="${adjustUrl(token)}" style="color:${B.teal};font-weight:700">Adjust the homes you're getting &rarr;</a>${searchSummary ? `<br><span style="font-size:12px;color:${B.muted}">Right now we're matching: ${esc(searchSummary)}</span>` : ""}</p>
 
-  <p style="${p}">If you'd like to see any of these in person, just reply to this email or call or text me at <a href="tel:${esc(phone.replace(/[^\d+]/g, ""))}" style="color:${B.teal};text-decoration:none">${esc(phone)}</a>.</p>
+  <p style="${p}">If one catches your eye, just reply to this email with the address and we'll set up a time for you to see it, or call or text me at <a href="tel:${esc(phone.replace(/[^\d+]/g, ""))}" style="color:${B.teal};text-decoration:none">${esc(phone)}</a>. Not sure yet? No pressure at all. We'll keep sending new homes as they come up, and you can change what you're looking for any time.</p>
 
   <p style="${p}">${esc(agentFirst || "The Land & Home Group")}<br>
   <span style="color:${B.muted};font-size:13px">${esc(site.name)} &middot; ${esc(site.brokerage)}</span></p>
