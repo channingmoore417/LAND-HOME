@@ -60,7 +60,16 @@ export function splitName(full: string | null | undefined): { first: string | nu
   return i < 0 ? { first: t, last: null } : { first: t.slice(0, i), last: t.slice(i + 1).trim() || null };
 }
 
-interface GhlContact { id: string; assignedTo?: string | null; tags?: string[] }
+/** 10-digit US numbers → +1XXXXXXXXXX (what GHL needs to text); otherwise pass through digits with a leading +. */
+export function toE164(raw: string | null | undefined): string | undefined {
+  const d = (raw ?? "").replace(/\D/g, "");
+  if (!d) return undefined;
+  if (d.length === 10) return `+1${d}`;
+  if (d.length === 11 && d.startsWith("1")) return `+${d}`;
+  return `+${d}`;
+}
+
+interface GhlContact { id: string; assignedTo?: string | null; tags?: string[]; phone?: string | null; firstName?: string | null; lastName?: string | null }
 
 export interface ContactInput {
   email: string;
@@ -88,7 +97,7 @@ export async function ensureContact(input: ContactInput): Promise<GhlResult & { 
   if (!contact) {
     const { first, last } = splitName(input.name);
     const created = await call<{ contact?: GhlContact; meta?: { contactId?: string } }>("/contacts/", "POST", {
-      locationId: LOCATION_ID, email, phone: input.phone || undefined,
+      locationId: LOCATION_ID, email, phone: toE164(input.phone),
       firstName: first ?? undefined, lastName: last ?? undefined,
       assignedTo: input.ownerUserId || undefined, tags, source: "Client search alerts",
     });
@@ -101,16 +110,20 @@ export async function ensureContact(input: ContactInput): Promise<GhlResult & { 
     contact = { id: existingId };
   }
 
-  // 3) existing: only ADD our tags; only set an owner when there is none.
+  // 3) existing: only ADD our tags, and only FILL IN what is missing (owner, phone, name) — never overwrite.
   await call(`/contacts/${contact.id}/tags`, "POST", { tags });
-  let assignedTo = contact.assignedTo ?? null;
-  if (contact.assignedTo === undefined) {
-    const full = await call<{ contact?: GhlContact }>(`/contacts/${contact.id}`, "GET");
-    assignedTo = full.data.contact?.assignedTo ?? null;
-  }
-  if (!assignedTo && input.ownerUserId) {
-    const set = await call(`/contacts/${contact.id}`, "PUT", { assignedTo: input.ownerUserId });
-    if (set.ok) assignedTo = input.ownerUserId;
+  const full = await call<{ contact?: GhlContact }>(`/contacts/${contact.id}`, "GET");
+  const have = full.ok ? full.data.contact ?? contact : contact;
+  let assignedTo = have.assignedTo ?? null;
+  const fill: Record<string, unknown> = {};
+  if (!assignedTo && input.ownerUserId) fill.assignedTo = input.ownerUserId;
+  if (!have.phone && toE164(input.phone)) fill.phone = toE164(input.phone);
+  const { first, last } = splitName(input.name);
+  if (!have.firstName && first) fill.firstName = first;
+  if (!have.lastName && last) fill.lastName = last;
+  if (Object.keys(fill).length > 0) {
+    const set = await call(`/contacts/${contact.id}`, "PUT", fill);
+    if (set.ok && fill.assignedTo) assignedTo = input.ownerUserId ?? null;
   }
   return { ok: true, status: 200, detail: "existing", id: contact.id, assignedTo };
 }
