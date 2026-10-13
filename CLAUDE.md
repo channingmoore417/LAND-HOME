@@ -140,6 +140,15 @@ Code is built (`/api/digest`, `digest_runs` table, `docs/behavior-signals.md`) b
 **Agent Recap Scheduler** (id 63b12261-e3c7-4991-86b6-29a91e145a50: weekdays 8am/12pm/4pm, Sat+Sun 4pm Central) and publish.
 4. Then test with `GET /api/digest?preview=1` (Bearer secret) before the first real send.
 
+## NEXT (after the GHL audit pass) — contact classification in GHL
+User wants, once the current build is done:
+1. **Contact type** field: Buyer / Seller / Both (GHL already has multi-select `Deal Type`: Buyer, Seller, Investor, Renter, Vendor — extend or reuse; set automatically: buyer-side workflows -> Buyer, valuation/cash offer -> Seller).
+2. **Relationship** field separating: Lead, Client, Past Client, Partner, Sphere, Top 50 (Top 50 overlaps the others, so likely a tag/checkbox).
+3. **Tags** (source / intent level) applied by every workflow — currently NO contact has any tag.
+Rule: GHL blanks a field when a later webhook omits it, so never map a field a given workflow doesn't always send.
+Ownership rules in force: seller leads (valuation, cash offer) -> Lauren; all other leads -> round-robin Kacy/Karley, only if unowned.
+SMS only for high intent (tour, inquiry, pre-approval, valuation/cash offer, contact); everything else is an in-app notification.
+
 ## Note on session scope
 The original build session was bound to the `bayoumortgage` repo and could not
 push to `LAND-HOME`; the code was delivered as a zip. Future sessions should be

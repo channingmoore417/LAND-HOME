@@ -1,0 +1,11 @@
+-- Applied to production (parts: ghl_fixes_part1_helpers, part2_lead_trigger, part3a/3b signup, ghl_never_blank_helpers, ghl_last_property_in_payloads).
+-- Result of the GHL workflow audit:
+--  * ghl_timeline() / ghl_property_type(): convert site answers to GHL dropdown values (e.g. "1–3 months" -> "60 To 90 Days").
+--  * lead_label(): distinct labels (HIGH INTENT for inquiry/tour/pre-approval/valuation/cash offer; contact; save; search; quiz; guide; account_signup).
+--  * ghl_webhook_url(): cash_offer -> seller (valuation) workflow; account_signup -> buyer workflow.
+--  * known_contact(): name/phone also from profiles. buyer_profile(): last quiz answers + normalized timeline.
+--  * last_property(email): last listing touched, merged into payloads so mapped property fields are never blanked.
+--  * forward_lead_to_ghl(): normalized values, preferred_times carried on inquiries, richer alert_detail per form.
+--  * forward_signup_to_ghl() + trigger profiles_to_ghl: plain website sign-ups alert GHL (skipped if a lead from the same person arrived in the last 10 min).
+-- GHL rule learned by test: a field missing from a later webhook BLANKS the saved contact field, so every mapped field must be
+-- sent every time with its last known value (that is what click_ids / buyer_profile / last_property / known_contact are for).
