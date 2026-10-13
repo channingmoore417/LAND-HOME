@@ -1,0 +1,5 @@
+-- Applied to production. High-intent alerts (property inquiry, tour request) get a
+-- "HIGH INTENT" label; the property registration gate gets its own "New Registration" label.
+-- (See forward_lead_to_ghl(): gate = criteria.quiz_source in ('listing_gate_form','listing_gate').)
+-- lead_label values: listing_inquiry/showing_request -> 🔥 HIGH INTENT; home_save -> ❤️ Home Saved;
+-- saved_search -> 🔎 Saved Search; buyer_quiz -> 🎯 New Buyer Quiz; buyer_guide -> 📘 Buyer Guide Download.
