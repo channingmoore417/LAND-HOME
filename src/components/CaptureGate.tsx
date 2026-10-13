@@ -101,7 +101,9 @@ export default function CaptureGate() {
       if (q.has("gclid") || q.has("gbraid") || q.has("wbraid") || q.has("gad_source") || /\/ga\/?$/i.test(window.location.pathname)) {
         window.sessionStorage.removeItem(KEY);
       }
-      setCaptured(window.sessionStorage.getItem(KEY) === "1");
+      // A client who came from one of our alert links (cookie set by /m/<token>) is already a known contact.
+      const knownClient = /(?:^|;\s*)lhg_client=[a-f0-9]{32}/.test(document.cookie);
+      setCaptured(window.sessionStorage.getItem(KEY) === "1" || knownClient);
       const v = window.sessionStorage.getItem(AD_KEY);
       setAdVisit(!!v);
       if (v) landing.current = v;

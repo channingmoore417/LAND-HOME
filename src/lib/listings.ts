@@ -30,6 +30,7 @@ export const FEATURE_COLUMN: Record<string, string> = {
 export interface ListingCriteria {
   status?: string; // defaults to "Active"
   city?: string;
+  cities?: string[]; // several cities (OR'd) — client alert searches
   bedsMin?: number;
   bathsMin?: number;
   priceMin?: number;
@@ -93,6 +94,10 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   if (c.lhgOnly) query = query.eq("is_lhg_listing", true);
   if (c.listAgentMlsId) query = query.ilike("list_agent_mls_id", c.listAgentMlsId.replace(/[%_]/g, ""));
   if (c.city) query = query.ilike("city", c.city);
+  if (c.cities && c.cities.length > 0) {
+    // OR across cities; values are quoted so multi-word names ("Lake Charles") survive.
+    query = query.or(c.cities.map((n) => `city.ilike."${n.replace(/["\\,]/g, "")}"`).join(","));
+  }
   if (c.bedsMin) query = query.gte("bedrooms_total", c.bedsMin);
   if (c.bathsMin) query = query.gte("bathrooms_total", c.bathsMin);
   if (c.priceMin && c.priceMin > 0) query = query.gte("list_price", c.priceMin);
