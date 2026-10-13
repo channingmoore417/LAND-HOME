@@ -17,5 +17,4 @@ Webhook payload fields: `signal, intent_level, tags[], occurred_at, email, name,
 listing_address, listing_city, listing_price`, plus per-signal extras (`view_count`, `criteria`, `previous_criteria`,
 `days_inactive`, `band`).
 
-GHL workflow: trigger **Inbound Webhook** → Create/Update Contact (match on email) → Add Tag `{{inboundWebhookRequest.tags}}`
-(or branch on `signal`) → optional Update Custom Fields (last signal, listing URL) → notify agent / start nurture.
+GHL workflow: "Website Behavior Signal" (draft, id c8d640db-c2c7-47d5-b718-2b90c8a73f68) — Inbound Webhook trigger → create/update contact → note → SMS to contact owner. Copy its webhook URL into GHL_SIGNALS_WEBHOOK_URL, then publish. Tours, quizzes and other forms already use their own GHL workflows via /api/forms.

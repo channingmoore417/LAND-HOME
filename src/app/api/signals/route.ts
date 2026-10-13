@@ -34,6 +34,14 @@ const TAGS: Record<string, string[]> = {
   return_visit_60_plus: ["intent:medium", "intent:returned-60d-plus"],
 };
 
+const LABELS: Record<string, string> = {
+  repeat_listing_view: "Viewed the same property 3 times",
+  listing_saved: "Saved a property",
+  saved_search_created: "Saved a search",
+  saved_search_narrowed: "Narrowed a saved search",
+  return_visit: "Returned to the website after being away",
+};
+
 interface Body {
   type?: string;
   listing_key?: string;
@@ -143,6 +151,11 @@ async function flushToGhl(db: Admin, a: Actor) {
     const payload = {
       event: "intent_signal",
       signal: s.signal,
+      signal_label: LABELS[s.signal] ?? s.signal,
+      signal_detail:
+        s.signal === "return_visit" ? `${s.meta?.days_inactive} days since last visit`
+        : s.signal === "repeat_listing_view" ? `${s.meta?.view_count} views`
+        : s.meta?.criteria ? JSON.stringify(s.meta.criteria) : "",
       intent_level: "medium",
       tags: TAGS[tagKey] ?? ["intent:medium"],
       occurred_at: s.created_at,
