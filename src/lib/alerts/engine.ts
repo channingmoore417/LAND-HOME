@@ -163,6 +163,8 @@ export async function loadSearches(admin: SupabaseClient, clientId: number) {
     .eq("client_id", clientId)
     .eq("active", true);
   const searches = (data as SavedSearchRow[]) ?? [];
-  const summary = searches.map((s) => summarizeCriteria(normalizeCriteria(s.criteria))).join(" | ");
+  // Distinct searches only, capped so the email line stays short ("A | B (+1 more)").
+  const distinct = [...new Set(searches.map((s) => summarizeCriteria(normalizeCriteria(s.criteria))))];
+  const summary = distinct.length > 2 ? `${distinct.slice(0, 2).join(" | ")} (+${distinct.length - 2} more)` : distinct.join(" | ");
   return { searches, summary };
 }
