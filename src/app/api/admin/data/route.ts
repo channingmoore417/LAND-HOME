@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminAuth";
+import { normalizeCriteria } from "@/lib/alerts/criteria";
 
 export const dynamic = "force-dynamic";
 
@@ -14,33 +15,37 @@ export async function GET(req: Request) {
 
   const [leads, showings, searches, favorites, signups] = await Promise.all([
     admin.from("leads").select("*").order("created_at", { ascending: false }).limit(200),
-    admin.from("showing_requests").select("*").order("created_at", { ascending: false }).limit(200),
-    admin.from("saved_searches").select("*").order("created_at", { ascending: false }).limit(200),
-    admin.from("favorites").select("*").order("created_at", { ascending: false }).limit(200),
+    admin.from("showing_requests").select("*").order("created_at", { ascending: false }).limit(1000),
+    admin.from("saved_searches").select("*").order("created_at", { ascending: false }).limit(1000),
+    admin.from("favorites").select("*").order("created_at", { ascending: false }).limit(1000),
     admin.from("profiles").select("id, email, full_name, phone, created_at").order("created_at", { ascending: false }).limit(200),
   ]);
 
-  // Enrich favorites with a bit of listing context (address/price) so the
-  // dashboard shows something readable instead of bare MLS keys.
-  const favKeys = [...new Set((favorites.data ?? []).map((f) => f.listing_key).filter(Boolean))];
-  let listingsByKey = new Map<string, { unparsed_address: string | null; list_price: number | null; city: string | null }>();
-  if (favKeys.length > 0) {
-    const { data: listingRows } = await admin
+  // Enrich saved homes and showing requests with listing context (address,
+  // price, beds/baths, city) so the dashboard can summarise instead of listing bare MLS keys.
+  const keys = [...new Set([...(favorites.data ?? []), ...(showings.data ?? [])].map((r) => r.listing_key).filter(Boolean))];
+  type ListingCtx = {
+    listing_key: string; unparsed_address: string | null; list_price: number | null; city: string | null;
+    bedrooms_total: number | null; bathrooms_total: number | null; living_area: number | null; property_type: string | null;
+  };
+  const listingsByKey = new Map<string, ListingCtx>();
+  for (let i = 0; i < keys.length; i += 200) {
+    const { data: rows } = await admin
       .from("listings")
-      .select("listing_key, unparsed_address, list_price, city")
-      .in("listing_key", favKeys);
-    listingsByKey = new Map((listingRows ?? []).map((l) => [l.listing_key, l]));
+      .select("listing_key, unparsed_address, list_price, city, bedrooms_total, bathrooms_total, living_area, property_type")
+      .in("listing_key", keys.slice(i, i + 200));
+    for (const l of (rows ?? []) as ListingCtx[]) listingsByKey.set(l.listing_key, l);
   }
-  const favoritesEnriched = (favorites.data ?? []).map((f) => ({
-    ...f,
-    listing: listingsByKey.get(f.listing_key) ?? null,
-  }));
+  const withListing = <T extends { listing_key: string | null }>(r: T) => ({
+    ...r,
+    listing: (r.listing_key && listingsByKey.get(r.listing_key)) || null,
+  });
 
   return NextResponse.json({
     leads: leads.data ?? [],
-    showingRequests: showings.data ?? [],
-    savedSearches: searches.data ?? [],
-    favorites: favoritesEnriched,
+    showingRequests: (showings.data ?? []).map(withListing),
+    savedSearches: (searches.data ?? []).map((x) => ({ ...x, norm: normalizeCriteria(x.criteria) })),
+    favorites: (favorites.data ?? []).map(withListing),
     signups: signups.data ?? [],
   });
 }
