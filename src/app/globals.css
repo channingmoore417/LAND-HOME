@@ -1714,3 +1714,9 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 .ba-body time{color:var(--ink-muted);font-size:.78rem;white-space:nowrap;}
 .ba-open{margin-top:12px;max-width:240px;}
 @media(max-width:1000px){.ba-tiles{grid-template-columns:repeat(3,1fr);}.ba-head{grid-template-columns:1fr;gap:8px;}.ba-stats{grid-template-columns:repeat(2,1fr);}}
+/* Admin: Client Alerts filters */
+.ca-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px;}
+.ca-filters input,.ca-filters select{font:inherit;font-size:.92rem;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);}
+.ca-filters input{flex:1 1 280px;min-width:200px;}
+.ca-filters input:focus,.ca-filters select:focus{outline:0;border-color:var(--aqua);}
+.ca-count{font-size:.82rem;color:var(--ink-muted);white-space:nowrap;}

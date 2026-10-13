@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { adminApi, fmtWhen, type ClientRow, type ListResponse } from "./clientApi";
 
 // "Client Alerts": every client who gets alerts, what they're searching for,
@@ -13,6 +13,9 @@ export default function ClientSearches({ onSetup }: { onSetup: () => void }) {
   const [note, setNote] = useState("");
   const [html, setHtml] = useState<{ subject: string; html: string; sms: string; count: number } | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [q, setQ] = useState("");
+  const [agentFilter, setAgentFilter] = useState("all"); // all | none | <agent id>
+  const [status, setStatus] = useState<"all" | "active" | "paused">("all");
 
   const load = useCallback(async () => {
     const r = await adminApi("/api/admin/clients");
@@ -48,6 +51,20 @@ export default function ClientSearches({ onSetup }: { onSetup: () => void }) {
     }
   }
 
+  const shown = useMemo(() => {
+    if (!data) return [];
+    const needle = q.trim().toLowerCase();
+    const digits = needle.replace(/\D/g, "");
+    return data.clients.filter((c) => {
+      if (agentFilter === "none" ? c.agent_id !== null : agentFilter !== "all" && String(c.agent_id) !== agentFilter) return false;
+      if (status === "active" && !c.alerts_enabled) return false;
+      if (status === "paused" && c.alerts_enabled) return false;
+      if (!needle) return true;
+      const hay = [c.full_name, c.email, c.phone, ...c.searches.map((x) => x.summary)].join(" ").toLowerCase();
+      return hay.includes(needle) || (digits.length >= 3 && (c.phone ?? "").replace(/\D/g, "").includes(digits));
+    });
+  }, [data, q, agentFilter, status]);
+
   if (err) return <p className="admin__empty">{err}</p>;
   if (!data) return <p className="admin__empty">Loading…</p>;
 
@@ -74,11 +91,33 @@ export default function ClientSearches({ onSetup }: { onSetup: () => void }) {
         </div>
       )}
 
+      {data.clients.length > 0 && (
+        <div className="ca-filters">
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, email, phone or town…" aria-label="Search clients" />
+          <select value={agentFilter} onChange={(e) => setAgentFilter(e.target.value)} aria-label="Filter by agent">
+            <option value="all">All agents</option>
+            {data.agents.map((a) => <option key={a.id} value={a.id}>{a.full_name}</option>)}
+            <option value="none">No agent (site visitors)</option>
+          </select>
+          <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)} aria-label="Filter by status">
+            <option value="all">All statuses</option>
+            <option value="active">Alerts on</option>
+            <option value="paused">Alerts paused</option>
+          </select>
+          <span className="ca-count">
+            Showing {shown.length} of {data.clients.length}
+            {(q || agentFilter !== "all" || status !== "all") && <button className="adm-back" style={{ margin: "0 0 0 10px" }} onClick={() => { setQ(""); setAgentFilter("all"); setStatus("all"); }}>Clear</button>}
+          </span>
+        </div>
+      )}
+
       {data.clients.length === 0 ? (
         <p className="admin__empty">No clients yet. <button className="adm-back" onClick={onSetup}>Set up your first client search →</button></p>
+      ) : shown.length === 0 ? (
+        <p className="admin__empty">No clients match that search.</p>
       ) : (
         <ul className="adm-rows">
-          {data.clients.map((c) => {
+          {shown.map((c) => {
             const agent = data.agents.find((a) => a.id === c.agent_id);
             return (
               <li key={c.id}>

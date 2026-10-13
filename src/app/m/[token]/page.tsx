@@ -70,8 +70,9 @@ export default async function MatchesPage({ params }: { params: { token: string 
               {agent?.phone ?? site.phone}{(agent?.email ?? site.email) ? ` · ${agent?.email ?? site.email}` : ""}
             </div>
           </div>
-          <AlertPrefs token={params.token} enabled={client.alerts_enabled} sms={client.sms_weekly} />
         </div>
+
+        <AlertPrefs token={params.token} enabled={client.alerts_enabled} sms={client.sms_weekly} />
       </div>
     </main>
   );

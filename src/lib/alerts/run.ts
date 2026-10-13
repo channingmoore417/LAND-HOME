@@ -14,8 +14,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { findMatches, loadSearches } from "@/lib/alerts/engine";
 import { digestDue, smsDue } from "@/lib/alerts/schedule";
-import { emailHtml, emailSubject, matchesUrl, smsText } from "@/lib/alerts/messages";
-import { postToGhl, splitName, type GhlAlertPayload } from "@/lib/alerts/ghl";
+import { emailHtml, emailSubject, smsText } from "@/lib/alerts/messages";
+import { ensureContact, notifyOwner, sendEmail, sendSms, splitName } from "@/lib/alerts/ghl";
 import type { Client } from "@/lib/alerts/types";
 
 export type AlertsMode = "off" | "test" | "live";
@@ -67,25 +67,32 @@ export function baseAgent(agents: Map<number, AgentRow>, c: Client) {
   return { name: a?.full_name ?? null, email: a?.email ?? null, phone: a?.phone ?? null, ghlUserId: a?.ghl_user_id ?? null };
 }
 
-export function basePayload(c: Client, agents: Map<number, AgentRow>, channel: GhlAlertPayload["channel"]): GhlAlertPayload {
-  const { first, last } = splitName(c.full_name);
+/**
+ * The client's GHL contact id — looked up / created on first use and cached on
+ * the client row. Existing GHL contacts are matched, never duplicated, and keep
+ * their owner and tags (see lib/alerts/ghl.ts).
+ */
+export async function ensureClientContact(
+  admin: SupabaseClient,
+  c: Client,
+  agents: Map<number, AgentRow>,
+): Promise<{ ok: boolean; contactId?: string; assignedTo?: string | null; detail: string }> {
   const a = baseAgent(agents, c);
-  return {
-    channel,
-    form_id: "search_alert",
-    source: c.source === "agent" ? "agent_client" : "site_visitor",
-    submission_id: crypto.randomUUID(),
-    submitted_at: new Date().toISOString(),
-    email: c.email,
-    phone: c.phone,
-    first_name: first,
-    last_name: last,
-    name: c.full_name,
-    agent_name: a.name,
-    agent_email: a.email,
-    agent_ghl_user_id: a.ghlUserId,
-    matches_url: matchesUrl(c.token),
-  };
+  const r = await ensureContact({
+    email: c.email, phone: c.phone, name: c.full_name, ownerUserId: a.ghlUserId,
+    tags: c.source === "agent" ? ["agent_client", "search_alerts"] : ["search_alerts"],
+  });
+  if (!r.ok || !r.id) return { ok: false, detail: r.detail };
+  if (c.ghl_contact_id !== r.id) await admin.from("clients").update({ ghl_contact_id: r.id }).eq("id", c.id);
+  return { ok: true, contactId: r.id, assignedTo: r.assignedTo ?? a.ghlUserId, detail: r.detail };
+}
+
+/** Tell the assigned agent (GHL note + task on the contact) that a client did something. Best effort. */
+export async function notifyAgent(admin: SupabaseClient, c: Client, agents: Map<number, AgentRow>, title: string, detail: string) {
+  const ensured = await ensureClientContact(admin, c, agents);
+  if (!ensured.ok || !ensured.contactId) return ensured;
+  const r = await notifyOwner({ contactId: ensured.contactId, userId: ensured.assignedTo ?? null, title, detail });
+  return { ok: r.ok, detail: r.detail };
 }
 
 export async function loadAgents(admin: SupabaseClient): Promise<Map<number, AgentRow>> {
@@ -150,12 +157,14 @@ export async function runAlerts(admin: SupabaseClient, opts: RunOptions = {}): P
           if (!deliver) {
             r.email_status = "dry";
           } else {
-            const payload: GhlAlertPayload = {
-              ...basePayload(c, agents, "email"),
-              match_count: matches.length, search_summary: summary, email_subject: subject, email_html: html,
-            };
+            const ensured = await ensureClientContact(admin, c, agents);
+            if (!ensured.ok || !ensured.contactId) {
+              await admin.from("alert_sends").insert({ client_id: c.id, channel: "email", status: "failed", match_count: matches.length, listing_keys: matches.map((m) => m.card.listing_key), error: `GHL contact: ${ensured.detail}` });
+              r.email_status = "failed"; r.detail = `GHL contact: ${ensured.detail}`;
+              continue;
+            }
             if (!(await claim(admin, c.id, "last_digest_at", c.last_digest_at, now))) { r.email_status = "not_due"; r.detail = "another run is sending"; continue; }
-            const res = await postToGhl(payload);
+            const res = await sendEmail({ contactId: ensured.contactId, subject, html });
             const keys = matches.map((m) => m.card.listing_key);
             const events = Object.fromEntries(matches.map((m) => [m.card.listing_key, m.event]));
             await admin.from("alert_sends").insert({
@@ -190,8 +199,14 @@ export async function runAlerts(admin: SupabaseClient, opts: RunOptions = {}): P
           } else {
             const { first } = splitName(c.full_name);
             const text = smsText({ count: week.length, token: c.token, firstName: first });
+            const ensured = await ensureClientContact(admin, c, agents);
+            if (!ensured.ok || !ensured.contactId) {
+              await admin.from("alert_sends").insert({ client_id: c.id, channel: "sms", status: "failed", match_count: week.length, listing_keys: week.map((m) => m.card.listing_key), error: `GHL contact: ${ensured.detail}` });
+              r.sms_status = "failed"; r.detail = `${r.detail ? r.detail + " | " : ""}sms GHL contact: ${ensured.detail}`;
+              continue;
+            }
             if (!(await claim(admin, c.id, "last_sms_at", c.last_sms_at, now))) { r.sms_status = "not_due"; continue; }
-            const res = await postToGhl({ ...basePayload(c, agents, "sms"), match_count: week.length, search_summary: summary, sms_text: text });
+            const res = await sendSms({ contactId: ensured.contactId, text });
             await admin.from("alert_sends").insert({
               client_id: c.id, channel: "sms", status: res.ok ? "sent" : "failed",
               match_count: week.length, listing_keys: week.map((m) => m.card.listing_key), error: res.ok ? null : `${res.status} ${res.detail}`,
