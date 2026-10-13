@@ -6,6 +6,7 @@ import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { usd } from "@/lib/format";
 import ContactRecord from "./ContactRecord";
 import ClientSearches from "./ClientSearches";
+import SetupClientSearch from "./SetupClientSearch";
 
 interface Lead {
   id: number;
@@ -59,12 +60,13 @@ interface DashboardData {
   signups: Signup[];
 }
 
-type Tab = "leads" | "contacts" | "clients" | "showings" | "searches" | "favorites";
+type Tab = "setup" | "leads" | "contacts" | "clients" | "showings" | "searches" | "favorites";
 
 const TABS: { id: Tab; label: string }[] = [
+  { id: "setup", label: "Set Up a Client Search" },
   { id: "leads", label: "Leads" },
   { id: "contacts", label: "Contacts" },
-  { id: "clients", label: "Client Searches" },
+  { id: "clients", label: "Client Alerts" },
   { id: "showings", label: "Showings" },
   { id: "searches", label: "Saved Searches" },
   { id: "favorites", label: "Saved Homes" },
@@ -266,7 +268,8 @@ export default function AdminDashboard() {
               </>
             )}
 
-            {tab === "clients" && <ClientSearches />}
+            {tab === "setup" && <SetupClientSearch onDone={() => setTab("clients")} />}
+            {tab === "clients" && <ClientSearches onSetup={() => setTab("setup")} />}
 
             {tab === "showings" && (
               <>

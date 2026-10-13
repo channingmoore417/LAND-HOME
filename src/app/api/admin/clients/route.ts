@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     none ? { data: [] } : admin.from("saved_searches").select("id, client_id, name, criteria, active, source, baseline_at, created_at").in("client_id", ids).order("created_at", { ascending: false }),
     none ? { data: [] } : admin.from("alert_sends").select("client_id, channel, status, match_count, error, created_at").in("client_id", ids).order("created_at", { ascending: false }).limit(1000),
     none ? { data: [] } : admin.from("alert_events").select("client_id, type, created_at").in("client_id", ids).order("created_at", { ascending: false }).limit(2000),
-    admin.from("agents").select("id, full_name, active").order("sort_order"),
+    admin.from("agents").select("id, full_name, email, active").order("sort_order"),
   ]);
 
   const out = (clients ?? []).map((c) => {
