@@ -1682,3 +1682,10 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 .su-actions{display:flex;flex-direction:column;gap:10px;max-width:360px;margin:22px auto 0;}
 .su-frame{width:100%;height:640px;border:1px solid var(--line);border-radius:10px;}
 @media (max-width:640px){.su-row{grid-template-columns:1fr;}.su-steps button{font-size:.72rem;}.su-card{padding:18px;}}
+
+/* Admin: Client Alerts filters */
+.ca-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px;}
+.ca-filters input,.ca-filters select{font:inherit;font-size:.92rem;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);}
+.ca-filters input{flex:1 1 280px;min-width:200px;}
+.ca-filters input:focus,.ca-filters select:focus{outline:0;border-color:var(--aqua);}
+.ca-count{font-size:.82rem;color:var(--ink-muted);white-space:nowrap;}

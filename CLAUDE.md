@@ -103,6 +103,7 @@ click lands on landhomegroup.com and is tied to that client.
 pg_cron (hourly) → POST /api/alerts/run → lib/alerts/run.ts → findMatches() → GHL webhook
 GHL "Client Search Alert — Email & Text" workflow → email / weekly SMS / contact sync
 client taps link → /m/<token> (their matches page)  /m/<token>/<listingKey> (tracked click)
+                    /m/<token>/adjust (client edits their own search; agent is notified via GHL "activity")
 ```
 
 - **Tables:** `clients` (one row per person; token, digest_frequency, sms_weekly, consent),

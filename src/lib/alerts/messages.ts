@@ -12,6 +12,7 @@ import { usd, titleCase } from "@/lib/format";
 import type { MatchedListing } from "@/lib/alerts/types";
 
 export const matchesUrl = (token: string) => `${SITE_URL}/m/${token}`;
+export const adjustUrl = (token: string) => `${SITE_URL}/m/${token}/adjust`;
 export const listingUrl = (token: string, key: string) => `${SITE_URL}/m/${token}/${encodeURIComponent(key)}`;
 
 const esc = (s: string) =>
@@ -123,8 +124,8 @@ export function emailHtml(opts: {
 <div style="max-width:600px;margin:0;padding:8px 4px;font-family:${FONT};color:${B.ink}">
   <p style="${p}">Hi ${esc(firstName || "there")},</p>
   <p style="${p}">${allNew
-    ? `${n === 1 ? "A home just" : `${n} homes just`} hit the market that ${n === 1 ? "fits" : "fit"} what you're looking for${searchSummary ? ` (${esc(searchSummary)})` : ""}.`
-    : `Here ${n === 1 ? "is one update" : `are ${n} updates`} on homes that fit what you're looking for${searchSummary ? ` (${esc(searchSummary)})` : ""}.`}</p>
+    ? `${n === 1 ? "A home just" : `${n} homes just`} hit the market that ${n === 1 ? "fits" : "fit"} your search.`
+    : `Here ${n === 1 ? "is one update on a home that fits" : `are ${n} updates on homes that fit`} your search.`}</p>
 
   ${cards.map((m) => card(m, token)).join("")}
 
@@ -133,18 +134,21 @@ export function emailHtml(opts: {
 
   <p style="${p}"><a href="${all}" style="color:${B.teal};font-weight:700">${n > cards.length ? `See all ${n} homes in one place` : "Open your matches in one place"} &rarr;</a></p>
 
+  <p style="${p}">Not quite right? <a href="${adjustUrl(token)}" style="color:${B.teal};font-weight:700">Adjust the homes you're getting &rarr;</a>${searchSummary ? `<br><span style="font-size:12px;color:${B.muted}">Right now we're matching: ${esc(searchSummary)}</span>` : ""}</p>
+
   <p style="${p}">If you'd like to see any of these in person, just reply to this email or call or text me at <a href="tel:${esc(phone.replace(/[^\d+]/g, ""))}" style="color:${B.teal};text-decoration:none">${esc(phone)}</a>.</p>
 
   <p style="${p}">${esc(agentFirst || "The Land & Home Group")}<br>
   <span style="color:${B.muted};font-size:13px">${esc(site.name)} &middot; ${esc(site.brokerage)}</span></p>
 
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:26px;border-top:1px solid ${B.line}">
-    <tr><td style="padding-top:16px;font-family:${FONT};font-size:12px;line-height:1.7;color:${B.muted}">
-      <a href="${SITE_URL}"><img src="${esc(site.logoUrl)}" alt="${esc(site.name)}" height="34" style="display:block;height:34px;width:auto;border:0;margin-bottom:8px;background:${B.teal};padding:6px 10px;border-radius:6px"></a>
-      <strong style="color:${B.teal}">${esc(site.name)}</strong> &middot; ${esc(site.brokerage)}<br>
-      ${esc(nap.street)}, ${esc(nap.city)}, ${esc(nap.region)} ${esc(nap.postalCode)} &middot; ${esc(site.phone)}<br>
-      <span style="font-size:11px">Equal Housing Opportunity &middot; Information deemed reliable but not guaranteed.</span><br>
-      <a href="${all}#preferences" style="font-size:10px;color:#9AA8AE;text-decoration:underline">Unsubscribe</a>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;background:${B.teal};border-radius:10px">
+    <tr><td style="padding:22px 24px;font-family:${FONT};font-size:12px;line-height:1.7;color:#CFE3E8">
+      <a href="${SITE_URL}"><img src="${esc(site.logoUrl)}" alt="${esc(site.name)}" height="40" style="display:block;height:40px;width:auto;border:0;margin-bottom:12px"></a>
+      <strong style="color:#ffffff;font-size:13px">${esc(site.name)}</strong> <span style="color:${B.aqua}">&middot;</span> ${esc(site.brokerage)}<br>
+      ${esc(nap.street)}, ${esc(nap.city)}, ${esc(nap.region)} ${esc(nap.postalCode)}<br>
+      <a href="tel:${esc(site.phone.replace(/[^\d+]/g, ""))}" style="color:${B.aqua};text-decoration:none">${esc(site.phone)}</a> <span style="color:${B.aqua}">&middot;</span> <a href="${esc(nap.website)}" style="color:${B.aqua};text-decoration:none">landhomegroup.com</a><br>
+      <span style="display:block;margin-top:10px;font-size:11px;color:#9FC0C9">Equal Housing Opportunity &middot; Information deemed reliable but not guaranteed.</span>
+      <a href="${all}#preferences" style="display:inline-block;margin-top:6px;font-size:10px;color:#8FB4C0;text-decoration:underline">Unsubscribe</a>
     </td></tr>
   </table>
 </div>`;
