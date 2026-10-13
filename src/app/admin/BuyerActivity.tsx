@@ -315,7 +315,9 @@ export default function BuyerActivity({ mode, showings, searches, favorites, ide
                   </div>
                   <div className="ba-stats">
                     <div><b>{r.count}</b><span>{mode === "favorites" ? "saved" : mode === "showings" ? "requests" : "searches"}</span></div>
-                    <div><b>{mode === "searches" || r.priceLo === r.priceHi ? range(r.priceLo, r.priceHi) : range(r.priceLo, r.priceHi)}</b><span>{mode === "searches" ? "budget" : r.count > 1 ? `avg ${k(r.priceAvg)}` : "price"}</span></div>
+                    {mode === "searches"
+                      ? <div><b>{range(r.priceLo, r.priceHi)}</b><span>budget</span></div>
+                      : <div><b>{k(r.priceAvg)} avg</b><span>{r.count > 1 ? range(r.priceLo, r.priceHi) : "price"}</span></div>}
                     <div><b>{one(r.beds)} bd · {one(r.baths)} ba</b><span>{mode === "searches" ? "wanted" : "avg"}</span></div>
                     <div><b>{r.cities.length ? r.cities.join(", ") : "—"}</b><span>{r.cities.length > 1 ? "cities" : "city"}</span></div>
                   </div>
