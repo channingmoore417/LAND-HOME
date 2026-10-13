@@ -1618,3 +1618,16 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 /* ---- infinite scroll on landing pages ---- */
 .inflist__status{text-align:center;color:var(--ink-muted);font-size:.95rem;margin:28px 0 8px;}
 .inflist__status a,.inflist__retry{color:var(--teal);font-weight:700;background:none;border:0;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;}
+
+/* Admin: client search form */
+.cs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.cs-grid label{display:flex;flex-direction:column;gap:5px;font-size:.78rem;font-weight:600;color:var(--ink-muted);}
+.cs-grid input,.cs-grid select{font:inherit;font-size:.92rem;font-weight:400;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;}
+.cs-sub{font-family:"Outfit";font-weight:700;font-size:.9rem;color:var(--teal);margin:20px 0 10px;}
+.cs-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.cs-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:6px 13px;font-size:.84rem;cursor:pointer;background:#fff;}
+.cs-chip input{display:none;}
+.cs-chip.is-on{background:var(--aqua-soft);border-color:var(--aqua);color:var(--teal);font-weight:700;}
+.cs-preview{margin-top:16px;background:var(--off);border-radius:10px;padding:11px 14px;font-size:.9rem;color:var(--ink);}
+.cs-check{display:flex;gap:9px;align-items:flex-start;font-size:.88rem;margin-top:14px;}
+.cs-check--consent{background:#FFF7E6;border:1px solid #F0DDB0;border-radius:10px;padding:10px 12px;}

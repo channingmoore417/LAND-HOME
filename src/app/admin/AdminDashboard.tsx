@@ -5,6 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { usd } from "@/lib/format";
 import ContactRecord from "./ContactRecord";
+import ClientSearches from "./ClientSearches";
 
 interface Lead {
   id: number;
@@ -58,11 +59,12 @@ interface DashboardData {
   signups: Signup[];
 }
 
-type Tab = "leads" | "contacts" | "showings" | "searches" | "favorites";
+type Tab = "leads" | "contacts" | "clients" | "showings" | "searches" | "favorites";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "leads", label: "Leads" },
   { id: "contacts", label: "Contacts" },
+  { id: "clients", label: "Client Searches" },
   { id: "showings", label: "Showings" },
   { id: "searches", label: "Saved Searches" },
   { id: "favorites", label: "Saved Homes" },
@@ -263,6 +265,8 @@ export default function AdminDashboard() {
                 </ul>
               </>
             )}
+
+            {tab === "clients" && <ClientSearches />}
 
             {tab === "showings" && (
               <>

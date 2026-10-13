@@ -92,6 +92,41 @@ score + reasons.
 `home_valuation`, `mortgage_preapproval`, `buyer_guide`, `buyer_quiz`,
 `cash_offer`.
 
+## Client search alerts (agent sets up a client → site emails/texts matches)
+
+Realtors create a client + search in `/admin` → **Client Searches**. The site (not the
+MLS portal) then emails new matches and, optionally, texts a weekly link — so every
+click lands on landhomegroup.com and is tied to that client.
+
+```
+/admin form → clients + saved_searches (Supabase)
+pg_cron (hourly) → POST /api/alerts/run → lib/alerts/run.ts → findMatches() → GHL webhook
+GHL "Client Search Alert — Email & Text" workflow → email / weekly SMS / contact sync
+client taps link → /m/<token> (their matches page)  /m/<token>/<listingKey> (tracked click)
+```
+
+- **Tables:** `clients` (one row per person; token, digest_frequency, sms_weekly, consent),
+  `saved_searches` (+client_id/agent_id/source/baseline_at), `alert_sends` (log),
+  `alert_sent_listings` (dedupe), `alert_events` (page views/clicks), `listing_history`
+  (price drops / back-on-market, written by trigger `listings_log_change`),
+  `listings.first_seen_at` (reliable "new" timestamp). Migration: `supabase/migrations/`.
+- **Matching** reuses `applyListingFilters()` (same code as site search) via
+  `lib/alerts/criteria.ts`, which understands all three stored criteria shapes.
+- **Safety:** `ALERTS_MODE` = off (default) | test (only `ALERTS_TEST_EMAILS`) | live.
+  Slot-based schedule (`lib/alerts/schedule.ts`, Central time) so a missed hour self-heals.
+  Overlapping runs can't double-send (optimistic claim); 3 failures/24h pauses a client.
+- **GHL:** ONE alert webhook (`GHL_ALERT_WEBHOOK_URL`), deliberately NOT a lead-form
+  webhook. `channel` = email | sms | sync. The `saved_searches_to_ghl` DB trigger skips
+  `source in ('agent','auto')` so agent-created searches never re-run new-buyer-lead
+  automations. Any speed-to-lead workflow must exclude tag `agent_client`.
+- **Texting** needs `clients.sms_consent_at` (agent attests consent in the form); sent
+  8am–8pm Central only. Alerts to site visitors who predate this feature are OFF
+  (`alerts_enabled=false`) until they opt in again.
+- **Add a teammate:** set `agents.ghl_user_id`, add a branch in the GHL "Which agent?" step.
+- **Not built yet:** auto-generated searches from browsing/quiz (source `auto`), magic-link
+  sign-in from alert links (favorites from an alert link aren't attributed to the client
+  yet; page views/clicks are), weekend open-house email.
+
 ## Env vars (see .env.example)
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — public reads
   (defaults are baked into `src/lib/supabase.ts` so it renders with none set).
