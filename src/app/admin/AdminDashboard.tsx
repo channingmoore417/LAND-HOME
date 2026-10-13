@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
-import { usd } from "@/lib/format";
 import ContactRecord from "./ContactRecord";
 import ClientSearches from "./ClientSearches";
 import SetupClientSearch from "./SetupClientSearch";
+import BuyerActivity, { type BAShowing, type BASearch, type BAFavorite } from "./BuyerActivity";
 
 interface Lead {
   id: number;
@@ -19,32 +19,9 @@ interface Lead {
   message: string | null;
   created_at: string;
 }
-interface ShowingRequest {
-  id: number;
-  listing_key: string | null;
-  full_name: string | null;
-  email: string | null;
-  phone: string | null;
-  preferred_times: string | null;
-  status: string | null;
-  created_at: string;
-}
-interface SavedSearch {
-  id: number;
-  email: string | null;
-  name: string | null;
-  criteria: Record<string, unknown>;
-  active: boolean;
-  alert_frequency: string | null;
-  created_at: string;
-}
-interface Favorite {
-  id: number;
-  email: string | null;
-  listing_key: string;
-  created_at: string;
-  listing: { unparsed_address: string | null; list_price: number | null; city: string | null } | null;
-}
+type ShowingRequest = BAShowing;
+type SavedSearch = BASearch;
+type Favorite = BAFavorite;
 interface Signup {
   id: string;
   email: string | null;
@@ -150,6 +127,16 @@ export default function AdminDashboard() {
       }
     }
     return [...byEmail.values()].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+  }, [data]);
+
+  // Name + phone for every email we know, so activity tabs can show who it is.
+  const identities = useMemo(() => {
+    if (!data) return [];
+    return [
+      ...data.signups,
+      ...data.leads,
+      ...data.showingRequests,
+    ].map((x) => ({ email: x.email, full_name: x.full_name, phone: x.phone }));
   }, [data]);
 
   // Open a contact; `list` is the visible list it was picked from (de-duped by email).
@@ -295,73 +282,17 @@ export default function AdminDashboard() {
             {tab === "setup" && <SetupClientSearch onDone={() => setTab("clients")} />}
             {tab === "clients" && <ClientSearches onSetup={() => setTab("setup")} />}
 
-            {tab === "showings" && (
+            {(tab === "showings" || tab === "searches" || tab === "favorites") && (
               <>
-                <h1 className="adm__title">Showing Requests</h1>
-                {data.showingRequests.length === 0 ? <p className="admin__empty">No showing requests yet.</p> : (
-                  <table className="admin__table">
-                    <thead><tr><th>Name</th><th>Contact</th><th>Listing</th><th>Preferred Times</th><th>Status</th><th>Received</th></tr></thead>
-                    <tbody>
-                      {data.showingRequests.map((s) => (
-                        <tr key={s.id} className="adm-clickrow" onClick={() => s.email && setContact({ email: s.email, name: s.full_name, phone: s.phone })}>
-                          <td>{s.full_name || "—"}</td>
-                          <td>{s.email || "—"}{s.phone ? ` · ${s.phone}` : ""}</td>
-                          <td>{s.listing_key ? <a href={`/listings/${s.listing_key}`} onClick={(e) => e.stopPropagation()}>{s.listing_key}</a> : "—"}</td>
-                          <td>{s.preferred_times || "—"}</td>
-                          <td>{s.status || "new"}</td>
-                          <td>{fmtDate(s.created_at)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </>
-            )}
-
-            {tab === "searches" && (
-              <>
-                <h1 className="adm__title">Saved Searches</h1>
-                {data.savedSearches.length === 0 ? <p className="admin__empty">No saved searches yet.</p> : (
-                  <table className="admin__table">
-                    <thead><tr><th>Email</th><th>Name</th><th>Criteria</th><th>Alerts</th><th>Created</th></tr></thead>
-                    <tbody>
-                      {data.savedSearches.map((s) => (
-                        <tr key={s.id} className="adm-clickrow" onClick={() => s.email && setContact({ email: s.email })}>
-                          <td>{s.email || "—"}</td>
-                          <td>{s.name || "—"}</td>
-                          <td className="admin__msg">{JSON.stringify(s.criteria)}</td>
-                          <td>{s.active ? s.alert_frequency ?? "on" : "off"}</td>
-                          <td>{fmtDate(s.created_at)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </>
-            )}
-
-            {tab === "favorites" && (
-              <>
-                <h1 className="adm__title">Saved Homes</h1>
-                {data.favorites.length === 0 ? <p className="admin__empty">No saved homes yet.</p> : (
-                  <table className="admin__table">
-                    <thead><tr><th>Email</th><th>Listing</th><th>Price</th><th>Saved</th></tr></thead>
-                    <tbody>
-                      {data.favorites.map((f) => (
-                        <tr key={f.id} className="adm-clickrow" onClick={() => f.email && setContact({ email: f.email })}>
-                          <td>{f.email || "—"}</td>
-                          <td>
-                            <a href={`/listings/${f.listing_key}`} onClick={(e) => e.stopPropagation()}>
-                              {f.listing?.unparsed_address || f.listing_key}
-                            </a>
-                          </td>
-                          <td>{f.listing?.list_price ? usd(f.listing.list_price) : "—"}</td>
-                          <td>{fmtDate(f.created_at)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+                <h1 className="adm__title">{tab === "showings" ? "Showing Requests" : tab === "searches" ? "Saved Searches" : "Saved Homes"}</h1>
+                <BuyerActivity
+                  mode={tab}
+                  showings={data.showingRequests}
+                  searches={data.savedSearches}
+                  favorites={data.favorites}
+                  identities={identities}
+                  onOpen={openContact}
+                />
               </>
             )}
           </>
