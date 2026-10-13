@@ -133,6 +133,13 @@ npm run dev        # http://localhost:3000  → try /listings/1146589207
 6. **Cloudinary** proxy for photos (`media_url`s are Trestle-signed, may expire).
 7. **Leads → GHL** dual-write (same pattern as Bayou OS).
 
+## PARKED — agent recap emails (finish later)
+Code is built (`/api/digest`, `digest_runs` table, `docs/behavior-signals.md`) but nothing is switched on. Inert until all of these happen:
+1. PR #25 merged; 2. Vercel env: `CRON_SECRET`, `GHL_API_KEY` (GHL Private Integration, contacts+users read), `GHL_DIGEST_WEBHOOK_URL`;
+3. GHL: verify + publish draft **Agent Recap Email** (id 908a955c-46ae-4cdd-8691-57253003a7b4); set the schedule on draft
+**Agent Recap Scheduler** (id 63b12261-e3c7-4991-86b6-29a91e145a50: weekdays 8am/12pm/4pm, Sat+Sun 4pm Central) and publish.
+4. Then test with `GET /api/digest?preview=1` (Bearer secret) before the first real send.
+
 ## Note on session scope
 The original build session was bound to the `bayoumortgage` repo and could not
 push to `LAND-HOME`; the code was delivered as a zip. Future sessions should be
