@@ -85,6 +85,14 @@ async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: num
     return null;
   }
 
+  // Ad click IDs ride along inside `criteria` so the DB trigger forwards them to GHL
+  // flat (gclid, gbraid, wbraid, ...) on every lead, not just the ad-capture webhook.
+  const clickIds: Record<string, unknown> = {};
+  for (const k of ["gclid", "gbraid", "wbraid", "gad_source", "gad_campaignid", "utm_source", "utm_medium", "utm_campaign", "utm_adgroup", "utm_term", "landing_page"]) {
+    const v = p[k];
+    if (typeof v === "string" && v) clickIds[k] = v;
+  }
+
   // Everything else is a lead. `destination` = which form produced it.
   // `criteria` carries the form's structured answers (valuation property
   // details, pre-approval numbers, quiz picks); the DB trigger forwards its
@@ -98,7 +106,7 @@ async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: num
     listing_key: p.listing_key ?? null,
     message: p.message ?? null,
     working_with_agent: p.working_with_agent ?? null,
-    criteria: p.criteria ?? null,
+    criteria: Object.keys(clickIds).length || p.criteria ? { ...clickIds, ...(p.criteria ?? {}) } : null,
   }).select("id").single();
   if (error) throw error;
   return { table: "leads", id: data.id };

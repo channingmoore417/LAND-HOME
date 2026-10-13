@@ -1,0 +1,5 @@
+-- Applied to production. forward_lead_to_ghl() now returns early for destination = 'ad_capture':
+-- Google Ads registrations are sent once, straight from /api/forms to the ads GHL webhook
+-- (with gclid/gbraid/wbraid). Previously the trigger ALSO posted them to the General Contact
+-- workflow (SMS "Contact Form Lead", no click IDs). Also treats quiz_source 'listing_gate_oauth'
+-- as a registration-gate event.
