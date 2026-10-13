@@ -39,7 +39,7 @@ const centralHour = (d: Date) =>
   +new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", hour: "numeric", hourCycle: "h23" }).format(d);
 const smsHoursOk = (d: Date) => { const h = centralHour(d); return h >= 8 && h < 20; }; // TCPA quiet hours
 
-interface AgentRow { id: number; full_name: string | null; email: string | null; ghl_user_id: string | null }
+interface AgentRow { id: number; full_name: string | null; email: string | null; phone: string | null; ghl_user_id: string | null }
 
 export interface ClientResult {
   client_id: number;
@@ -64,7 +64,7 @@ export interface RunOptions {
 
 export function baseAgent(agents: Map<number, AgentRow>, c: Client) {
   const a = c.agent_id ? agents.get(c.agent_id) : undefined;
-  return { name: a?.full_name ?? null, email: a?.email ?? null, ghlUserId: a?.ghl_user_id ?? null };
+  return { name: a?.full_name ?? null, email: a?.email ?? null, phone: a?.phone ?? null, ghlUserId: a?.ghl_user_id ?? null };
 }
 
 export function basePayload(c: Client, agents: Map<number, AgentRow>, channel: GhlAlertPayload["channel"]): GhlAlertPayload {
@@ -89,7 +89,7 @@ export function basePayload(c: Client, agents: Map<number, AgentRow>, channel: G
 }
 
 export async function loadAgents(admin: SupabaseClient): Promise<Map<number, AgentRow>> {
-  const { data } = await admin.from("agents").select("id, full_name, email, ghl_user_id");
+  const { data } = await admin.from("agents").select("id, full_name, email, phone, ghl_user_id");
   return new Map(((data as AgentRow[]) ?? []).map((a) => [a.id, a]));
 }
 
@@ -145,7 +145,7 @@ export async function runAlerts(admin: SupabaseClient, opts: RunOptions = {}): P
           const a = baseAgent(agents, c);
           const { first } = splitName(c.full_name);
           const subject = emailSubject(matches, first);
-          const html = emailHtml({ matches, token: c.token, firstName: first, agentName: a.name, searchSummary: summary });
+          const html = emailHtml({ matches, token: c.token, firstName: first, agentName: a.name, agentPhone: a.phone, agentEmail: a.email, searchSummary: summary });
           if (opts.preview) r.preview = { subject, html, sms: smsText({ count: matches.length, token: c.token, firstName: first }) };
           if (!deliver) {
             r.email_status = "dry";
