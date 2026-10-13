@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import type { User } from "@supabase/supabase-js";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { logActivity } from "@/lib/activity";
+import { trackSignal } from "@/lib/signals";
 import AuthModal from "@/components/AuthModal";
 import CompletePhoneModal from "@/components/CompletePhoneModal";
 
@@ -73,6 +74,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         set.add(pending);
         await supabase.from("favorites").insert({ user_id: user.id, listing_key: pending });
         logActivity("save", { listingKey: pending });
+        trackSignal("listing_saved", { listingKey: pending });
       }
       if (typeof window !== "undefined") window.localStorage.removeItem("lhg_pending_fav");
       setFavs(set);
@@ -121,6 +123,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     setFavs((s) => new Set(s).add(key));
     await supabase.from("favorites").insert({ user_id: uid, listing_key: key, email: u.email ?? null });
     logActivity("save", { listingKey: key });
+    trackSignal("listing_saved", { listingKey: key });
   }, [supabase]);
 
   const removeFav = useCallback(async (key: string) => {

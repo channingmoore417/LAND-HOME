@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
+import { trackSignal } from "@/lib/signals";
 
 function label(c?: Record<string, unknown>): string {
   if (!c) return "My saved search";
@@ -38,6 +39,7 @@ export default function NotifyBand({ criteria }: { criteria?: Record<string, unk
     });
     setBusy(false);
     setSaved(true);
+    trackSignal("saved_search", { criteria: criteria ?? {} });
   }
 
   function handleClick() {

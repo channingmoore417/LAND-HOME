@@ -4,11 +4,17 @@ import { useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { logActivity } from "@/lib/activity";
+import { trackSignal } from "@/lib/signals";
 
 // Records a listing view for signed-in users (powers "recently viewed" + the
 // activity log).
 export default function TrackView({ listingKey }: { listingKey: string }) {
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
+  // Behavioral signal: counts views for anonymous AND signed-in visitors.
+  useEffect(() => {
+    if (!ready) return;
+    trackSignal("listing_view", { listingKey });
+  }, [ready, listingKey]);
   useEffect(() => {
     if (!user) return;
     getBrowserClient()

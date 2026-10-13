@@ -8,6 +8,7 @@ import ListingAlertsQuiz from "@/components/ListingAlertsQuiz";
 import SiteLocalBand from "@/components/SiteLocalBand";
 import AuthProvider from "@/components/AuthProvider";
 import { site, AD_VISIT_KEY, AD_VISIT_COOKIE, adLandingCities } from "@/config/site";
+import SignalTracker from "@/components/SignalTracker";
 import { SITE_URL } from "@/lib/seoConfig";
 import { getNavCityMenu } from "@/lib/seo";
 import "./globals.css";
@@ -92,6 +93,7 @@ gtag('js', new Date());
 gtag('config', 'G-J59TGYC1RT');`}
         </Script>
         <AuthProvider>
+          <SignalTracker />
           <SiteHeader cityMenu={cityMenu} />
           {children}
           <SiteLocalBand cities={cityMenu.map((c) => ({ label: c.label, href: c.href }))} />
