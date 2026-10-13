@@ -64,3 +64,11 @@ export function getAttribution(): Record<string, string> {
   if (landing || out.gclid || out.gbraid || out.wbraid) out.ad_click = "true";
   return out;
 }
+
+/** Just the ad-click fields (gclid, gbraid, wbraid, UTMs, landing_page) for storing next to an action. */
+export function clickAttribution(): Record<string, string> {
+  const all = getAttribution();
+  const out: Record<string, string> = {};
+  for (const k of [...ATTR_KEYS, "landing_page"]) if (all[k]) out[k] = all[k];
+  return out;
+}

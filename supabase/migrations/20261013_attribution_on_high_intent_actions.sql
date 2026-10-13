@@ -1,0 +1,7 @@
+-- Applied to production (3 migrations: attribution_on_high_intent_actions, click_ids_lookup_for_ghl_payloads, click_ids_never_null).
+-- favorites / saved_searches / showing_requests get an `attribution jsonb` column holding the ad-click fields
+-- (gclid, gbraid, wbraid, gad_*, utm_*, landing_page) captured when the action happened. leads already carry them in `criteria`.
+-- public.click_ids(email): the person's most recent click IDs from the last 90 days (never NULL; '{}' when none).
+-- The forward_*_to_ghl() triggers merge click_ids(new.email) || new.attribution into every GHL payload, so
+-- saves, saved searches, tour requests, quizzes and inquiries all arrive with gclid/gbraid/wbraid, and a later
+-- organic action never blanks a real click ID already stored on the GHL contact.

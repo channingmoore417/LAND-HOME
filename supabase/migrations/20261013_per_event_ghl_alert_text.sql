@@ -1,0 +1,7 @@
+-- Applied to production. Each GHL alert now carries its own tailored text:
+--   alert_title  (label), alert_detail (event-specific body), alert_link (listing URL when there is one).
+-- home_save: full address + price + link; saved_search: criteria summary + alert frequency;
+-- buyer_quiz: communities/beds/baths/price/features/timeline; listing_inquiry: address + their message + link;
+-- registration gate: the gate message. Helper: public.criteria_summary(jsonb).
+-- The GHL "New Buyer Lead Submission" SMS/note render {{alert_title}} / {{alert_detail}} / {{alert_link}}.
+-- (Function bodies live in the database: forward_favorite_to_ghl, forward_saved_search_to_ghl, forward_lead_to_ghl.)

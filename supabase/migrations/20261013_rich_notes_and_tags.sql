@@ -1,0 +1,5 @@
+-- Applied to production (rich_note_html_helpers, add_note_html_to_ghl_payloads).
+-- html_esc(text): escapes visitor-typed text. alert_note(kind, title, body, listing jsonb, ts): color-coded GHL note HTML —
+-- colored title per event type (red = high intent, green = home save, blue = saved search, purple = quiz/guide, teal = registration/sign-up,
+-- orange = contact form / repeat-view signals), the property address as a hyperlink with the price, details, and a Central-time stamp.
+-- Every trigger-driven GHL payload now carries `note_html`; the GHL workflows' "Add lead note" step renders {{inboundWebhookRequest.note_html}}.

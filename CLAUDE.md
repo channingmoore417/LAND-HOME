@@ -170,6 +170,29 @@ npm run dev        # http://localhost:3000  → try /listings/1146589207
 6. **Cloudinary** proxy for photos (`media_url`s are Trestle-signed, may expire).
 7. **Leads → GHL** dual-write (same pattern as Bayou OS).
 
+## PARKED — agent recap emails (finish later)
+Code is built (`/api/digest`, `digest_runs` table, `docs/behavior-signals.md`) but nothing is switched on. Inert until all of these happen:
+1. PR #25 merged; 2. Vercel env: `CRON_SECRET`, `GHL_API_KEY` (GHL Private Integration, contacts+users read), `GHL_DIGEST_WEBHOOK_URL`;
+3. GHL: verify + publish draft **Agent Recap Email** (id 908a955c-46ae-4cdd-8691-57253003a7b4); set the schedule on draft
+**Agent Recap Scheduler** (id 63b12261-e3c7-4991-86b6-29a91e145a50: weekdays 8am/12pm/4pm, Sat+Sun 4pm Central) and publish.
+4. Then test with `GET /api/digest?preview=1` (Bearer secret) before the first real send.
+
+## GHL tags (decided: tags, not dropdowns — a contact can hold several)
+Existing: past-client, past-buyer, past-seller, sphere, closed-2023/24/25, needs-lender, email-only, no-phone.
+Created: buyer, seller, investor, lead, client, top-50, laurens-sphere, partner, recruiting, google-ads.
+Auto-applied by workflows: buyer (buyer, tour, pre-approval, ads), seller (valuation / cash offer), google-ads (ads registration).
+Manual / by smart list or import: investor, lead, client, past-client, top-50, laurens-sphere, partner, recruiting, sphere.
+GHL notes keep HTML (color spans, links, bold) — notes are built in the DB by public.alert_note() and sent as `note_html`.
+
+## NEXT (after the GHL audit pass) — contact classification in GHL
+User wants, once the current build is done:
+1. **Contact type** field: Buyer / Seller / Both (GHL already has multi-select `Deal Type`: Buyer, Seller, Investor, Renter, Vendor — extend or reuse; set automatically: buyer-side workflows -> Buyer, valuation/cash offer -> Seller).
+2. **Relationship** field separating: Lead, Client, Past Client, Partner, Sphere, Top 50 (Top 50 overlaps the others, so likely a tag/checkbox).
+3. **Tags** (source / intent level) applied by every workflow — currently NO contact has any tag.
+Rule: GHL blanks a field when a later webhook omits it, so never map a field a given workflow doesn't always send.
+Ownership rules in force: seller leads (valuation, cash offer) -> Lauren; all other leads -> round-robin Kacy/Karley, only if unowned.
+SMS only for high intent (tour, inquiry, pre-approval, valuation/cash offer, contact); everything else is an in-app notification.
+
 ## Note on session scope
 The original build session was bound to the `bayoumortgage` repo and could not
 push to `LAND-HOME`; the code was delivered as a zip. Future sessions should be

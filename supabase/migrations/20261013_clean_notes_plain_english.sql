@@ -1,0 +1,7 @@
+-- Applied to production. Notes / alerts now carry only what matters (no MLS#, raw URLs, tracking strings, form jargon).
+--  fmt_money(), feature_label(), timeline_label(), inquiry_text(): translators (codes -> plain words, strips the auto-added property line).
+--  criteria_summary(): plain-English quiz/search answers ("Wants: Single story, Pool · Timeline: 1–3 months · Owns a home and may sell").
+--  alert_note(kind, title, body, listing, ts, source): colored note with linked address + price, body, optional "🎯 Google Ads — searched “…”".
+--  forward_lead_to_ghl(): per-form clean bodies (gate, inquiry, quiz, guide, valuation, cash offer, pre-approval, contact); showing-request alert drops the auto message.
+-- NOTE: the Supabase MCP tool hangs on statements containing DROP (waits for a confirmation). The old 5-arg alert_note() overload
+-- therefore still exists, unused; all callers pass 6 args. Drop it manually when convenient: drop function public.alert_note(text,text,text,jsonb,timestamptz);
