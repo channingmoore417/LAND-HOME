@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
-import { basePayload, loadAgents } from "@/lib/alerts/run";
-import { postToGhl } from "@/lib/alerts/ghl";
+import { loadAgents, notifyAgent } from "@/lib/alerts/run";
+import { ghlConfigured } from "@/lib/alerts/ghl";
 import type { Client } from "@/lib/alerts/types";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 // only the client receives.
 //   { token, action: "pause" | "resume" | "sms_off" }
 // Every real change (a) leaves a note on the contact in /admin and
-// (b) tells the assigned agent through the GHL alert workflow, so nobody is
+// (b) tells the assigned agent through GHL (note + task on the contact), so nobody is
 // surprised when a client goes quiet.
 const COPY: Record<string, { title: string; detail: string }> = {
   pause: { title: "⏸ Client paused their home alerts", detail: "They used the unsubscribe link in their home-alert email, so they will not get new-listing emails until they turn alerts back on. Worth a quick personal check-in." },
@@ -54,10 +54,9 @@ export async function POST(req: Request) {
       contact_email: client.email, author_email: "system", body: `${copy.title.replace(/^\S+\s/, "")}. ${copy.detail}`,
     });
 
-    // Tell the assigned agent (GHL note + in-app notification on the contact). Best effort.
+    // Tell the assigned agent (GHL note + task on the contact). Best effort.
     try {
-      const agents = await loadAgents(admin);
-      await postToGhl({ ...basePayload(client, agents, "activity"), activity_title: copy.title, activity_detail: copy.detail });
+      if (ghlConfigured()) await notifyAgent(admin, client, await loadAgents(admin), copy.title, copy.detail);
     } catch (e) {
       console.error("[alerts] activity notify failed:", (e as Error).message);
     }

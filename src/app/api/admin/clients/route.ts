@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminAuth";
 import { canonicalFromForm, normalizeCriteria, summarizeCriteria } from "@/lib/alerts/criteria";
-import { basePayload, loadAgents, alertsMode } from "@/lib/alerts/run";
-import { ghlWebhookConfigured, postToGhl } from "@/lib/alerts/ghl";
+import { ensureClientContact, loadAgents, alertsMode } from "@/lib/alerts/run";
+import { ghlConfigured } from "@/lib/alerts/ghl";
 import type { Client } from "@/lib/alerts/types";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
       last_activity: myEvents[0]?.created_at ?? null,
     };
   });
-  return NextResponse.json({ clients: out, agents: agents.data ?? [], mode: alertsMode(), ghl: ghlWebhookConfigured() });
+  return NextResponse.json({ clients: out, agents: agents.data ?? [], mode: alertsMode(), ghl: ghlConfigured() });
 }
 
 export async function POST(req: Request) {
@@ -111,12 +111,12 @@ export async function POST(req: Request) {
   // An agent-built search replaces any auto-generated one.
   await admin.from("saved_searches").update({ active: false }).eq("client_id", client.id).eq("source", "auto");
 
-  // --- GHL contact sync (create/update, tag, assign owner). Sends nothing.
-  let ghl: { ok: boolean; detail: string } = { ok: false, detail: "GHL_ALERT_WEBHOOK_URL not set — contact not synced yet" };
-  if (ghlWebhookConfigured()) {
+  // --- GHL contact sync (find or create, add tags, owner only if unowned). Sends nothing.
+  let ghl: { ok: boolean; detail: string } = { ok: false, detail: "GHL_API_KEY not set — contact not synced yet" };
+  if (ghlConfigured()) {
     const agents = await loadAgents(admin);
-    const res = await postToGhl({ ...basePayload(client, agents, "sync"), search_summary: summarizeCriteria(crit), tags: "agent_client,search_alerts" });
-    ghl = { ok: res.ok, detail: res.ok ? "synced" : `${res.status} ${res.detail}` };
+    const res = await ensureClientContact(admin, client, agents);
+    ghl = { ok: res.ok, detail: res.ok ? "synced" : res.detail };
   }
 
   return NextResponse.json({ ok: true, client, search, ghl, mode: alertsMode() });

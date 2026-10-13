@@ -101,7 +101,8 @@ click lands on landhomegroup.com and is tied to that client.
 ```
 /admin form → clients + saved_searches (Supabase)
 pg_cron (hourly) → POST /api/alerts/run → lib/alerts/run.ts → findMatches() → GHL webhook
-GHL "Client Search Alert — Email & Text" workflow → email / weekly SMS / contact sync
+GHL REST API (lib/alerts/ghl.ts, token GHL_API_KEY) → find/create contact, send email + weekly SMS
+                    through GHL conversations, note + task to the contact owner (no GHL workflow involved)
 client taps link → /m/<token> (their matches page)  /m/<token>/<listingKey> (tracked click)
                     /m/<token>/adjust (client edits their own search; agent is notified via GHL "activity")
 ```
@@ -116,10 +117,17 @@ client taps link → /m/<token> (their matches page)  /m/<token>/<listingKey> (t
 - **Safety:** `ALERTS_MODE` = off (default) | test (only `ALERTS_TEST_EMAILS`) | live.
   Slot-based schedule (`lib/alerts/schedule.ts`, Central time) so a missed hour self-heals.
   Overlapping runs can't double-send (optimistic claim); 3 failures/24h pauses a client.
-- **GHL:** ONE alert webhook (`GHL_ALERT_WEBHOOK_URL`), deliberately NOT a lead-form
-  webhook. `channel` = email | sms | sync | activity (client paused/resumed/stopped texts → note + in-app notification to the contact owner; see `/api/alerts/prefs`). The `saved_searches_to_ghl` DB trigger skips
-  `source in ('agent','auto')` so agent-created searches never re-run new-buyer-lead
-  automations. Any speed-to-lead workflow must exclude tag `agent_client`.
+- **GHL:** alerts go through GHL's REST API (`GHL_API_KEY`, a Private Integration with scopes
+  contacts.readonly/write, conversations.write, conversations/message.write), NOT a webhook +
+  workflow template — an HTML body in a webhook variable arrived blank, while the API stores and
+  delivers it intact (and every email/text lands in the contact's conversation). Existing GHL
+  contacts are matched by email, never re-owned or re-tagged destructively (we only ADD tags
+  `agent_client` / `search_alerts`, and set an owner only when there is none). Client pause /
+  adjust events create a note + task for the contact owner. The `saved_searches_to_ghl` DB trigger
+  skips `source in ('agent','auto')`. Any speed-to-lead workflow must exclude tag `agent_client`.
+  Deliverability: set a verified sending domain in GHL and `ALERTS_EMAIL_FROM` (default is GHL's
+  shared send.lcmsgsndr.org, which lands in spam). Photos are raw Trestle URLs unless
+  NEXT_PUBLIC_CLOUDINARY_CLOUD is set — set it before going live so email images don't expire.
 - **Texting** needs `clients.sms_consent_at` (agent attests consent in the form); sent
   8am–8pm Central only. Alerts to site visitors who predate this feature are OFF
   (`alerts_enabled=false`) until they opt in again.

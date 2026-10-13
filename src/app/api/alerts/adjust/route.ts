@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
 import { listingStats } from "@/lib/listings";
 import { canonicalFromForm, normalizeCriteria, summarizeCriteria } from "@/lib/alerts/criteria";
-import { basePayload, loadAgents } from "@/lib/alerts/run";
-import { postToGhl } from "@/lib/alerts/ghl";
+import { loadAgents, notifyAgent } from "@/lib/alerts/run";
+import { ghlConfigured } from "@/lib/alerts/ghl";
 import type { Client } from "@/lib/alerts/types";
 
 export const runtime = "nodejs";
@@ -61,8 +61,7 @@ export async function POST(req: Request) {
   const detail = `New search: ${summary}. Alerts: ${freq === "instant" ? "as homes hit the market" : freq === "daily" ? "daily" : "weekly"}. A good moment to check in.`;
   await admin.from("contact_notes").insert({ contact_email: client.email, author_email: "system", body: `Client adjusted their home search. ${detail}` });
   try {
-    const agents = await loadAgents(admin);
-    await postToGhl({ ...basePayload(client, agents, "activity"), activity_title: title, activity_detail: detail });
+    if (ghlConfigured()) await notifyAgent(admin, client, await loadAgents(admin), title, detail);
   } catch (e) {
     console.error("[alerts] adjust notify failed:", (e as Error).message);
   }
