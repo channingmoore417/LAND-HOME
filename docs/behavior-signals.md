@@ -31,7 +31,7 @@ the signals those triggers cannot see: `repeat_listing_view` and `return_visit`.
   Every event still adds a note to the contact.
 
 ## Agent recap emails (`/api/digest`)
-Hourly Vercel cron; acts only at Lake Charles slots: Mon–Fri 8 AM / 12 PM / 4 PM, Sat & Sun 4 PM. For each GHL user it reads their
+Called hourly (schedule it with Supabase pg_cron + pg_net, or a Vercel cron if the plan allows hourly crons — Hobby rejects them and would fail the deploy); acts only at Lake Charles slots: Mon–Fri 8 AM / 12 PM / 4 PM, Sat & Sun 4 PM. For each GHL user it reads their
 assigned contacts (GHL API), summarizes site activity since the previous slot (Supabase), and posts one email per agent to
 `GHL_DIGEST_WEBHOOK_URL` (GHL workflow "Agent Recap Email" sends it). Agents with no activity get nothing.
 Env: `GHL_API_KEY` (Private Integration: contacts.readonly + users.readonly), `GHL_DIGEST_WEBHOOK_URL`, `CRON_SECRET`.
