@@ -55,6 +55,13 @@ interface FormPayload {
   [k: string]: unknown;
 }
 
+const CLICK_KEYS = ["gclid", "gbraid", "wbraid", "gad_source", "gad_campaignid", "utm_source", "utm_medium", "utm_campaign", "utm_adgroup", "utm_term", "landing_page"];
+function clickIdsOf(p: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const k of CLICK_KEYS) { const v = p[k]; if (typeof v === "string" && v) out[k] = v; }
+  return out;
+}
+
 // Returns which table the submission landed in and the new row id, so the
 // BoldTrail sync below can stamp the row once the contact is created.
 async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: number } | null> {
@@ -69,6 +76,7 @@ async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: num
       preferred_times: p.preferred_times ?? null,
       message: p.message ?? null,
       status: "new",
+      attribution: clickIdsOf(p),
     }).select("id").single();
     if (error) throw error;
     return { table: "showing_requests", id: data.id };
@@ -80,6 +88,7 @@ async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: num
       name: p.name ?? null,
       criteria: p.criteria ?? {},
       alert_frequency: p.alert_frequency ?? "instant",
+      attribution: clickIdsOf(p),
     });
     if (error) throw error;
     return null;
@@ -87,11 +96,7 @@ async function writeToSupabase(p: FormPayload): Promise<{ table: string; id: num
 
   // Ad click IDs ride along inside `criteria` so the DB trigger forwards them to GHL
   // flat (gclid, gbraid, wbraid, ...) on every lead, not just the ad-capture webhook.
-  const clickIds: Record<string, unknown> = {};
-  for (const k of ["gclid", "gbraid", "wbraid", "gad_source", "gad_campaignid", "utm_source", "utm_medium", "utm_campaign", "utm_adgroup", "utm_term", "landing_page"]) {
-    const v = p[k];
-    if (typeof v === "string" && v) clickIds[k] = v;
-  }
+  const clickIds = clickIdsOf(p);
 
   // Everything else is a lead. `destination` = which form produced it.
   // `criteria` carries the form's structured answers (valuation property

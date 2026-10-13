@@ -1,6 +1,7 @@
 "use client";
 
 import { getBrowserClient } from "@/lib/supabaseBrowser";
+import { clickAttribution } from "@/lib/attribution";
 
 export type SignalType = "listing_view" | "listing_saved" | "saved_search" | "session_start" | "identify";
 
@@ -21,7 +22,7 @@ export async function trackSignal(
         "Content-Type": "application/json",
         ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
       },
-      body: JSON.stringify({ type, listing_key: opts?.listingKey, criteria: opts?.criteria }),
+      body: JSON.stringify({ type, listing_key: opts?.listingKey, criteria: opts?.criteria, attribution: clickAttribution() }),
     });
   } catch { /* tracking is best-effort */ }
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { trackSignal } from "@/lib/signals";
+import { clickAttribution } from "@/lib/attribution";
 
 function label(c?: Record<string, unknown>): string {
   if (!c) return "My saved search";
@@ -36,6 +37,7 @@ export default function NotifyBand({ criteria }: { criteria?: Record<string, unk
       criteria: criteria ?? {},
       alert_frequency: "instant",
       active: true,
+      attribution: clickAttribution(),
     });
     setBusy(false);
     setSaved(true);

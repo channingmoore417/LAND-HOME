@@ -56,6 +56,7 @@ interface Body {
   type?: string;
   listing_key?: string;
   criteria?: Record<string, unknown>;
+  attribution?: Record<string, unknown>;
 }
 
 interface Actor {
@@ -124,10 +125,11 @@ function isNarrower(prev: Record<string, unknown>, next: Record<string, unknown>
 async function recordSignal(
   db: Admin, a: Actor, signal: string, dedupeKey: string,
   listingKey: string | null, meta: Record<string, unknown>,
+  attribution: Record<string, string> = {},
 ) {
   const { error } = await db.from("intent_signals").insert({
     signal, visitor_id: a.visitorId, user_id: a.userId,
-    dedupe_key: dedupeKey, listing_key: listingKey, meta,
+    dedupe_key: dedupeKey, listing_key: listingKey, meta: { ...meta, attribution },
   });
   if (error) {
     if (error.code === "23505") return; // already recorded
@@ -182,6 +184,7 @@ async function flushToGhl(db: Admin, a: Actor) {
           : null,
       listing_city: listing?.city ?? null,
       listing_price: listing?.list_price ?? null,
+      ...(s.meta?.attribution ?? {}),
       ...s.meta,
     };
     let ok = false;
@@ -212,6 +215,9 @@ export async function POST(req: Request) {
   if ((type === "listing_view" || type === "listing_saved") && !listingKey) return reply(vid, { ok: false, error: "listing_key required" }, 400);
 
   const db = getAdminClient();
+  // Ad-click fields (gclid, gbraid, wbraid, UTMs) so GHL can tie every signal back to the ad.
+  const attribution: Record<string, string> = {};
+  for (const [k, v] of Object.entries(body.attribution ?? {})) if (typeof v === "string" && v.length < 600) attribution[k] = v;
 
   // Identify the user from their Supabase JWT (never trust a client-sent email).
   const token = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
@@ -239,7 +245,7 @@ export async function POST(req: Request) {
         const days = Math.floor((now - new Date(prev.created_at).getTime()) / 86_400_000);
         if (days >= RETURN_MIN_DAYS) {
           const band = days <= RETURN_BAND_MAX_DAYS ? "30_60" : "60_plus";
-          await recordSignal(db, actor, "return_visit", new Date().toISOString().slice(0, 10), null, { days_inactive: days, band });
+          await recordSignal(db, actor, "return_visit", new Date().toISOString().slice(0, 10), null, { days_inactive: days, band }, attribution);
         }
       }
     }
@@ -254,12 +260,12 @@ export async function POST(req: Request) {
         const { count } = await db.from("behavior_events").select("id", { count: "exact", head: true })
           .eq("type", type).eq("listing_key", listingKey!).or(actorFilter);
         if ((count ?? 0) >= VIEW_THRESHOLD) {
-          await recordSignal(db, actor, "repeat_listing_view", listingKey!, listingKey, { view_count: count });
+          await recordSignal(db, actor, "repeat_listing_view", listingKey!, listingKey, { view_count: count }, attribution);
         }
       }
     } else if (type === "listing_saved") {
       await db.from("behavior_events").insert({ visitor_id: vid, user_id: actor.userId, type, listing_key: listingKey, meta: {} });
-      await recordSignal(db, actor, "listing_saved", listingKey!, listingKey, {});
+      await recordSignal(db, actor, "listing_saved", listingKey!, listingKey, {}, attribution);
     } else if (type === "saved_search") {
       const criteria = normCriteria(body.criteria);
       if (JSON.stringify(criteria).length > 2000) return reply(vid, { ok: false, error: "criteria too large" }, 400);
@@ -270,7 +276,7 @@ export async function POST(req: Request) {
       const narrowed = !!prev && isNarrower(prev, criteria);
       await recordSignal(
         db, actor, narrowed ? "saved_search_narrowed" : "saved_search_created",
-        `${Date.now()}`, null, { criteria, previous_criteria: narrowed ? prev : undefined },
+        `${Date.now()}`, null, { criteria, previous_criteria: narrowed ? prev : undefined }, attribution,
       );
     }
     // "identify" has no event of its own; it only triggers the flush below.

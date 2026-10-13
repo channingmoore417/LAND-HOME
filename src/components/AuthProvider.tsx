@@ -5,6 +5,7 @@ import type { User } from "@supabase/supabase-js";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { logActivity } from "@/lib/activity";
 import { trackSignal } from "@/lib/signals";
+import { clickAttribution } from "@/lib/attribution";
 import AuthModal from "@/components/AuthModal";
 import CompletePhoneModal from "@/components/CompletePhoneModal";
 
@@ -72,7 +73,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       const pending = typeof window !== "undefined" ? window.localStorage.getItem("lhg_pending_fav") : null;
       if (pending && !set.has(pending)) {
         set.add(pending);
-        await supabase.from("favorites").insert({ user_id: user.id, listing_key: pending });
+        await supabase.from("favorites").insert({ user_id: user.id, listing_key: pending, attribution: clickAttribution() });
         logActivity("save", { listingKey: pending });
         trackSignal("listing_saved", { listingKey: pending });
       }
@@ -121,7 +122,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     const uid = u?.id;
     if (!uid) return;
     setFavs((s) => new Set(s).add(key));
-    await supabase.from("favorites").insert({ user_id: uid, listing_key: key, email: u.email ?? null });
+    await supabase.from("favorites").insert({ user_id: uid, listing_key: key, email: u.email ?? null, attribution: clickAttribution() });
     logActivity("save", { listingKey: key });
     trackSignal("listing_saved", { listingKey: key });
   }, [supabase]);
