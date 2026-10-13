@@ -86,6 +86,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("leads");
   const [contact, setContact] = useState<OpenContact | null>(null);
+  // The ordered list the open contact came from, so the record can step
+  // through it with previous / next arrows.
+  const [navList, setNavList] = useState<OpenContact[]>([]);
 
   useEffect(() => {
     if (!ready) return;
@@ -145,6 +148,19 @@ export default function AdminDashboard() {
     return [...byEmail.values()].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   }, [data]);
 
+  // Open a contact; `list` is the visible list it was picked from (de-duped by email).
+  function openContact(c: OpenContact, list: OpenContact[] = [c]) {
+    const seen = new Set<string>();
+    const uniq = list.filter((x) => {
+      const k = x.email.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    setNavList(uniq.some((x) => x.email.toLowerCase() === c.email.toLowerCase()) ? uniq : [c]);
+    setContact(c);
+  }
+
   if (!ready || loading) {
     return <main className="admin"><div className="wrap"><p className="prose">Loading…</p></div></main>;
   }
@@ -176,6 +192,10 @@ export default function AdminDashboard() {
 
   if (!data) return null;
 
+  const navIndex = contact ? navList.findIndex((x) => x.email.toLowerCase() === contact.email.toLowerCase()) : -1;
+  const inboxContacts: OpenContact[] = inbox
+    .filter((i) => i.email)
+    .map((i) => ({ email: i.email as string, name: i.name, phone: i.phone }));
   const newLeadCount = inbox.filter((i) => isNew(i.created_at)).length;
 
   return (
@@ -207,6 +227,10 @@ export default function AdminDashboard() {
             fallbackName={contact.name}
             fallbackPhone={contact.phone}
             onBack={() => setContact(null)}
+            position={navIndex >= 0 ? navIndex + 1 : undefined}
+            total={navList.length}
+            onPrev={navIndex > 0 ? () => setContact(navList[navIndex - 1]) : undefined}
+            onNext={navIndex >= 0 && navIndex < navList.length - 1 ? () => setContact(navList[navIndex + 1]) : undefined}
           />
         ) : (
           <>
@@ -220,7 +244,7 @@ export default function AdminDashboard() {
                         <button
                           className="adm-row"
                           disabled={!i.email}
-                          onClick={() => i.email && setContact({ email: i.email, name: i.name, phone: i.phone })}
+                          onClick={() => i.email && openContact({ email: i.email, name: i.name, phone: i.phone }, inboxContacts)}
                         >
                           <div className="adm-row__who">
                             <strong>{i.name || i.email || "Unknown"}</strong>
@@ -248,7 +272,7 @@ export default function AdminDashboard() {
                 <ul className="adm-rows">
                   {contacts.map((c) => (
                     <li key={c.email}>
-                      <button className="adm-row" onClick={() => setContact(c)}>
+                      <button className="adm-row" onClick={() => openContact(c, contacts)}>
                         <div className="adm-row__who">
                           <strong>{c.name || c.email}</strong>
                           <span>{c.email}{c.phone ? ` · ${c.phone}` : ""}</span>

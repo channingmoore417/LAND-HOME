@@ -1247,7 +1247,12 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 .adm-clickrow{cursor:pointer;}
 .adm-clickrow:hover td{background:var(--aqua-soft);}
 /* Contact record */
-.adm-back{background:none;border:0;color:var(--teal);font-weight:700;font-size:.88rem;padding:0;margin-bottom:18px;}
+.adm-back{background:none;border:0;color:var(--teal);font-weight:700;font-size:.88rem;padding:0;}
+.adm-contact__nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.adm-pager{display:flex;align-items:center;gap:10px;}
+.adm-pager__pos{font-size:.85rem;color:var(--ink-muted);min-width:70px;text-align:center;}
+.adm-pager__btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line,#d8dee3);background:#fff;color:var(--teal);font-size:1.4rem;line-height:1;cursor:pointer;}
+.adm-pager__btn:disabled{opacity:.35;cursor:default;}
 .adm-contact__grid{display:grid;grid-template-columns:260px 1fr 300px;gap:20px;align-items:start;}
 .adm-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;}
 .adm-card__head{font-family:"Outfit";font-weight:700;font-size:.95rem;color:var(--teal);margin:0 0 14px;}

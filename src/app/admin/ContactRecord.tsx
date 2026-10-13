@@ -51,11 +51,19 @@ export default function ContactRecord({
   fallbackName,
   fallbackPhone,
   onBack,
+  position,
+  total,
+  onPrev,
+  onNext,
 }: {
   email: string;
   fallbackName?: string | null;
   fallbackPhone?: string | null;
   onBack: () => void;
+  position?: number;
+  total?: number;
+  onPrev?: () => void;
+  onNext?: () => void;
 }) {
   const [data, setData] = useState<ContactData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -156,7 +164,16 @@ export default function ContactRecord({
 
   return (
     <div className="adm-contact">
-      <button className="adm-back" onClick={onBack}>← Back to list</button>
+      <div className="adm-contact__nav">
+        <button className="adm-back" onClick={onBack}>← Back to list</button>
+        {(total ?? 0) > 1 && (
+          <div className="adm-pager" aria-label="Browse contacts">
+            <button className="adm-pager__btn" onClick={onPrev} disabled={!onPrev} aria-label="Previous contact">‹</button>
+            <span className="adm-pager__pos">{position} of {total}</span>
+            <button className="adm-pager__btn" onClick={onNext} disabled={!onNext} aria-label="Next contact">›</button>
+          </div>
+        )}
+      </div>
 
       <div className="adm-contact__grid">
         {/* Left: contact card */}
