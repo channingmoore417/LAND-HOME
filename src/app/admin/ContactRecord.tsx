@@ -7,7 +7,7 @@ import { usd } from "@/lib/format";
 interface ListingLite { unparsed_address: string | null; list_price: number | null; city: string | null }
 interface ViewRow { listing_key: string; views: number; last_viewed_at: string; listing: ListingLite | null }
 interface OtherActivity { type: string; created_at: string; meta: Record<string, unknown> }
-interface LeadRow { id: number; full_name: string | null; phone: string | null; source: string | null; listing_key: string | null; message: string | null; created_at: string }
+interface LeadRow { id: number; full_name: string | null; phone: string | null; source: string | null; destination?: string | null; listing_key: string | null; message: string | null; created_at: string }
 interface ShowingRow { id: number; listing_key: string | null; preferred_times: string | null; status: string | null; created_at: string }
 interface SearchRow { id: number; name: string | null; criteria: Record<string, unknown>; active: boolean; created_at: string }
 interface FavoriteRow { id: number; listing_key: string; created_at: string; listing: ListingLite | null }
@@ -35,6 +35,45 @@ function telHref(phone: string | null | undefined): string | null {
   const d = (phone ?? "").replace(/\D/g, "");
   if (d.length < 10) return null;
   return `+${d.length === 10 ? "1" + d : d}`;
+}
+
+const FORM_LABELS: Record<string, string> = {
+  listing_inquiry: "Asked about a property",
+  ad_capture: "Registered to see listings (Google Ads)",
+  buyer_quiz: "Registered / completed the buyer quiz",
+  buyer_guide: "Downloaded the buyer guide",
+  mortgage_preapproval: "Started a pre-approval",
+  home_valuation: "Requested a home valuation",
+  cash_offer: "Requested a cash offer",
+  contact: "Sent a contact message",
+};
+
+// Form messages carry site-generated filler (MLS numbers, links, "listing gate form"). Show only what matters.
+function cleanMessage(m: string | null | undefined): string | undefined {
+  const t = (m ?? "").trim();
+  if (!t) return undefined;
+  if (/^Re: /.test(t)) return t.split("\nProperty:")[0].replace(/^Re: [^\n]*? — /, "").trim() || undefined;
+  if (/^Property inquiry:|^Inquiry about listing|listing gate|^Listing-gate|^New-listing alerts \(/.test(t)) return "Wants new-listing alerts";
+  return t.replace(/\bMLS#?\s*\S+/gi, "").replace(/https?:\/\/\S+/g, "").replace(/\s{2,}/g, " ").trim() || undefined;
+}
+
+const FEATURE_LABELS: Record<string, string> = {
+  pool: "Pool", acreage: "Acreage", waterfront: "Waterfront", newconstruction: "New construction", singlestory: "Single story", shop: "Shop / workshop",
+};
+const money = (v: unknown) => (v ? `$${Number(v).toLocaleString("en-US")}` : "");
+
+// Saved-search / quiz criteria in plain words (no JSON).
+function criteriaText(c: Record<string, unknown> | null | undefined): string | undefined {
+  if (!c) return undefined;
+  const parts: string[] = [];
+  if (Array.isArray(c.communities) && c.communities.length) parts.push(c.communities.join(", "));
+  for (const k of ["city", "zip", "type"]) if (c[k]) parts.push(String(c[k]));
+  if (c.beds) parts.push(`${c.beds}+ bd`);
+  if (c.baths) parts.push(`${c.baths}+ ba`);
+  if (c.price) parts.push(String(c.price));
+  if (c.minPrice || c.maxPrice) parts.push(`${money(c.minPrice) || "any"} – ${money(c.maxPrice) || "any"}`);
+  if (Array.isArray(c.features) && c.features.length) parts.push(`Wants: ${c.features.map((f) => FEATURE_LABELS[String(f)] ?? String(f)).join(", ")}`);
+  return parts.join(" · ") || undefined;
 }
 
 const ACTIVITY_LABELS: Record<string, string> = {
@@ -141,17 +180,17 @@ export default function ContactRecord({
       key: `note-${n.id}`, kind: "Note", title: n.body, author: n.author_email ?? undefined, created_at: n.created_at,
     })),
     ...(data?.leads ?? []).map((l) => ({
-      key: `lead-${l.id}`, kind: "Form", title: `Submitted ${l.source || "a form"}`,
-      detail: l.message || (l.listing_key ? `Listing ${l.listing_key}` : undefined), created_at: l.created_at,
+      key: `lead-${l.id}`, kind: "Form", title: FORM_LABELS[l.destination ?? ""] ?? "Submitted a form",
+      detail: cleanMessage(l.message), created_at: l.created_at,
     })),
     ...(data?.showingRequests ?? []).map((s) => ({
       key: `showing-${s.id}`, kind: "Showing", title: "Requested a showing",
-      detail: [s.listing_key ? `Listing ${s.listing_key}` : null, s.preferred_times].filter(Boolean).join(" · ") || undefined,
+      detail: s.preferred_times || undefined,
       created_at: s.created_at,
     })),
     ...(data?.savedSearches ?? []).map((s) => ({
       key: `search-${s.id}`, kind: "Search", title: `Saved a search${s.name ? `: ${s.name}` : ""}`,
-      detail: JSON.stringify(s.criteria), created_at: s.created_at,
+      detail: criteriaText(s.criteria), created_at: s.created_at,
     })),
     ...(data?.favorites ?? []).map((f) => ({
       key: `fav-${f.id}`, kind: "Saved home", title: f.listing?.unparsed_address || f.listing_key,

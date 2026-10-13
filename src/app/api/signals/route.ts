@@ -45,7 +45,7 @@ const TAGS: Record<string, string[]> = {
 };
 
 const LABELS: Record<string, string> = {
-  repeat_listing_view: "Viewed the same property 3 times",
+  repeat_listing_view: "Very interested in this property",
   listing_saved: "Saved a property",
   saved_search_created: "Saved a search",
   saved_search_narrowed: "Narrowed a saved search",
@@ -166,7 +166,7 @@ async function flushToGhl(db: Admin, a: Actor) {
       signal_label: LABELS[s.signal] ?? s.signal,
       signal_detail:
         s.signal === "return_visit" ? `${s.meta?.days_inactive} days since last visit`
-        : s.signal === "repeat_listing_view" ? `${s.meta?.view_count} views`
+        : s.signal === "repeat_listing_view" ? `Viewed this home ${s.meta?.view_count} times`
         : s.meta?.criteria ? JSON.stringify(s.meta.criteria) : "",
       intent_level: "medium",
       tags: TAGS[tagKey] ?? ["intent:medium"],
