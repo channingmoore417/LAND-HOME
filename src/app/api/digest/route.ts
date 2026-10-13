@@ -6,45 +6,26 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // ============================================================
-// Agent activity recap. A Vercel cron hits this every hour; it only
-// does work at the scheduled local (Lake Charles) slots:
-//   Mon–Fri 8:00 AM, 12:00 PM, 4:00 PM   ·   Sat & Sun 4:00 PM only
-// For each GHL user it finds their assigned contacts (GHL API), gathers
-// what those people did on the site since the previous slot (Supabase),
-// and posts one recap per agent to GHL_DIGEST_WEBHOOK_URL, where a GHL
-// workflow sends the email. Agents with no activity get nothing.
+// Agent activity recap. A GoHighLevel scheduled workflow calls this at
+// the exact local times (Mon–Fri 8 AM / 12 PM / 4 PM, Sat & Sun 4 PM), so GHL
+// owns the timing and the time zone. For each GHL user it finds their
+// assigned contacts (GHL API), summarizes what those people did on the
+// site since THAT AGENT'S LAST SUCCESSFUL RECAP (Supabase digest_runs), and
+// posts one email per agent to GHL_DIGEST_WEBHOOK_URL, where a GHL workflow
+// sends it. Because the window is "since last send", a missed or failed
+// run never loses activity — the next run just covers more. Agents with
+// no activity get nothing.
 // ============================================================
 
 const TZ = "America/Chicago";
 const LOCATION_ID = process.env.GHL_LOCATION_ID || "xdGkCWotXaek58gmTbxt";
 const GHL_API = "https://services.leadconnectorhq.com";
 
-interface Local { dow: number; hour: number }
+const DEFAULT_WINDOW_MS = 16 * 60 * 60 * 1000; // first-ever run
 
-function localParts(d: Date): Local {
-  const f = new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short", hour: "numeric", hour12: false });
-  const parts = Object.fromEntries(f.formatToParts(d).map((p) => [p.type, p.value]));
-  const dow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(parts.weekday);
-  return { dow, hour: Number(parts.hour) % 24 };
-}
-
-function isSlot(l: Local): boolean {
-  const weekend = l.dow === 0 || l.dow === 6;
-  return weekend ? l.hour === 16 : [8, 12, 16].includes(l.hour);
-}
-
-function slotName(l: Local): string {
-  return l.hour === 8 ? "Morning" : l.hour === 12 ? "Lunch" : "Afternoon";
-}
-
-// Start of the window = the previous scheduled slot (on the hour).
-function previousSlot(now: Date): Date {
-  const hour = new Date(Math.floor(now.getTime() / 3_600_000) * 3_600_000);
-  for (let i = 1; i <= 96; i++) {
-    const t = new Date(hour.getTime() - i * 3_600_000);
-    if (isSlot(localParts(t))) return t;
-  }
-  return new Date(hour.getTime() - 16 * 3_600_000);
+function slotName(d: Date): string {
+  const hour = Number(new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "numeric", hour12: false }).format(d)) % 24;
+  return hour < 11 ? "Morning" : hour < 15 ? "Lunch" : "Afternoon";
 }
 
 async function ghl<T>(path: string, init?: RequestInit): Promise<T> {
@@ -245,30 +226,30 @@ function renderEmail(agent: string, slot: string, recaps: ContactRecap[]) {
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   const auth = req.headers.get("authorization");
-  const isCron = (req.headers.get("user-agent") ?? "").startsWith("vercel-cron");
-  const authed = secret ? auth === `Bearer ${secret}` : false;
-  if (!authed && !(isCron && !secret)) return NextResponse.json({ ok: false }, { status: 401 });
+  if (!secret || auth !== `Bearer ${secret}`) return NextResponse.json({ ok: false }, { status: 401 });
 
   const url = new URL(req.url);
-  const force = authed && url.searchParams.get("force") === "1";
-  const preview = authed && url.searchParams.get("preview") === "1"; // build but don't send
+  const preview = url.searchParams.get("preview") === "1"; // build but don't send or record
   const now = new Date();
-  const local = localParts(now);
-  if (!force && !isSlot(local)) return NextResponse.json({ ok: true, skipped: "not a scheduled slot" });
   if (!process.env.GHL_API_KEY) return NextResponse.json({ ok: false, error: "GHL_API_KEY not set" }, { status: 500 });
 
-  const since = previousSlot(now);
-  const slot = slotName(force ? { ...local, hour: [8, 12, 16].reduce((p, h) => (Math.abs(h - local.hour) < Math.abs(p - local.hour) ? h : p), 8) } : local);
+  const slot = slotName(now);
   const webhook = process.env.GHL_DIGEST_WEBHOOK_URL;
+  const db = getAdminClient();
 
   const { users } = await ghl<{ users?: GhlUser[] }>(`/users/?locationId=${LOCATION_ID}`);
   const results: Record<string, unknown>[] = [];
   for (const u of users ?? []) {
     if (!u.email) continue;
     try {
+      // Window = since this agent's last delivered recap.
+      const { data: last } = await db.from("digest_runs").select("sent_at").eq("agent_email", u.email.toLowerCase())
+        .order("sent_at", { ascending: false }).limit(1).maybeSingle();
+      const since = last ? new Date(last.sent_at) : new Date(now.getTime() - DEFAULT_WINDOW_MS);
+
       const contacts = await assignedContacts(u.id);
       const recaps = await buildRecaps(contacts, since);
-      if (!recaps.length) { results.push({ agent: u.email, active: 0 }); continue; }
+      if (!recaps.length) { results.push({ agent: u.email, active: 0, since: since.toISOString() }); continue; }
       const name = u.name || u.firstName || u.email;
       const { html, text } = renderEmail(name, slot, recaps);
       const payload = {
@@ -276,13 +257,16 @@ export async function GET(req: Request) {
         subject: `${slot} recap: ${recaps.length} of your contacts ${recaps.length === 1 ? "was" : "were"} active`,
         html, text,
       };
-      if (preview || !webhook) { results.push({ agent: u.email, active: recaps.length, preview: payload }); continue; }
+      if (preview || !webhook) { results.push({ agent: u.email, active: recaps.length, since: since.toISOString(), preview: payload }); continue; }
       const r = await fetch(webhook, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      // Only a delivered recap moves the window forward.
+      if (r.ok) await db.from("digest_runs").insert({ agent_email: u.email.toLowerCase(), slot, contacts: recaps.length, sent_at: now.toISOString() });
       results.push({ agent: u.email, active: recaps.length, sent: r.ok });
     } catch (e) {
       console.error("[digest] agent failed:", u.email, (e as Error).message);
       results.push({ agent: u.email, error: (e as Error).message });
     }
   }
-  return NextResponse.json({ ok: true, slot, since: since.toISOString(), webhookConfigured: !!webhook, results });
+  const failed = results.filter((r) => r.error || r.sent === false).length;
+  return NextResponse.json({ ok: failed === 0, slot, webhookConfigured: !!webhook, results }, { status: failed ? 502 : 200 });
 }

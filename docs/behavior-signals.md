@@ -31,8 +31,10 @@ the signals those triggers cannot see: `repeat_listing_view` and `return_visit`.
   Every event still adds a note to the contact.
 
 ## Agent recap emails (`/api/digest`)
-Called hourly (schedule it with Supabase pg_cron + pg_net, or a Vercel cron if the plan allows hourly crons — Hobby rejects them and would fail the deploy); acts only at Lake Charles slots: Mon–Fri 8 AM / 12 PM / 4 PM, Sat & Sun 4 PM. For each GHL user it reads their
-assigned contacts (GHL API), summarizes site activity since the previous slot (Supabase), and posts one email per agent to
-`GHL_DIGEST_WEBHOOK_URL` (GHL workflow "Agent Recap Email" sends it). Agents with no activity get nothing.
+A GHL scheduled workflow calls `GET /api/digest` (header `Authorization: Bearer $CRON_SECRET`) at Mon–Fri 8 AM / 12 PM / 4 PM and
+Sat & Sun 4 PM Lake Charles time. GHL owns timing + time zone; there is no hourly polling. For each GHL user the endpoint reads their
+assigned contacts (GHL API), summarizes site activity since **that agent's last delivered recap** (`digest_runs`), and posts one
+email per agent to `GHL_DIGEST_WEBHOOK_URL` ("Agent Recap Email" workflow sends it). A failed or missed run loses nothing: the next
+window is simply longer. Agents with no activity get nothing.
 Env: `GHL_API_KEY` (Private Integration: contacts.readonly + users.readonly), `GHL_DIGEST_WEBHOOK_URL`, `CRON_SECRET`.
-Test without sending: `GET /api/digest?force=1&preview=1` with `Authorization: Bearer $CRON_SECRET`.
+Test without sending or recording: `GET /api/digest?preview=1` with the bearer secret.
