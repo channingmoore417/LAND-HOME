@@ -128,6 +128,29 @@ export async function ensureContact(input: ContactInput): Promise<GhlResult & { 
   return { ok: true, status: 200, detail: "existing", id: contact.id, assignedTo };
 }
 
+// Contact-id lookups are cached per serverless instance so a burst of page views
+// costs one search, not one per view. A miss is cached briefly (the contact may be created moments later).
+const contactCache = new Map<string, { id: string | null; at: number }>();
+
+/** The existing GHL contact id for an email — never creates one. */
+export async function findContactId(emailRaw: string): Promise<string | null> {
+  const email = emailRaw.trim().toLowerCase();
+  const hit = contactCache.get(email);
+  if (hit && Date.now() - hit.at < (hit.id ? 60 * 60_000 : 5 * 60_000)) return hit.id;
+  const q = new URLSearchParams({ locationId: LOCATION_ID, email });
+  const r = await call<{ contact?: GhlContact }>(`/contacts/search/duplicate?${q}`, "GET");
+  if (!r.ok && r.status !== 404 && r.status !== 422) return null; // transient — don't cache
+  const id = r.ok ? r.data.contact?.id ?? null : null;
+  contactCache.set(email, { id, at: Date.now() });
+  return id;
+}
+
+/** Add a note (HTML allowed) to a contact's activity feed. Notes do not notify anyone. */
+export async function addNote(contactId: string, html: string): Promise<GhlResult> {
+  const r = await call(`/contacts/${contactId}/notes`, "POST", { body: html });
+  return { ok: r.ok, status: r.status, detail: r.detail };
+}
+
 /** Send the alert email through GHL's mail system (HTML body goes straight in). */
 export async function sendEmail(opts: { contactId: string; subject: string; html: string }): Promise<GhlResult> {
   const from = process.env.ALERTS_EMAIL_FROM || undefined; // e.g. "Lauren Huffman <lauren@landhomegroup.com>" once the domain is verified in GHL
