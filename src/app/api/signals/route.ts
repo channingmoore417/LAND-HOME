@@ -21,7 +21,7 @@ const EVENT_TYPES = ["listing_view", "listing_saved", "saved_search", "session_s
 type EventType = (typeof EVENT_TYPES)[number];
 
 const VIEW_THRESHOLD = 3;
-const VIEW_DEBOUNCE_MS = 30 * 60 * 1000; // refreshes within 30 min are one view
+const VIEW_DEBOUNCE_MS = 10 * 1000; // only ignores one page load reporting twice; every real revisit counts
 const RETURN_MIN_DAYS = 30;
 const RETURN_BAND_MAX_DAYS = 60;
 const VID_COOKIE = "lhg_vid";
