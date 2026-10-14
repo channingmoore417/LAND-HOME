@@ -1745,3 +1745,8 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 .adm-row__detail{min-width:0;max-width:100%;}
 
 .adm-row__link{color:var(--teal)!important;font-weight:600;text-decoration:underline;text-decoration-color:var(--aqua);cursor:pointer;}
+
+/* Contact record — "Set up a client search" button */
+.adm-contact__nav{flex-wrap:wrap;gap:10px;}
+.adm-setup-btn{width:auto;margin:0 0 0 auto;padding:10px 18px;font-size:.88rem;}
+@media(max-width:560px){.adm-setup-btn{width:100%;margin:0;order:3;}}

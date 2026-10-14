@@ -5,7 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import ContactRecord, { cleanMessage } from "./ContactRecord";
 import ClientSearches from "./ClientSearches";
-import SetupClientSearch from "./SetupClientSearch";
+import SetupClientSearch, { type SetupPrefill } from "./SetupClientSearch";
 import BuyerActivity, { type BAShowing, type BASearch, type BAFavorite, type ListingCtx } from "./BuyerActivity";
 
 interface Lead {
@@ -80,6 +80,13 @@ export default function AdminDashboard() {
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [tab, setTab] = useState<Tab>("leads");
   const [contact, setContact] = useState<OpenContact | null>(null);
+  // A contact being turned into a client search: pre-fills the setup flow. `key` forces a fresh form each time.
+  const [prefill, setPrefill] = useState<{ key: number; data?: SetupPrefill }>({ key: 0 });
+  function startSetup(data?: SetupPrefill) {
+    setPrefill((p) => ({ key: p.key + 1, data }));
+    setContact(null);
+    setTab("setup");
+  }
   // Groups the user collapsed, remembered per browser (never required to render).
   const [collapsed, setCollapsed] = useState<string[]>([]);
   useEffect(() => {
@@ -261,7 +268,7 @@ export default function AdminDashboard() {
               <button
                 key={t.id}
                 className={`adm__navbtn${sub ? " adm__navbtn--sub" : ""}${tab === t.id && !contact ? " is-active" : ""}`}
-                onClick={() => { setTab(t.id); setContact(null); }}
+                onClick={() => { if (t.id === "setup") { startSetup(); return; } setTab(t.id); setContact(null); }}
               >
                 {t.label}
                 {t.id === "leads" && newLeadCount > 0 && <span className="adm-badge">{newLeadCount}</span>}
@@ -302,6 +309,7 @@ export default function AdminDashboard() {
             fallbackName={contact.name}
             fallbackPhone={contact.phone}
             onBack={() => setContact(null)}
+            onSetupSearch={startSetup}
             position={navIndex >= 0 ? navIndex + 1 : undefined}
             total={navList.length}
             onPrev={navIndex > 0 ? () => setContact(navList[navIndex - 1]) : undefined}
@@ -368,7 +376,7 @@ export default function AdminDashboard() {
               </>
             )}
 
-            {tab === "setup" && <SetupClientSearch onDone={() => setTab("clients")} />}
+            {tab === "setup" && <SetupClientSearch key={prefill.key} prefill={prefill.data} onDone={() => { setPrefill((p) => ({ key: p.key + 1 })); setTab("clients"); }} />}
             {tab === "clients" && <ClientSearches onSetup={() => setTab("setup")} />}
 
             {(tab === "showings" || tab === "searches" || tab === "favorites") && (
