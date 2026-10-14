@@ -38,3 +38,15 @@ email per agent to `GHL_DIGEST_WEBHOOK_URL` ("Agent Recap Email" workflow sends 
 window is simply longer. Agents with no activity get nothing.
 Env: `GHL_API_KEY` (Private Integration: contacts.readonly + users.readonly), `GHL_DIGEST_WEBHOOK_URL`, `CRON_SECRET`.
 Test without sending or recording: `GET /api/digest?preview=1` with the bearer secret.
+
+## Every property view → GHL activity feed
+
+Each listing view (30-minute debounce) is added to the contact's GHL activity as a note: linked
+address, price, beds/baths, time (Central), and "Opened from an alert email" when it followed a click
+on an alert link. Implemented in `logViewsToGhl()` (`src/app/api/signals/route.ts`) through the GHL
+REST API (`GHL_API_KEY`, needs `contacts.write`). Notes don't notify anyone.
+
+- A visitor is identified by a Supabase login **or** by the `lhg_client` cookie set when they tap a link in an
+  alert email (clients table token). Views from before identification are logged on the first identified hit.
+- Only existing GHL contacts get notes; views wait (`behavior_events.ghl_logged_at is null`) until one exists.
+- The "3+ views of one home" signal is separate and unchanged (`repeat_listing_view` → Website Behavior Signal workflow).

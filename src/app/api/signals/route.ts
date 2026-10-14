@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
 import { SITE_URL } from "@/lib/seoConfig";
+import { addNote, findContactId, ghlConfigured } from "@/lib/alerts/ghl";
 
 export const runtime = "nodejs";
 
@@ -63,6 +64,7 @@ interface Actor {
   visitorId: string;
   userId: string | null;
   email: string | null;
+  clientId?: number | null; // set when identified by an alert-email link (lhg_client cookie)
 }
 
 type Admin = ReturnType<typeof getAdminClient>;
@@ -204,6 +206,59 @@ async function flushToGhl(db: Admin, a: Actor) {
   }
 }
 
+const CT = (iso: string) =>
+  new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " CT";
+const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// Every property view goes into the contact's GHL activity feed as a note
+// (address linked, price, beds/baths, and "opened from an alert email" when it was).
+// Views from before the visitor was identified are logged on the first identified
+// hit. Only EXISTING GHL contacts get notes; unlogged views wait for one to appear.
+async function logViewsToGhl(db: Admin, a: Actor) {
+  if (!a.email || !ghlConfigured()) return;
+  const filter = a.userId ? `visitor_id.eq.${a.visitorId},user_id.eq.${a.userId}` : `visitor_id.eq.${a.visitorId}`;
+  const { data: rows } = await db
+    .from("behavior_events").select("id, listing_key, created_at")
+    .eq("type", "listing_view").is("ghl_logged_at", null).or(filter).order("created_at").limit(20);
+  if (!rows?.length) return;
+  const contactId = await findContactId(a.email);
+  if (!contactId) return;
+
+  const keys = [...new Set(rows.map((r) => r.listing_key).filter(Boolean))] as string[];
+  const { data: ls } = await db
+    .from("listings")
+    .select("listing_key, unparsed_address, city, state_or_province, postal_code, list_price, bedrooms_total, bathrooms_total, internet_address_yn")
+    .in("listing_key", keys);
+  const byKey = new Map((ls ?? []).map((l) => [l.listing_key, l]));
+
+  let clicked = new Set<string>();
+  if (a.clientId) {
+    const since = new Date(Date.now() - 2 * 60 * 60_000).toISOString();
+    const { data: ev } = await db.from("alert_events").select("listing_key").eq("client_id", a.clientId).eq("type", "listing_click").gte("created_at", since);
+    clicked = new Set((ev ?? []).map((e) => e.listing_key as string));
+  }
+
+  for (const r of rows) {
+    const l = byKey.get(r.listing_key as string);
+    const url = `${SITE_URL}/listings/${r.listing_key}`;
+    const showAddr = !!l && l.internet_address_yn !== false && !!l.unparsed_address;
+    const addr = showAddr
+      ? [l!.unparsed_address, l!.city, `${l!.state_or_province ?? "LA"} ${l!.postal_code ?? ""}`.trim()].filter(Boolean).join(", ")
+      : `a home in ${l?.city ?? "Southwest Louisiana"}`;
+    const facts = l
+      ? [l.list_price ? `$${Number(l.list_price).toLocaleString("en-US")}` : "", l.bedrooms_total ? `${l.bedrooms_total} bd` : "", l.bathrooms_total ? `${l.bathrooms_total} ba` : ""].filter(Boolean).join(" · ")
+      : "";
+    const html =
+      `<p><span style="color:#00695C"><strong>👀 Viewed a home</strong></span> · ${CT(r.created_at)}</p>` +
+      `<p>📍 <a href="${esc(url)}">${esc(addr)}</a></p>` +
+      (facts ? `<p>${esc(facts)}</p>` : "") +
+      (clicked.has(r.listing_key as string) ? `<p><em>Opened from an alert email</em></p>` : "");
+    const res = await addNote(contactId, html);
+    if (res.ok) await db.from("behavior_events").update({ ghl_logged_at: new Date().toISOString() }).eq("id", r.id);
+    else { console.error("[signals] ghl note failed:", res.detail); break; }
+  }
+}
+
 export async function POST(req: Request) {
   let body: Body;
   try { body = await req.json(); } catch { return NextResponse.json({ ok: false }, { status: 400 }); }
@@ -225,6 +280,15 @@ export async function POST(req: Request) {
   if (token) {
     const { data } = await db.auth.getUser(token);
     if (data.user) { actor.userId = data.user.id; actor.email = data.user.email ?? null; }
+  }
+  // Not signed in, but arrived through a link in one of our alert emails: that private
+  // token already identifies the client (same trust as their matches page).
+  if (!actor.email) {
+    const ct = readCookie(req, "lhg_client");
+    if (ct && /^[a-f0-9]{32}$/.test(ct)) {
+      const { data: c } = await db.from("clients").select("id, email").eq("token", ct).maybeSingle();
+      if (c?.email) { actor.email = c.email; actor.clientId = c.id; }
+    }
   }
 
   try {
@@ -281,6 +345,7 @@ export async function POST(req: Request) {
     }
     // "identify" has no event of its own; it only triggers the flush below.
 
+    await logViewsToGhl(db, actor);
     await flushToGhl(db, actor);
   } catch (e) {
     console.error("[signals] failed:", (e as Error).message);
