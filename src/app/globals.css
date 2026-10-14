@@ -1743,3 +1743,5 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 .adm-chip{max-width:100%;overflow:hidden;text-overflow:ellipsis;}
 .adm-row__what{flex-wrap:wrap;}
 .adm-row__detail{min-width:0;max-width:100%;}
+
+.adm-row__link{color:var(--teal)!important;font-weight:600;text-decoration:underline;text-decoration-color:var(--aqua);cursor:pointer;}
