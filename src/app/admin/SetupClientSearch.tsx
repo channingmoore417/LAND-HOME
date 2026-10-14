@@ -27,11 +27,24 @@ const EMPTY: Form = {
   freq: "instant", backfill: "7", sms: false, consent: false,
 };
 
-export default function SetupClientSearch({ onDone }: { onDone: () => void }) {
+export interface SetupPrefill {
+  full_name?: string; email?: string; phone?: string;
+  cities?: string[]; bedsMin?: string; bathsMin?: string; // hints from what the contact already did on the site
+}
+
+export default function SetupClientSearch({ onDone, prefill }: { onDone: () => void; prefill?: SetupPrefill }) {
   const { user } = useAuth();
   const [meta, setMeta] = useState<ListResponse | null>(null);
   const [step, setStep] = useState(0);
-  const [f, setF] = useState<Form>(EMPTY);
+  const [f, setF] = useState<Form>(() => ({
+    ...EMPTY,
+    full_name: prefill?.full_name ?? "",
+    email: prefill?.email ?? "",
+    phone: prefill?.phone ?? "",
+    cities: (prefill?.cities ?? []).filter((c) => COMMUNITIES.includes(c)),
+    bedsMin: prefill?.bedsMin ?? "",
+    bathsMin: prefill?.bathsMin ?? "",
+  }));
   const [preview, setPreview] = useState<Preview | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");

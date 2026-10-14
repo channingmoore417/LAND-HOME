@@ -1,5 +1,6 @@
 "use client";
 
+import type { SetupPrefill } from "./SetupClientSearch";
 import { useCallback, useEffect, useState } from "react";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { usd } from "@/lib/format";
@@ -85,6 +86,26 @@ const ACTIVITY_LABELS: Record<string, string> = {
   unsave: "Unsaved a home",
 };
 
+// What this person has already shown us they want (towns, beds, baths), used to
+// pre-fill a client search so the agent only confirms instead of retyping.
+function searchHints(d: { savedSearches: SearchRow[]; favorites: FavoriteRow[] } | null) {
+  if (!d) return {};
+  const towns = new Map<string, number>();
+  const bump = (c: unknown) => { if (typeof c === "string" && c.trim()) towns.set(c.trim(), (towns.get(c.trim()) ?? 0) + 1); };
+  const beds: number[] = [];
+  const baths: number[] = [];
+  for (const s of d.savedSearches) {
+    const c = s.criteria ?? {};
+    for (const k of ["cities", "communities"]) if (Array.isArray(c[k])) (c[k] as unknown[]).forEach(bump);
+    bump(c.city);
+    const b = Number(c.bedsMin ?? c.beds); if (b > 0) beds.push(b);
+    const ba = Number(c.bathsMin ?? c.baths); if (ba > 0) baths.push(ba);
+  }
+  for (const f of d.favorites) bump(f.listing?.city);
+  const lowest = (xs: number[]) => (xs.length ? String(Math.min(...xs)) : undefined);
+  return { cities: [...towns.keys()], bedsMin: lowest(beds), bathsMin: lowest(baths) };
+}
+
 export default function ContactRecord({
   email,
   fallbackName,
@@ -94,11 +115,13 @@ export default function ContactRecord({
   total,
   onPrev,
   onNext,
+  onSetupSearch,
 }: {
   email: string;
   fallbackName?: string | null;
   fallbackPhone?: string | null;
   onBack: () => void;
+  onSetupSearch?: (p: SetupPrefill) => void;
   position?: number;
   total?: number;
   onPrev?: () => void;
@@ -205,6 +228,14 @@ export default function ContactRecord({
     <div className="adm-contact">
       <div className="adm-contact__nav">
         <button className="adm-back" onClick={onBack}>← Back to list</button>
+        {onSetupSearch && (
+          <button
+            className="btn btn--primary adm-setup-btn"
+            onClick={() => onSetupSearch({ full_name: name === email ? "" : name, email, phone: phone ?? "", ...searchHints(data) })}
+          >
+            Set up a client search
+          </button>
+        )}
         {(total ?? 0) > 1 && (
           <div className="adm-pager" aria-label="Browse contacts">
             <button className="adm-pager__btn" onClick={onPrev} disabled={!onPrev} aria-label="Previous contact">‹</button>
