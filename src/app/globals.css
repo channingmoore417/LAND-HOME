@@ -1289,16 +1289,25 @@ a.contact-row:hover{border-color:var(--aqua-line);box-shadow:0 10px 26px rgba(32
 @media(max-width:1100px){.adm-contact__grid{grid-template-columns:1fr;}
 .adm-contact__who{order:1;}.adm-contact__center{order:2;}.adm-contact__activity{order:3;}}
 @media(max-width:820px){
-.adm{grid-template-columns:1fr;}
+.adm{grid-template-columns:minmax(0,1fr);}
 .adm__side{flex-direction:row;align-items:center;padding:10px 14px;gap:10px;overflow-x:auto;}
 .adm__brand{display:none;}
 .adm__nav{flex-direction:row;gap:2px;}
 .adm__navbtn{padding:8px 12px;border-left:0;border-bottom:3px solid transparent;white-space:nowrap;}
 .adm__navbtn.is-active{border-left:0;border-bottom-color:var(--aqua);}
 .adm__me{display:none;}
-.adm__main{padding:20px 16px 60px;}
-.adm-row{grid-template-columns:1fr;gap:6px;}
+.adm__main{padding:16px 14px 60px;}
+.adm-row{grid-template-columns:1fr;gap:6px;padding:12px 14px;}
+.adm-row__when{justify-content:flex-start;}
+.adm__side{-webkit-overflow-scrolling:touch;}
+.adm__nav{flex-wrap:nowrap;}
+.adm__title{font-size:1.2rem;margin-bottom:12px;}
+.adm-contact__grid>*{min-width:0;}
+.ba-in{flex:1 1 calc(50% - 8px);min-width:0;}
+.ba-in--wide{flex:1 1 100%;}
+.ba-in--num{width:auto;}
 }
+@media(max-width:560px){.ba-tiles{grid-template-columns:repeat(2,1fr);}.ba-head{padding:12px 14px;}.ba-open{max-width:none;width:100%;}}
 
 /* Section-closing CTA row */
 .ctaband{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;margin-top:28px;padding:18px 22px;background:var(--aqua-soft);border:1px solid var(--line);border-radius:16px;}
@@ -1728,3 +1737,9 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 .adm__grouphead i{font-style:normal;font-size:.8rem;}
 .adm__navbtn--sub{width:100%;padding-left:34px;font-weight:500;}
 @media(max-width:820px){.adm__group,.adm__sub{display:contents;}.adm__grouphead{display:none;}.adm__navbtn--sub{width:auto;padding-left:12px;}}
+
+/* Admin — never let long text stretch the page */
+.adm__main{overflow-wrap:anywhere;}
+.adm-chip{max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+.adm-row__what{flex-wrap:wrap;}
+.adm-row__detail{min-width:0;max-width:100%;}

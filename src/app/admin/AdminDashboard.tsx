@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
-import ContactRecord from "./ContactRecord";
+import ContactRecord, { cleanMessage } from "./ContactRecord";
 import ClientSearches from "./ClientSearches";
 import SetupClientSearch from "./SetupClientSearch";
 import BuyerActivity, { type BAShowing, type BASearch, type BAFavorite } from "./BuyerActivity";
@@ -116,17 +116,31 @@ export default function AdminDashboard() {
     return () => { mounted = false; };
   }, [ready, user]);
 
-  // One inbox: every lead form + showing request, newest first.
+  // One inbox: every lead form + showing request, newest first. Raw tracking
+  // URLs and MLS filler stay out of it — a short form label, a clean page path
+  // or message, and a "Google Ads" tag when the visit came from an ad.
   const inbox = useMemo(() => {
     if (!data) return [];
+    const FORM_CHIP: Record<string, string> = {
+      listing_inquiry: "Property inquiry", ad_capture: "Ads registration", buyer_quiz: "Buyer quiz", buyer_guide: "Buyer guide",
+      mortgage_preapproval: "Pre-approval", home_valuation: "Home value", cash_offer: "Cash offer", contact: "Contact",
+    };
+    const pathOf = (src: string | null) => {
+      if (!src) return null;
+      try { return decodeURIComponent(new URL(src, "https://x.test").pathname).replace(/\/$/, "") || "/"; } catch { return null; }
+    };
     return [
       ...data.leads.map((l) => ({
         key: `lead-${l.id}`, name: l.full_name, email: l.email, phone: l.phone,
-        kind: l.source || "form", detail: l.message, created_at: l.created_at,
+        kind: FORM_CHIP[l.destination ?? ""] ?? "Form",
+        ad: /gclid|gbraid|wbraid|gad_source|utm_source=google/i.test(l.source ?? ""),
+        detail: cleanMessage(l.message) ?? pathOf(l.source) ?? null,
+        created_at: l.created_at,
       })),
       ...data.showingRequests.map((s) => ({
         key: `showing-${s.id}`, name: s.full_name, email: s.email, phone: s.phone,
-        kind: "showing request", detail: s.listing_key ? `Listing ${s.listing_key}` : null, created_at: s.created_at,
+        kind: "Showing request", ad: false,
+        detail: s.listing?.unparsed_address ?? null, created_at: s.created_at,
       })),
     ].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   }, [data]);
@@ -284,6 +298,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="adm-row__what">
                             <span className="adm-chip adm-chip--teal">{i.kind}</span>
+                            {i.ad && <span className="adm-chip adm-chip--gold">Google Ads</span>}
                             {i.detail && <span className="adm-row__detail">{i.detail}</span>}
                           </div>
                           <div className="adm-row__when">
