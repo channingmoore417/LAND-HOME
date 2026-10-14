@@ -37,7 +37,7 @@ function telHref(phone: string | null | undefined): string | null {
   return `+${d.length === 10 ? "1" + d : d}`;
 }
 
-const FORM_LABELS: Record<string, string> = {
+export const FORM_LABELS: Record<string, string> = {
   listing_inquiry: "Asked about a property",
   ad_capture: "Registered to see listings (Google Ads)",
   buyer_quiz: "Registered / completed the buyer quiz",
@@ -49,7 +49,7 @@ const FORM_LABELS: Record<string, string> = {
 };
 
 // Form messages carry site-generated filler (MLS numbers, links, "listing gate form"). Show only what matters.
-function cleanMessage(m: string | null | undefined): string | undefined {
+export function cleanMessage(m: string | null | undefined): string | undefined {
   const t = (m ?? "").trim();
   if (!t) return undefined;
   if (/^Re: /.test(t)) return t.split("\nProperty:")[0].replace(/^Re: [^\n]*? — /, "").trim() || undefined;
