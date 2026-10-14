@@ -23,7 +23,7 @@ export async function GET(req: Request) {
 
   // Enrich saved homes and showing requests with listing context (address,
   // price, beds/baths, city) so the dashboard can summarise instead of listing bare MLS keys.
-  const keys = [...new Set([...(favorites.data ?? []), ...(showings.data ?? [])].map((r) => r.listing_key).filter(Boolean))];
+  const keys = [...new Set([...(favorites.data ?? []), ...(showings.data ?? []), ...(leads.data ?? [])].map((r) => r.listing_key).filter(Boolean))];
   type ListingCtx = {
     listing_key: string; unparsed_address: string | null; list_price: number | null; city: string | null;
     bedrooms_total: number | null; bathrooms_total: number | null; living_area: number | null; property_type: string | null;
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
   });
 
   return NextResponse.json({
-    leads: leads.data ?? [],
+    leads: (leads.data ?? []).map(withListing),
     showingRequests: (showings.data ?? []).map(withListing),
     savedSearches: (searches.data ?? []).map((x) => ({ ...x, norm: normalizeCriteria(x.criteria) })),
     favorites: (favorites.data ?? []).map(withListing),

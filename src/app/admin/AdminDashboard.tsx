@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import ContactRecord, { cleanMessage } from "./ContactRecord";
 import ClientSearches from "./ClientSearches";
 import SetupClientSearch from "./SetupClientSearch";
-import BuyerActivity, { type BAShowing, type BASearch, type BAFavorite } from "./BuyerActivity";
+import BuyerActivity, { type BAShowing, type BASearch, type BAFavorite, type ListingCtx } from "./BuyerActivity";
 
 interface Lead {
   id: number;
@@ -18,6 +18,7 @@ interface Lead {
   listing_key: string | null;
   message: string | null;
   created_at: string;
+  listing?: ListingCtx | null;
 }
 type ShowingRequest = BAShowing;
 type SavedSearch = BASearch;
@@ -75,6 +76,8 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [tab, setTab] = useState<Tab>("leads");
   const [contact, setContact] = useState<OpenContact | null>(null);
   // Groups the user collapsed, remembered per browser (never required to render).
@@ -93,28 +96,43 @@ export default function AdminDashboard() {
   // through it with previous / next arrows.
   const [navList, setNavList] = useState<OpenContact[]>([]);
 
-  useEffect(() => {
-    if (!ready) return;
+  // Fetch dashboard data. `silent` refreshes in place (no spinner) so a lead that
+  // arrives while the page is open shows up without a manual reload.
+  const load = useCallback(async (silent = false) => {
     if (!user) { setLoading(false); return; }
-    let mounted = true;
-    (async () => {
-      const sb = getBrowserClient();
-      const { data: sessionData } = await sb.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) { setLoading(false); return; }
-      const res = await fetch("/api/admin/data", { headers: { Authorization: `Bearer ${token}` } });
-      if (!mounted) return;
-      if (!res.ok) {
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
+    const sb = getBrowserClient();
+    const { data: sessionData } = await sb.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) { setLoading(false); setRefreshing(false); return; }
+    const res = await fetch("/api/admin/data", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+    if (!res.ok) {
+      if (!silent) {
         const body = await res.json().catch(() => ({}));
         setError(body.error || `Request failed (${res.status})`);
-        setLoading(false);
-        return;
       }
+    } else {
       setData(await res.json());
-      setLoading(false);
-    })();
-    return () => { mounted = false; };
-  }, [ready, user]);
+      setUpdatedAt(new Date());
+    }
+    setLoading(false);
+    setRefreshing(false);
+  }, [user]);
+
+  useEffect(() => {
+    if (!ready) return;
+    load();
+  }, [ready, load]);
+
+  // Keep it fresh: every 2 minutes, and whenever the tab/app comes back into view.
+  useEffect(() => {
+    if (!user) return;
+    const t = setInterval(() => load(true), 120_000);
+    const onVisible = () => { if (document.visibilityState === "visible") load(true); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", onVisible); };
+  }, [user, load]);
 
   // One inbox: every lead form + showing request, newest first. Raw tracking
   // URLs and MLS filler stay out of it — a short form label, a clean page path
@@ -125,22 +143,30 @@ export default function AdminDashboard() {
       listing_inquiry: "Property inquiry", ad_capture: "Ads registration", buyer_quiz: "Buyer quiz", buyer_guide: "Buyer guide",
       mortgage_preapproval: "Pre-approval", home_valuation: "Home value", cash_offer: "Cash offer", contact: "Contact",
     };
-    const pathOf = (src: string | null) => {
+    // A page address as plain words ("Lake Charles · Homes for sale"), never a URL.
+    const pageOf = (src: string | null) => {
       if (!src) return null;
-      try { return decodeURIComponent(new URL(src, "https://x.test").pathname).replace(/\/$/, "") || "/"; } catch { return null; }
+      try {
+        const words = decodeURIComponent(new URL(src, "https://x.test").pathname).split("/").filter(Boolean)
+          .filter((w) => !/^\d+$/.test(w))
+          .map((w) => w.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase()));
+        return words.length ? words.join(" · ") : null;
+      } catch { return null; }
     };
+    const addrOf = (l: { listing?: ListingCtx | null }) => l.listing?.unparsed_address ?? null;
     return [
       ...data.leads.map((l) => ({
         key: `lead-${l.id}`, name: l.full_name, email: l.email, phone: l.phone,
         kind: FORM_CHIP[l.destination ?? ""] ?? "Form",
         ad: /gclid|gbraid|wbraid|gad_source|utm_source=google/i.test(l.source ?? ""),
-        detail: cleanMessage(l.message) ?? pathOf(l.source) ?? null,
+        detail: addrOf(l) ?? cleanMessage(l.message) ?? pageOf(l.source),
+        href: l.listing_key && addrOf(l) ? `/listings/${l.listing_key}` : undefined,
         created_at: l.created_at,
       })),
       ...data.showingRequests.map((s) => ({
         key: `showing-${s.id}`, name: s.full_name, email: s.email, phone: s.phone,
         kind: "Showing request", ad: false,
-        detail: s.listing?.unparsed_address ?? null, created_at: s.created_at,
+        detail: addrOf(s), href: s.listing_key && addrOf(s) ? `/listings/${s.listing_key}` : undefined, created_at: s.created_at,
       })),
     ].sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
   }, [data]);
@@ -262,6 +288,9 @@ export default function AdminDashboard() {
         </nav>
         <div className="adm__me">
           <span>{user.email}</span>
+          <button onClick={() => load(true)} disabled={refreshing}>
+            {refreshing ? "Refreshing…" : updatedAt ? `Refresh · updated ${updatedAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}` : "Refresh"}
+          </button>
           <button onClick={signOut}>Sign out</button>
         </div>
       </aside>
@@ -299,7 +328,11 @@ export default function AdminDashboard() {
                           <div className="adm-row__what">
                             <span className="adm-chip adm-chip--teal">{i.kind}</span>
                             {i.ad && <span className="adm-chip adm-chip--gold">Google Ads</span>}
-                            {i.detail && <span className="adm-row__detail">{i.detail}</span>}
+                            {i.detail && (i.href
+                              ? <span className="adm-row__detail adm-row__link" role="link" tabIndex={0}
+                                  onClick={(e) => { e.stopPropagation(); window.open(i.href, "_blank", "noopener"); }}
+                                  onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); window.open(i.href, "_blank", "noopener"); } }}>{i.detail}</span>
+                              : <span className="adm-row__detail">{i.detail}</span>)}
                           </div>
                           <div className="adm-row__when">
                             {isNew(i.created_at) && <span className="adm-badge">NEW</span>}
