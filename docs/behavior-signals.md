@@ -41,7 +41,7 @@ Test without sending or recording: `GET /api/digest?preview=1` with the bearer s
 
 ## Every property view → GHL activity feed
 
-Each listing view (30-minute debounce) is added to the contact's GHL activity as a note: linked
+Each listing view (10-second guard against double-fires only; quick revisits all count) is added to the contact's GHL activity as a note: linked
 address, price, beds/baths, time (Central), and "Opened from an alert email" when it followed a click
 on an alert link. Implemented in `logViewsToGhl()` (`src/app/api/signals/route.ts`) through the GHL
 REST API (`GHL_API_KEY`, needs `contacts.write`). Notes don't notify anyone.
