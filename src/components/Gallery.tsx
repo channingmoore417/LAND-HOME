@@ -33,6 +33,12 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
     };
   }, [open, photos.length]);
 
+  function slideBy(dir: 1 | -1) {
+    const el = track.current;
+    if (!el) return;
+    el.scrollTo({ left: (slide + dir) * el.clientWidth, behavior: "smooth" });
+  }
+
   function show(idx: number) {
     setI(idx);
     setOpen(true);
@@ -67,6 +73,12 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
             </figure>
           ))}
         </div>
+        {photos.length > 1 && slide > 0 && (
+          <button className="gallery__arrow gallery__arrow--prev" aria-label="Previous photo" onClick={() => slideBy(-1)}>‹</button>
+        )}
+        {photos.length > 1 && slide < photos.length - 1 && (
+          <button className="gallery__arrow gallery__arrow--next" aria-label="Next photo" onClick={() => slideBy(1)}>›</button>
+        )}
         <span className="gallery__count">{Math.min(slide + 1, photos.length)} / {photos.length}</span>
       </div>
 
