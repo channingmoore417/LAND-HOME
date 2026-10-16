@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase";
 import { SITE_URL } from "@/lib/seoConfig";
-import { addNote, findContactId, ghlConfigured } from "@/lib/alerts/ghl";
+import { addNote, addTask, findContact, findContactId, ghlConfigured } from "@/lib/alerts/ghl";
 
 export const runtime = "nodejs";
 
@@ -259,6 +259,30 @@ async function logViewsToGhl(db: Admin, a: Actor) {
   }
 }
 
+// A home save puts a task on the contact's owner in GHL (they are notified and it lands in
+// their task list) — in addition to the workflow's in-app notification, which GHL gives us no
+// way to verify. One task per burst: saves within 15 minutes of an earlier one are covered by
+// that task (every save still gets its own note). Only for contacts that already have an owner.
+async function taskOwnerForSave(db: Admin, a: Actor, actorFilter: string, listingKey: string) {
+  if (!a.email || !ghlConfigured()) return;
+  const since = new Date(Date.now() - 15 * 60_000).toISOString();
+  const { count } = await db.from("behavior_events").select("id", { count: "exact", head: true })
+    .eq("type", "listing_saved").or(actorFilter).gte("created_at", since);
+  if ((count ?? 0) > 1) return; // this save is the one just stored; any more means a task already went out
+  const contact = await findContact(a.email);
+  if (!contact?.assignedTo) return;
+  const { data: l } = await db.from("listings")
+    .select("unparsed_address, city, list_price, internet_address_yn").eq("listing_key", listingKey).maybeSingle();
+  const where = l && l.internet_address_yn !== false && l.unparsed_address ? `${l.unparsed_address}, ${l.city ?? ""}`.replace(/,\s*$/, "") : `a home in ${l?.city ?? "Southwest Louisiana"}`;
+  const price = l?.list_price ? ` · $${Number(l.list_price).toLocaleString("en-US")}` : "";
+  const res = await addTask({
+    contactId: contact.id, userId: contact.assignedTo,
+    title: `${contact.name ?? a.email} saved a home`,
+    body: `${where}${price}\n${SITE_URL}/listings/${listingKey}\nReach out while it's fresh.`,
+  });
+  if (!res.ok) console.error("[signals] ghl task failed:", res.detail);
+}
+
 export async function POST(req: Request) {
   let body: Body;
   try { body = await req.json(); } catch { return NextResponse.json({ ok: false }, { status: 400 }); }
@@ -330,6 +354,7 @@ export async function POST(req: Request) {
     } else if (type === "listing_saved") {
       await db.from("behavior_events").insert({ visitor_id: vid, user_id: actor.userId, type, listing_key: listingKey, meta: {} });
       await recordSignal(db, actor, "listing_saved", listingKey!, listingKey, {}, attribution);
+      await taskOwnerForSave(db, actor, actorFilter, listingKey!);
     } else if (type === "saved_search") {
       const criteria = normCriteria(body.criteria);
       if (JSON.stringify(criteria).length > 2000) return reply(vid, { ok: false, error: "criteria too large" }, 400);

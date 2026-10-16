@@ -128,21 +128,40 @@ export async function ensureContact(input: ContactInput): Promise<GhlResult & { 
   return { ok: true, status: 200, detail: "existing", id: contact.id, assignedTo };
 }
 
-// Contact-id lookups are cached per serverless instance so a burst of page views
+// Contact lookups are cached per serverless instance so a burst of page views
 // costs one search, not one per view. A miss is cached briefly (the contact may be created moments later).
-const contactCache = new Map<string, { id: string | null; at: number }>();
+export interface FoundContact { id: string; assignedTo: string | null; name: string | null }
+const contactCache = new Map<string, { c: FoundContact | null; at: number }>();
 
-/** The existing GHL contact id for an email — never creates one. */
-export async function findContactId(emailRaw: string): Promise<string | null> {
+/** The existing GHL contact for an email — never creates one. */
+export async function findContact(emailRaw: string): Promise<FoundContact | null> {
   const email = emailRaw.trim().toLowerCase();
   const hit = contactCache.get(email);
-  if (hit && Date.now() - hit.at < (hit.id ? 60 * 60_000 : 5 * 60_000)) return hit.id;
+  // An owner can be assigned moments after creation, so only trust a cached owner for a minute.
+  if (hit && Date.now() - hit.at < (hit.c ? (hit.c.assignedTo ? 60 * 60_000 : 60_000) : 5 * 60_000)) return hit.c;
   const q = new URLSearchParams({ locationId: LOCATION_ID, email });
   const r = await call<{ contact?: GhlContact }>(`/contacts/search/duplicate?${q}`, "GET");
   if (!r.ok && r.status !== 404 && r.status !== 422) return null; // transient — don't cache
-  const id = r.ok ? r.data.contact?.id ?? null : null;
-  contactCache.set(email, { id, at: Date.now() });
-  return id;
+  const k = r.ok ? r.data.contact : undefined;
+  const c: FoundContact | null = k
+    ? { id: k.id, assignedTo: k.assignedTo ?? null, name: [k.firstName, k.lastName].filter(Boolean).join(" ") || null }
+    : null;
+  contactCache.set(email, { c, at: Date.now() });
+  return c;
+}
+
+/** The existing GHL contact id for an email — never creates one. */
+export async function findContactId(emailRaw: string): Promise<string | null> {
+  return (await findContact(emailRaw))?.id ?? null;
+}
+
+/** A task assigned to a GHL user — they get notified and it lands in their task list. */
+export async function addTask(opts: { contactId: string; userId: string; title: string; body: string; dueInHours?: number }): Promise<GhlResult> {
+  const due = new Date(Date.now() + (opts.dueInHours ?? 2) * 60 * 60_000).toISOString();
+  const r = await call(`/contacts/${opts.contactId}/tasks`, "POST", {
+    title: opts.title, body: opts.body, dueDate: due, completed: false, assignedTo: opts.userId,
+  });
+  return { ok: r.ok, status: r.status, detail: r.detail };
 }
 
 /** Add a note (HTML allowed) to a contact's activity feed. Notes do not notify anyone. */
