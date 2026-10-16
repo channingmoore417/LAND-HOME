@@ -13,9 +13,11 @@ export const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0
 export const arr = (v: string | string[] | undefined) => (Array.isArray(v) ? v : v ? [v] : []);
 
 export function parseFilters(sp: SP): ListingFilters {
+  const cities = [...new Set(arr(sp.city).map((c) => c.trim()).filter(Boolean))];
   return {
     q: one(sp.q),
-    city: one(sp.city),
+    cities,
+    city: cities.length === 1 ? cities[0] : "",
     beds: Number(one(sp.beds)) || 0,
     baths: Number(one(sp.baths)) || 0,
     type: one(sp.type),
@@ -35,7 +37,8 @@ export function parseFilters(sp: SP): ListingFilters {
 export function toCriteria(f: ListingFilters): ListingCriteria {
   const crit: ListingCriteria = {
     status: f.status || undefined,
-    city: f.city || undefined,
+    city: f.cities.length === 1 ? f.cities[0] : undefined,
+    cities: f.cities.length > 1 ? f.cities : undefined,
     bedsMin: f.beds || undefined,
     bathsMin: f.baths || undefined,
     priceMin: f.minPrice || undefined,
