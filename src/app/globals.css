@@ -1781,3 +1781,9 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
 }
 
 .fgroup__hint{font-style:normal;font-weight:400;text-transform:none;letter-spacing:0;opacity:.6;font-size:.72rem;}
+
+/* Sign-in buttons: matched size, real brand logos */
+.qg__oauth{min-height:54px;gap:12px;font-weight:600;font-size:1rem;line-height:1;}
+.qg__oauth .qg__logo{flex:0 0 auto;display:block;}
+.qg__oauth--fb{background:#1877F2;border-color:#1877F2;color:#fff;}
+.qg__oauth--fb:active{background:#166fe0;}
