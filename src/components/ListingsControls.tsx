@@ -15,6 +15,7 @@ export interface ListingFilters {
   beds: number;
   baths: number;
   type: string;
+  builder: string;
   status: string;
   minPrice: number;
   maxPrice: number;
@@ -37,6 +38,7 @@ export const CITIES = [
   "Ragley", "DeQuincy", "DeRidder", "Jennings", "Welsh", "Carlyss", "Westlake",
 ];
 export const TYPES = ["Single Family", "Multi-Family", "New Construction", "Land", "Mobile / Manufactured"];
+export const BUILDER_OPTIONS = ["DSLD Homes", "D.R. Horton"];
 export const STATUSES = ["Active", "Pending"];
 export const FEATURES: { key: string; label: string }[] = [
   { key: "pool", label: "Pool" },
@@ -74,6 +76,7 @@ export default function ListingsControls({
     if (next.beds) p.set("beds", String(next.beds));
     if (next.baths) p.set("baths", String(next.baths));
     if (next.type) p.set("type", next.type);
+    if (next.builder) p.set("builder", next.builder);
     if (next.status) p.set("status", next.status);
     if (next.minPrice > 0) p.set("minPrice", String(next.minPrice));
     if (next.maxPrice < PRICE_MAX) p.set("maxPrice", String(next.maxPrice));
@@ -107,7 +110,7 @@ export default function ListingsControls({
   }
 
   const empty: ListingFilters = {
-    q: "", city: "", cities: [], beds: 0, baths: 0, type: "", status: "",
+    q: "", city: "", cities: [], beds: 0, baths: 0, type: "", builder: "", status: "",
     minPrice: 0, maxPrice: PRICE_MAX, minSqft: 0, maxSqft: SQFT_MAX,
     year: 0, features: [], zip: "", neighborhood: "", sort: f.sort,
   };
@@ -124,6 +127,7 @@ export default function ListingsControls({
   if (f.beds) active++;
   if (f.baths) active++;
   if (f.type) active++;
+  if (f.builder) active++;
   if (f.status) active++;
   if (f.year) active++;
   if (f.minPrice > 0 || f.maxPrice < PRICE_MAX) active++;
@@ -192,6 +196,16 @@ export default function ListingsControls({
             {TYPES.map((t) => (
               <button key={t} className={f.type === t ? "on" : ""}
                 onClick={() => setApply("type", f.type === t ? "" : t)}>{t}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className="fgroup">
+          <span className="fgroup__label">Builder</span>
+          <div className="pills">
+            {BUILDER_OPTIONS.map((b) => (
+              <button key={b} className={f.builder === b ? "on" : ""}
+                onClick={() => setApply("builder", f.builder === b ? "" : b)}>{b}</button>
             ))}
           </div>
         </div>

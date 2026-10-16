@@ -35,6 +35,7 @@ function pageToFilters(page: SeoPage): ListingFilters {
       page.page_type === "land" ? "Land"
         : page.page_type === "single_family" ? "Single Family"
         : page.page_type === "mobile" ? "Mobile / Manufactured" : "",
+    builder: "",
     status: "",
     minPrice: page.price_min ?? 0,
     maxPrice: page.price_max ?? PRICE_MAX,
