@@ -316,8 +316,10 @@ export default async function ListingPage({
             <div className="hero__price">
               <div className="lbl">Offered At</div>
               <div className="val">{priceLabel}</div>
-              <div className="hero__status">{statusLabel}</div>
-              <SaveListingButton listingKey={listing.listing_key} />
+              <div className="hero__actions">
+                <div className="hero__status">{statusLabel}</div>
+                <SaveListingButton listingKey={listing.listing_key} />
+              </div>
             </div>
           </div>
 
