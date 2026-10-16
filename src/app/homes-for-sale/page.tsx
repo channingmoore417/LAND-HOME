@@ -49,6 +49,7 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
   if (f.minPrice) searchMeta.minPrice = f.minPrice;
   if (f.maxPrice && f.maxPrice < PRICE_MAX) searchMeta.maxPrice = f.maxPrice;
   if (f.type) searchMeta.type = f.type;
+  if (f.builder) searchMeta.builder = f.builder;
   if (f.features.length) searchMeta.features = f.features;
   if (f.zip) searchMeta.zip = f.zip;
   if (f.neighborhood) searchMeta.neighborhood = f.neighborhood;

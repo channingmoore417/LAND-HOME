@@ -21,6 +21,7 @@ export function parseFilters(sp: SP): ListingFilters {
     beds: Number(one(sp.beds)) || 0,
     baths: Number(one(sp.baths)) || 0,
     type: one(sp.type),
+    builder: one(sp.builder),
     status: one(sp.status),
     minPrice: Number(one(sp.minPrice)) || 0,
     maxPrice: Number(one(sp.maxPrice)) || PRICE_MAX,
@@ -47,6 +48,7 @@ export function toCriteria(f: ListingFilters): ListingCriteria {
     sqftMax: f.maxSqft,
     yearMin: f.year || undefined,
     type: f.type || undefined,
+    builder: f.builder || undefined,
     features: f.features,
     q: f.q || undefined,
   };

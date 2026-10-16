@@ -27,6 +27,13 @@ export const FEATURE_COLUMN: Record<string, string> = {
   owner_financing: "has_owner_financing",
 };
 
+// Builders buyers ask for by name. The MLS feed has no builder field, so a listing counts
+// as built by one when its public remarks say so (phrases are matched case-insensitively).
+export const BUILDERS: Record<string, string[]> = {
+  "DSLD Homes": ["dsld"],
+  "D.R. Horton": ["d.r. horton", "dr horton", "d. r. horton", "dr. horton", "d r horton", "d.r.horton", "drhorton"],
+};
+
 export interface ListingCriteria {
   status?: string; // defaults to "Active"
   city?: string;
@@ -41,6 +48,7 @@ export interface ListingCriteria {
   type?: string; // UI value: "Single Family" | "Multi-Family" | "New Construction" | "Land" | "Mobile / Manufactured"
   category?: "land" | "single_family" | "mobile" | "residential"; // SEO-page shorthand
   features?: string[]; // feature keys (see FEATURE_COLUMN)
+  builder?: string; // a key of BUILDERS — matched against the listing remarks (the MLS feed has no builder field)
   postalCode?: string; // ZIP (prefix match, tolerates ZIP+4)
   subdivisionAny?: string[]; // neighborhood: subdivision_name ILIKE keywords (OR'd)
   highSchool?: string; // school-zone pages: MLS high_school (exact, case-insensitive)
@@ -118,6 +126,9 @@ export function applyListingFilters(query: any, c: ListingCriteria) {
   else if (c.type === "New Construction") query = query.eq("is_new_construction", true);
   else if (c.type === "Land") query = query.eq("property_type", "Land");
   else if (c.type === "Mobile / Manufactured") query = query.in("property_sub_type", MOBILE_SUBTYPES);
+
+  const builderKeys = c.builder ? BUILDERS[c.builder] : undefined;
+  if (builderKeys) query = query.or(builderKeys.map((k) => `public_remarks.ilike.%${k}%`).join(","));
 
   for (const key of c.features ?? []) {
     const col = FEATURE_COLUMN[key];
