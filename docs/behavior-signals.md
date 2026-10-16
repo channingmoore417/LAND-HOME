@@ -50,3 +50,10 @@ REST API (`GHL_API_KEY`, needs `contacts.write`). Notes don't notify anyone.
   alert email (clients table token). Views from before identification are logged on the first identified hit.
 - Only existing GHL contacts get notes; views wait (`behavior_events.ghl_logged_at is null`) until one exists.
 - The "3+ views of one home" signal is separate and unchanged (`repeat_listing_view` → Website Behavior Signal workflow).
+
+## Home saves → task for the assigned agent
+
+On `listing_saved` the signals route also creates a GHL **task** assigned to the contact's owner (GHL notifies
+the assignee and it lands in their task list), once per 15-minute burst; every save still gets its own note via
+the `favorites_to_ghl` workflow. This exists because the workflow's in-app notification step can't be verified
+from outside GHL. Needs `GHL_API_KEY` with `contacts.write`; skipped for contacts with no owner yet.
