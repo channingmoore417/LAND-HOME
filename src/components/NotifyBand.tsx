@@ -9,7 +9,8 @@ import { clickAttribution } from "@/lib/attribution";
 function label(c?: Record<string, unknown>): string {
   if (!c) return "My saved search";
   const parts: string[] = [];
-  if (c.city) parts.push(String(c.city));
+  if (Array.isArray(c.cities) && c.cities.length) parts.push((c.cities as string[]).join(", "));
+  else if (c.city) parts.push(String(c.city));
   if (c.beds) parts.push(`${c.beds}+ bd`);
   if (c.type) parts.push(String(c.type));
   if (c.zip) parts.push(String(c.zip));

@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 
 export interface ListingFilters {
   q: string;
-  city: string;
+  city: string; // the single selected city ("" when none or several) — kept for pages that expect one
+  cities: string[]; // every selected city (multi-select)
   beds: number;
   baths: number;
   type: string;
@@ -69,7 +70,7 @@ export default function ListingsControls({
   function apply(next: ListingFilters) {
     const p = new URLSearchParams();
     if (next.q) p.set("q", next.q);
-    if (next.city) p.set("city", next.city);
+    for (const c of next.cities) p.append("city", c);
     if (next.beds) p.set("beds", String(next.beds));
     if (next.baths) p.set("baths", String(next.baths));
     if (next.type) p.set("type", next.type);
@@ -92,6 +93,12 @@ export default function ListingsControls({
     setF(next);
     apply(next);
   }
+  function toggleCity(c: string) {
+    const cities = f.cities.includes(c) ? f.cities.filter((x) => x !== c) : [...f.cities, c];
+    const next = { ...f, cities, city: cities.length === 1 ? cities[0] : "" };
+    setF(next);
+    apply(next);
+  }
   function toggleFeature(key: string) {
     const features = f.features.includes(key)
       ? f.features.filter((x) => x !== key)
@@ -100,7 +107,7 @@ export default function ListingsControls({
   }
 
   const empty: ListingFilters = {
-    q: "", city: "", beds: 0, baths: 0, type: "", status: "",
+    q: "", city: "", cities: [], beds: 0, baths: 0, type: "", status: "",
     minPrice: 0, maxPrice: PRICE_MAX, minSqft: 0, maxSqft: SQFT_MAX,
     year: 0, features: [], zip: "", neighborhood: "", sort: f.sort,
   };
@@ -111,7 +118,7 @@ export default function ListingsControls({
 
   let active = 0;
   if (f.q) active++;
-  if (f.city) active++;
+  active += f.cities.length;
   if (f.neighborhood) active++;
   if (f.zip) active++;
   if (f.beds) active++;
@@ -200,12 +207,12 @@ export default function ListingsControls({
         </div>
 
         <div className="fgroup">
-          <span className="fgroup__label">City</span>
-          <div className="qsel" style={{ width: "100%" }}>
-            <select value={f.city} style={{ width: "100%" }} onChange={(e) => setApply("city", e.target.value)}>
-              <option value="">Any City</option>
-              {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+          <span className="fgroup__label">City <em className="fgroup__hint">(pick one or more)</em></span>
+          <div className="pills">
+            {CITIES.map((c) => (
+              <button key={c} type="button" aria-pressed={f.cities.includes(c)} className={f.cities.includes(c) ? "on" : ""}
+                onClick={() => toggleCity(c)}>{c}</button>
+            ))}
           </div>
         </div>
 

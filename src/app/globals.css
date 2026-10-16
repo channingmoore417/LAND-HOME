@@ -1779,3 +1779,5 @@ html[data-ad] .nav,html[data-ad] .hero--index{display:none !important;}
   .gallery__arrow--next{right:10px;}
   .gallery__arrow:active{background:var(--aqua);color:var(--teal-deep);}
 }
+
+.fgroup__hint{font-style:normal;font-weight:400;text-transform:none;letter-spacing:0;opacity:.6;font-size:.72rem;}

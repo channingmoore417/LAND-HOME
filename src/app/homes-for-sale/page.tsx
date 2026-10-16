@@ -42,7 +42,8 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
 
   // Compact set of active filters for the per-user search activity log.
   const searchMeta: Record<string, unknown> = {};
-  if (f.city) searchMeta.city = f.city;
+  if (f.cities.length > 1) searchMeta.cities = f.cities;
+  else if (f.city) searchMeta.city = f.city;
   if (f.beds) searchMeta.beds = f.beds;
   if (f.baths) searchMeta.baths = f.baths;
   if (f.minPrice) searchMeta.minPrice = f.minPrice;
@@ -53,7 +54,11 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
   if (f.neighborhood) searchMeta.neighborhood = f.neighborhood;
   if (f.q) searchMeta.q = f.q;
 
-  const areaName = f.city ? `${f.city}, Louisiana` : "Southwest Louisiana";
+  const cityLabel =
+    f.cities.length <= 1 ? f.cities[0] ?? ""
+    : f.cities.length === 2 ? f.cities.join(" & ")
+    : `${f.cities.slice(0, -1).join(", ")} & ${f.cities[f.cities.length - 1]}`;
+  const areaName = cityLabel ? `${cityLabel}, Louisiana` : "Southwest Louisiana";
 
   // Toggle links (preserve filters + sort; drop page/view).
   const keep = new URLSearchParams();
@@ -75,10 +80,12 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
     for (const item of arr(v)) apiQuery.append(k, item);
   }
 
-  const controls = (
+  // `total` is the real match count (it labels the "Show N homes" button), so the
+  // controls are built after the search runs.
+  const makeControls = (total: number) => (
     <ListingsControls
       filters={f}
-      total={0}
+      total={total}
       neighborhoods={neighborhoodsFor("Lake Charles").map((n) => ({ slug: n.slug, name: n.name }))}
       zips={zipAreasFor("Lake Charles").map((z) => ({ slug: z.slug, name: `${z.name} · ${z.zip}` }))}
     />
@@ -95,7 +102,7 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
 
     return (
       <>
-        <Hero areaName={areaName} city={f.city} />
+        <Hero areaName={areaName} city={cityLabel} />
         <TrackSearch criteria={searchMeta} />
         <main className="results">
           <div className="wrapwide">
@@ -106,12 +113,12 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
               query={apiQuery.toString()}
               qText={f.q}
               listHref={viewHref("list")}
-              filtersSlot={<FilterDrawer>{controls}</FilterDrawer>}
+              filtersSlot={<FilterDrawer>{makeControls(total)}</FilterDrawer>}
             />
           </div>
         </main>
-        <AreaBlurb areaName={areaName} city={f.city} total={total} />
-        <HubExtras showCities={!f.city} />
+        <AreaBlurb areaName={areaName} city={cityLabel} total={total} />
+        <HubExtras showCities={f.cities.length === 0} />
       </>
     );
   }
@@ -137,13 +144,13 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
 
   return (
     <>
-      <Hero areaName={areaName} city={f.city} />
-      <ListBar view={view} query={f.q} viewHref={viewHref} filtersSlot={<FilterDrawer>{controls}</FilterDrawer>} />
+      <Hero areaName={areaName} city={cityLabel} />
+      <ListBar view={view} query={f.q} viewHref={viewHref} filtersSlot={<FilterDrawer>{makeControls(total)}</FilterDrawer>} />
       <TrackSearch criteria={searchMeta} />
       <main className="results">
         <div className="wrap">
           <div className="searchgrid">
-            {controls}
+            {makeControls(total)}
             <div className="searchgrid__main">
               <div className="results__head">
                 <div className="meta">
@@ -215,8 +222,8 @@ export default async function HomesForSalePage({ searchParams }: { searchParams:
           </div>
         </div>
       </main>
-      <AreaBlurb areaName={areaName} city={f.city} total={total} />
-      <HubExtras showCities={!f.city} />
+      <AreaBlurb areaName={areaName} city={cityLabel} total={total} />
+      <HubExtras showCities={f.cities.length === 0} />
     </>
   );
 }

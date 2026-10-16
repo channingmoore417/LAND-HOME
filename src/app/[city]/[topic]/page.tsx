@@ -28,6 +28,7 @@ function pageToFilters(page: SeoPage): ListingFilters {
   return {
     q: "",
     city: page.city ?? "",
+    cities: page.city ? [page.city] : [],
     beds: page.page_type === "beds" ? page.beds_min ?? 0 : 0,
     baths: 0,
     type:

@@ -18,6 +18,7 @@ export async function GET(req: Request) {
   const sp: SP = {};
   for (const key of p.keys()) {
     if (key === "feature") sp.feature = p.getAll("feature");
+    else if (key === "city") sp.city = p.getAll("city");
     else sp[key] = p.get(key) ?? undefined;
   }
 
