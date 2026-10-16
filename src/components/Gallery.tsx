@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface Photo {
   url: string;
@@ -12,6 +12,8 @@ export interface Photo {
 export default function Gallery({ photos }: { photos: Photo[] }) {
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
+  const [slide, setSlide] = useState(0); // which photo the mobile swipe strip is showing
+  const track = useRef<HTMLDivElement>(null);
 
   const has = photos.length > 0;
   const grid = photos.slice(0, 5);
@@ -48,6 +50,26 @@ export default function Gallery({ photos }: { photos: Photo[] }) {
 
   return (
     <>
+      {/* Phones/tablets: swipe through every photo right in the hero (tap one to open it full screen). */}
+      <div className="gallery__slider">
+        <div
+          className="gallery__track"
+          ref={track}
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            setSlide(Math.round(el.scrollLeft / Math.max(el.clientWidth, 1)));
+          }}
+        >
+          {photos.map((p, idx) => (
+            <figure key={idx} className="gallery__slide" onClick={() => show(idx)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.url} alt={p.alt} loading={idx < 2 ? "eager" : "lazy"} draggable={false} />
+            </figure>
+          ))}
+        </div>
+        <span className="gallery__count">{Math.min(slide + 1, photos.length)} / {photos.length}</span>
+      </div>
+
       <div className="gallery">
         {grid.map((p, idx) => (
           <figure key={idx} onClick={() => show(idx)}>
