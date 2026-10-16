@@ -136,6 +136,15 @@ export const ZIP_AREAS: Record<string, Neighborhood[]> = {
         "East-side neighborhoods offering affordable homes and convenient access along the I-10 corridor.",
     },
   ],
+  "Ragley": [
+    {
+      slug: "70657",
+      name: "Ragley",
+      zip: "70657",
+      blurb:
+        "Ragley's home ZIP — country homes, acreage, and building land north of Lake Charles in Beauregard Parish.",
+    },
+  ],
 };
 
 export function neighborhoodsFor(city: string | null | undefined): Neighborhood[] {

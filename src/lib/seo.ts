@@ -78,6 +78,7 @@ export function seoCriteria(page: SeoPage): ListingCriteria {
     bedsMin: page.beds_min ?? undefined,
     priceMin: page.price_min ?? undefined,
     priceMax: page.price_max ?? undefined,
+    postalCode: page.postal_code ?? undefined,
     category:
       page.page_type === "land"
         ? "land"
