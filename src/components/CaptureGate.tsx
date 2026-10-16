@@ -68,6 +68,15 @@ export default function CaptureGate() {
   const { user, ready } = useAuth();
   const onAdPage = !!getAdPage(pathname)?.capture;
   const [adVisit, setAdVisit] = useState(false);
+  // Private preview: add ?fb=1 to any listing link to show the Facebook button while it is
+  // switched off for everyone else (used for Meta's app review and for testing).
+  const [fbPreview, setFbPreview] = useState(false);
+  useEffect(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get("fb") === "1") window.sessionStorage.setItem("lhg_fb_preview", "1");
+      setFbPreview(window.sessionStorage.getItem("lhg_fb_preview") === "1");
+    } catch { /* storage blocked */ }
+  }, []);
   const [captured, setCaptured] = useState(false);
   const [checked, setChecked] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -230,7 +239,7 @@ export default function CaptureGate() {
         <div style={{ visibility: checked && ready ? "visible" : "hidden" }}>
           <FormGate
             a={a} set={set0} step={step} setStep={setStep} busy={busy} err={err} hpRef={guard.hpRef}
-            onSubmit={submitForm} onOAuth={startOAuth} providers={leadGate.oauth}
+            onSubmit={submitForm} onOAuth={startOAuth} providers={{ ...leadGate.oauth, facebook: leadGate.oauth.facebook || fbPreview }}
             property={property}
           />
         </div>
