@@ -9,6 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { BATHS, BEDS, COMMUNITIES, FEATURES, PRICE_BANDS, matchHref } from "@/lib/buyerMatch";
 import FormGate from "@/components/FormGate";
+import { trackBuyerRegistration } from "@/lib/ads";
 import { propertyPayload, propertySummary, useCurrentProperty } from "@/lib/propertyInfo";
 
 const KEY = "lhg_captured";
@@ -201,6 +202,7 @@ export default function CaptureGate() {
       try { window.sessionStorage.setItem(KEY, "1"); } catch { /* ignore */ }
       track("gate_complete", { traffic: isAdTraffic ? "ad" : "organic", gate_mode: "form" });
       track("generate_lead", { traffic: isAdTraffic ? "ad" : "organic", method: "listing_gate_form" });
+      trackBuyerRegistration(isAdTraffic);
       window.dispatchEvent(new Event("lhg:captured"));
       setCaptured(true);
     } catch {
@@ -317,6 +319,7 @@ export default function CaptureGate() {
       try { window.sessionStorage.setItem(KEY, "1"); window.sessionStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       track("gate_complete", { traffic: onAdPage || adVisit ? "ad" : "organic" });
       track("generate_lead", { traffic: onAdPage || adVisit ? "ad" : "organic", method: "listing_gate_quiz" });
+      trackBuyerRegistration(onAdPage || adVisit);
       window.dispatchEvent(new Event("lhg:captured")); // header + hero come back
       setCaptured(true);
     } catch {

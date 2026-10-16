@@ -90,7 +90,8 @@ export default async function RootLayout({
           {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'G-J59TGYC1RT');`}
+gtag('config', 'G-J59TGYC1RT');
+gtag('config', 'AW-11288252520');`}
         </Script>
         <AuthProvider>
           <SignalTracker />

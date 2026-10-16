@@ -1,5 +1,6 @@
 "use client";
 
+import { trackBuyerRegistration } from "@/lib/ads";
 import { useState } from "react";
 import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { site, AD_VISIT_KEY } from "@/config/site";
@@ -58,6 +59,7 @@ export default function CompletePhoneModal({ onDone }: { onDone: () => void }) {
       });
       try { window.localStorage.setItem("lhg_captured", "1"); } catch { /* ignore */ }
       (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", "generate_lead", { method: "oauth", traffic: isAd ? "ad" : "organic" });
+      trackBuyerRegistration(isAd);
       window.dispatchEvent(new Event("lhg:captured"));
     } catch { /* never block the account on the lead post */ }
     setLoading(false);
