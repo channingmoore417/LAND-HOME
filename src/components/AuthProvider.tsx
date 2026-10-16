@@ -99,6 +99,10 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       supabase.from("profiles").upsert({ id: user.id, email: user.email ?? null, phone: metaDigits }).then(() => {});
       return () => { mounted = false; };
     }
+    // Google / Facebook sign-ins never typed a phone: raise the blocking prompt immediately on return
+    // (before the profile lookup finishes) so there is no moment where they can browse without one.
+    const provider = String((user.app_metadata as { provider?: string } | null)?.provider ?? "email");
+    if (provider !== "email") setNeedsPhone(true);
     supabase.from("profiles").select("phone").eq("id", user.id).maybeSingle().then(({ data }) => {
       if (!mounted) return;
       const digits = ((data?.phone as string | null) ?? "").replace(/\D/g, "");
