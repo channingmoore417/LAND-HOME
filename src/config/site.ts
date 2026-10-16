@@ -197,7 +197,7 @@ export const adSuffix = "ga";
 export const leadGate: { adsOnly: boolean; mode: "form" | "quiz"; oauth: { google: boolean; facebook: boolean } } = {
   adsOnly: false,
   mode: "form",
-  oauth: { google: true, facebook: true },
+  oauth: { google: true, facebook: false },
 };
 
 // sessionStorage key flagging an ad visit. Set when a /GA page loads; while set,
