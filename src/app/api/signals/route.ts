@@ -315,6 +315,18 @@ export async function POST(req: Request) {
     }
   }
 
+  // GHL only hears about people we can call: a signed-in visitor with no phone on file (e.g. they
+  // closed the "add your phone" step) is tracked here but nothing goes to GHL until they add one.
+  // Agent-created clients (alert-email token) are already real GHL contacts, so they pass.
+  let ghlOk = false;
+  if (actor.email) {
+    if (actor.clientId) ghlOk = true;
+    else {
+      const { data: hp } = await db.rpc("has_phone", { p_email: actor.email });
+      ghlOk = hp === true;
+    }
+  }
+
   try {
     // Link earlier anonymous events to the account on first authenticated hit.
     if (actor.userId) {
@@ -354,7 +366,7 @@ export async function POST(req: Request) {
     } else if (type === "listing_saved") {
       await db.from("behavior_events").insert({ visitor_id: vid, user_id: actor.userId, type, listing_key: listingKey, meta: {} });
       await recordSignal(db, actor, "listing_saved", listingKey!, listingKey, {}, attribution);
-      await taskOwnerForSave(db, actor, actorFilter, listingKey!);
+      if (ghlOk) await taskOwnerForSave(db, actor, actorFilter, listingKey!);
     } else if (type === "saved_search") {
       const criteria = normCriteria(body.criteria);
       if (JSON.stringify(criteria).length > 2000) return reply(vid, { ok: false, error: "criteria too large" }, 400);
@@ -370,8 +382,10 @@ export async function POST(req: Request) {
     }
     // "identify" has no event of its own; it only triggers the flush below.
 
-    await logViewsToGhl(db, actor);
-    await flushToGhl(db, actor);
+    if (ghlOk) {
+      await logViewsToGhl(db, actor);
+      await flushToGhl(db, actor);
+    }
   } catch (e) {
     console.error("[signals] failed:", (e as Error).message);
     return reply(vid, { ok: false }, 500);
