@@ -1,3 +1,4 @@
+import SearchBar from "@/components/SearchBar";
 import type { Metadata } from "next";
 import { cityShowcase } from "@/lib/cityShowcase";
 import { getTeam } from "@/lib/team";
@@ -255,12 +256,7 @@ function ListBar({ view, query, viewHref, wide, filtersSlot }: { view: "split" |
   return (
     <div className="listbar">
       <div className={`listbar__inner${wide ? " listbar__inner--wide" : ""}`}>
-        <form className="hsearch hsearch--bar" action="/homes-for-sale" method="get">
-          <input type="hidden" name="view" value={view} />
-          <input className="hsearch__input" type="text" name="q" defaultValue={query}
-            placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
-          <button className="hsearch__btn" type="submit">Search</button>
-        </form>
+        <SearchBar view={view} defaultQuery={query} className="hsearch hsearch--bar" />
         {filtersSlot}
         <div className="viewtoggle">
           <Link className={view === "split" ? "is-on" : ""} href={viewHref("split")}>Map</Link>
