@@ -1,5 +1,6 @@
 "use client";
 
+import SearchBar from "@/components/SearchBar";
 import { useCallback, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -69,12 +70,7 @@ export default function MapSearch({
   return (
     <div className={`mapsearch mapsearch--${mobilePane}`}>
       <div className="mapsearch__bar">
-        <form className="hsearch hsearch--bar" action="/homes-for-sale" method="get">
-          <input type="hidden" name="view" value="split" />
-          <input className="hsearch__input" type="text" name="q" defaultValue={qText}
-            placeholder="Search by city, address, or ZIP…" aria-label="Search properties" />
-          <button className="hsearch__btn" type="submit">Search</button>
-        </form>
+        <SearchBar view="split" defaultQuery={qText} className="hsearch hsearch--bar" />
         {filtersSlot}
         <label className="mapsearch__toggle">
           <input type="checkbox" checked={searchOnMove} onChange={(e) => toggleSearchOnMove(e.target.checked)} />
