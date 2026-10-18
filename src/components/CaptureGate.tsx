@@ -98,6 +98,7 @@ export default function CaptureGate() {
       window.sessionStorage.removeItem(AD_KEY);
       window.sessionStorage.removeItem(DRAFT_KEY);
       document.cookie = `${AD_COOKIE}=; path=/; max-age=0`;
+      document.cookie = "lhg_client=; path=/; max-age=0";
     } catch { /* storage blocked */ }
     const done = () => window.location.replace(window.location.pathname);
     getBrowserClient().auth.signOut().then(done, done);
@@ -108,11 +109,11 @@ export default function CaptureGate() {
       // Every fresh ad click starts over: a "done" marker left in this tab by an
       // earlier submission must not let an ad visitor skip the gate.
       const q = new URLSearchParams(window.location.search);
-      if (q.has("gclid") || q.has("gbraid") || q.has("wbraid") || q.has("gad_source") || /\/ga\/?$/i.test(window.location.pathname)) {
-        window.sessionStorage.removeItem(KEY);
-      }
-      // A client who came from one of our alert links (cookie set by /m/<token>) is already a known contact.
-      const knownClient = /(?:^|;\s*)lhg_client=[a-f0-9]{32}/.test(document.cookie);
+      const adClick = q.has("gclid") || q.has("gbraid") || q.has("wbraid") || q.has("gad_source") || /\/ga\/?$/i.test(window.location.pathname);
+      if (adClick) window.sessionStorage.removeItem(KEY);
+      // A client who came from one of our alert links (cookie set by /m/<token>) is already a known contact,
+      // but never for a fresh ad click: those always see the gate unless actually signed in.
+      const knownClient = !adClick && !window.sessionStorage.getItem(AD_KEY) && /(?:^|;\s*)lhg_client=[a-f0-9]{32}/.test(document.cookie);
       setCaptured(window.sessionStorage.getItem(KEY) === "1" || knownClient);
       const v = window.sessionStorage.getItem(AD_KEY);
       setAdVisit(!!v);
