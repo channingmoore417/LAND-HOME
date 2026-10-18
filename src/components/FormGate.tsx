@@ -33,7 +33,7 @@ function FacebookLogo() {
 }
 
 export default function FormGate({
-  a, set, step, setStep, busy, err, hpRef, onSubmit, onOAuth, providers, property,
+  a, set, step, setStep, busy, err, hpRef, onSubmit, onOAuth, providers, property, variant,
 }: {
   a: Contact;
   set: (p: Partial<Contact>) => void;
@@ -46,8 +46,10 @@ export default function FormGate({
   onOAuth: (provider: "google" | "facebook") => void;
   providers: { google: boolean; facebook: boolean };
   property: PropertyInfo | null;
+  variant: "two" | "single";
 }) {
   const emailOk = /\S+@\S+\.\S+/.test(a.email.trim());
+  const single = variant === "single";
   const detailsOk = !!a.firstName.trim() && !!a.lastName.trim() && a.phone.replace(/\D/g, "").length >= 10;
 
   return (
@@ -57,14 +59,15 @@ export default function FormGate({
         className="qg__sheet"
         onSubmit={(e) => {
           e.preventDefault();
-          if (step === 0) { if (emailOk) setStep(1); } else if (detailsOk && !busy) onSubmit();
+          if (single) { if (emailOk && detailsOk && !busy) onSubmit(); }
+          else if (step === 0) { if (emailOk) setStep(1); } else if (detailsOk && !busy) onSubmit();
         }}
         // Step 1 is a plain button, never a submit, so GoHighLevel's tracker sees
         // exactly ONE form submission per visitor (the last step), not two.
       >
         <header className="qg__top">
-          {step > 0 ? <button type="button" className="qg__icon" onClick={() => setStep(0)} aria-label="Back">←</button> : <span className="qg__icon" />}
-          <div className="qg__bar" aria-hidden="true"><div style={{ width: step === 0 ? "50%" : "100%" }} /></div>
+          {single ? <span className="qg__icon" /> : step > 0 ? <button type="button" className="qg__icon" onClick={() => setStep(0)} aria-label="Back">←</button> : <span className="qg__icon" />}
+          <div className="qg__bar" aria-hidden="true" style={single ? { visibility: "hidden" } : undefined}><div style={{ width: step === 0 ? "50%" : "100%" }} /></div>
           <span className="qg__icon" />
         </header>
 
@@ -73,7 +76,42 @@ export default function FormGate({
           {/* Named fields: GoHighLevel tracking reads these on submit. */}
           <PropertyFields p={property} inquiry="Property Inquiry" />
 
-          {step === 0 && (<>
+          {single && (<>
+            <p className="qg__eyebrow">Unlock this home + every listing</p>
+            <h2 id="capture-title" className="qg__q">Create your free account to see this home</h2>
+            <p className="qg__hint">You&apos;ll also get an email the day new homes hit the market. Your phone number is also your password.</p>
+            <label className="qg__sr" htmlFor="qg-first">First name</label>
+            <input
+              id="qg-first" name="first_name" className="qg__input" type="text" autoComplete="given-name" enterKeyHint="next"
+              autoCapitalize="words" autoCorrect="off" spellCheck={false} placeholder="First name"
+              value={a.firstName} onChange={(e) => set({ firstName: e.target.value })}
+            />
+            <label className="qg__sr" htmlFor="qg-last">Last name</label>
+            <input
+              id="qg-last" name="last_name" className="qg__input qg__input--2nd" type="text" autoComplete="family-name" enterKeyHint="next"
+              autoCapitalize="words" autoCorrect="off" spellCheck={false} placeholder="Last name"
+              value={a.lastName} onChange={(e) => set({ lastName: e.target.value })}
+            />
+            <label className="qg__sr" htmlFor="qg-email">Email address</label>
+            <input
+              id="qg-email" name="email" className="qg__input qg__input--2nd" type="email" autoComplete="email" inputMode="email"
+              enterKeyHint="next" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+              placeholder="Email address" value={a.email} onChange={(e) => set({ email: e.target.value })}
+            />
+            <label className="qg__sr" htmlFor="qg-phone">Phone number</label>
+            <input
+              id="qg-phone" name="phone" className="qg__input qg__input--2nd" type="tel" autoComplete="tel" inputMode="tel" enterKeyHint="go"
+              placeholder="Phone number" value={a.phone} onChange={(e) => set({ phone: e.target.value })}
+            />
+            {err && <p className="hv-err" style={{ marginTop: 10 }}>{err}</p>}
+            <button type="submit" className="qg__cta" disabled={!emailOk || !detailsOk || busy}>{busy ? "One moment…" : "Show me this home →"}</button>
+            <p className="qg__legal">
+              Already signed up? Enter your email and phone and we&apos;ll log you in. By continuing you agree to be contacted by {site.name},
+              including new-listing alerts, by call, text and email. Consent is not a condition of any purchase or sale.
+            </p>
+          </>)}
+
+          {!single && step === 0 && (<>
             <p className="qg__eyebrow">Unlock this home + every listing</p>
             <h2 id="capture-title" className="qg__q">Create your free account to see this home</h2>
             <p className="qg__hint">You&apos;ll also get an email the day new homes hit the market.</p>
@@ -102,7 +140,7 @@ export default function FormGate({
             <p className="qg__legal">Already signed up? Continue with your email and phone and we&apos;ll log you in.</p>
           </>)}
 
-          {step === 1 && (<>
+          {!single && step === 1 && (<>
             {/* The email input is unmounted on this step; keep it in the form so the submitted fields include it. */}
             <HiddenField name="email" value={a.email.trim()} />
             <h2 id="capture-title" className="qg__q">Last step: where can we reach you?</h2>

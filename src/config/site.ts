@@ -194,9 +194,14 @@ export const adSuffix = "ga";
 // visitor who opens a listing sees the quiz; true = only Google Ads visitors.
 // mode "form" = two-step form (email/Google, then name + phone); "quiz" = the long buyer quiz.
 // oauth: which one-tap sign-in buttons show. Turn a provider on only after it works in Supabase.
-export const leadGate: { adsOnly: boolean; mode: "form" | "quiz"; oauth: { google: boolean; facebook: boolean } } = {
+// singleShare: share of new visitors who get the ONE-screen form (name, email, phone together).
+// The rest get the two-step form. 0 = everyone two-step, 1 = everyone one-screen. Each visitor keeps
+// the version they were given; ?gv=single or ?gv=two forces one for testing. The version is saved on
+// every lead and in gate_events so the two can be compared.
+export const leadGate: { adsOnly: boolean; mode: "form" | "quiz"; singleShare: number; oauth: { google: boolean; facebook: boolean } } = {
   adsOnly: false,
   mode: "form",
+  singleShare: 0.5,
   oauth: { google: false, facebook: false },
 };
 

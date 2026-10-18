@@ -6,7 +6,7 @@ import { getAdminClient } from "@/lib/supabase";
 // shown to signed-out visitors and where they stop. Never blocks the page.
 const OUTCOMES = new Set([
   "shown", "skipped_signed_in", "skipped_session_flag", "skipped_client_cookie",
-  "step_email", "step_details", "complete", "error",
+  "step_email", "step_details", "step_all", "complete", "error",
 ]);
 
 export async function POST(req: Request) {
