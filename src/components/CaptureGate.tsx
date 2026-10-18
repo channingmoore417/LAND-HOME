@@ -10,6 +10,7 @@ import { getBrowserClient } from "@/lib/supabaseBrowser";
 import { BATHS, BEDS, COMMUNITIES, FEATURES, PRICE_BANDS, matchHref } from "@/lib/buyerMatch";
 import FormGate from "@/components/FormGate";
 import { trackBuyerRegistration } from "@/lib/ads";
+import { logGate } from "@/lib/gateLog";
 import { propertyPayload, propertySummary, useCurrentProperty } from "@/lib/propertyInfo";
 
 const KEY = "lhg_captured";
@@ -86,6 +87,8 @@ export default function CaptureGate() {
   const guard = useFormGuard();
   const property = useCurrentProperty();
   const landing = useRef<string>("");
+  const bypass = useRef("");
+  const loggedPath = useRef("");
   const bodyRef = useRef<HTMLDivElement>(null);
 
   // Test hook: open any page with ?gate=reset to forget "already completed",
@@ -114,7 +117,9 @@ export default function CaptureGate() {
       // A client who came from one of our alert links (cookie set by /m/<token>) is already a known contact,
       // but never for a fresh ad click: those always see the gate unless actually signed in.
       const knownClient = !adClick && !window.sessionStorage.getItem(AD_KEY) && /(?:^|;\s*)lhg_client=[a-f0-9]{32}/.test(document.cookie);
-      setCaptured(window.sessionStorage.getItem(KEY) === "1" || knownClient);
+      const sessionDone = window.sessionStorage.getItem(KEY) === "1";
+      bypass.current = sessionDone ? "skipped_session_flag" : knownClient ? "skipped_client_cookie" : "";
+      setCaptured(sessionDone || knownClient);
       const v = window.sessionStorage.getItem(AD_KEY);
       setAdVisit(!!v);
       if (v) landing.current = v;
@@ -156,6 +161,14 @@ export default function CaptureGate() {
   const enabled = PROPERTY.test(base) && (!leadGate.adsOnly || onAdPage || adVisit);
   const locked = enabled && !captured && !user;
 
+  // Server-side proof of what the gate did on each property page: shown, or skipped and why.
+  useEffect(() => {
+    if (!enabled || !checked || !ready || loggedPath.current === base) return;
+    loggedPath.current = base;
+    const outcome = user ? "skipped_signed_in" : captured ? (bypass.current || "skipped_session_flag") : "shown";
+    logGate(outcome, adVisit || onAdPage ? "ad" : "organic", base);
+  }, [enabled, checked, ready, user, captured, base, adVisit, onAdPage]);
+
   // One "gate_step" event per screen shown (step_name tells you where people stop).
   const shownSteps = useRef<Set<number>>(new Set());
   useEffect(() => {
@@ -166,6 +179,7 @@ export default function CaptureGate() {
     if (shownSteps.current.size === 1) track("gate_view", { traffic });
     const names: readonly string[] = leadGate.mode === "form" ? ["email", "details"] : STEPS;
     track("gate_step", { step_name: names[step], step_number: step + 1, steps_total: names.length, traffic, gate_mode: leadGate.mode });
+    if (leadGate.mode === "form") logGate(`step_${names[step]}`, traffic, base);
   }, [locked, checked, ready, step, adVisit, onAdPage]);
 
   useEffect(() => {
@@ -210,12 +224,14 @@ export default function CaptureGate() {
       if (!ok) throw new Error("bad");
       await createAccount();
       try { window.sessionStorage.setItem(KEY, "1"); } catch { /* ignore */ }
+      logGate("complete", isAdTraffic ? "ad" : "organic", base);
       track("gate_complete", { traffic: isAdTraffic ? "ad" : "organic", gate_mode: "form" });
       track("generate_lead", { traffic: isAdTraffic ? "ad" : "organic", method: "listing_gate_form" });
       trackBuyerRegistration(isAdTraffic);
       window.dispatchEvent(new Event("lhg:captured"));
       setCaptured(true);
-    } catch {
+    } catch (e) {
+      logGate("error", isAdTraffic ? "ad" : "organic", base, { message: e instanceof Error ? e.message : "unknown" });
       setErr(`Something went wrong. Please call us at ${site.phone}.`);
     }
     setBusy(false);
