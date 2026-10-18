@@ -122,6 +122,8 @@ export default function CaptureGate() {
       const forced = q.get("gv");
       let gv = window.localStorage.getItem("lhg_gate_variant");
       if (forced === "single" || forced === "two") gv = forced;
+      else if (leadGate.singleShare >= 1) gv = "single";
+      else if (leadGate.singleShare <= 0) gv = "two";
       else if (gv !== "single" && gv !== "two") gv = Math.random() < leadGate.singleShare ? "single" : "two";
       window.localStorage.setItem("lhg_gate_variant", gv);
       setVariant(gv as "two" | "single");
