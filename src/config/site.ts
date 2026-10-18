@@ -201,7 +201,7 @@ export const adSuffix = "ga";
 export const leadGate: { adsOnly: boolean; mode: "form" | "quiz"; singleShare: number; oauth: { google: boolean; facebook: boolean } } = {
   adsOnly: false,
   mode: "form",
-  singleShare: 0.5,
+  singleShare: 1,
   oauth: { google: false, facebook: false },
 };
 
