@@ -88,6 +88,8 @@ export default function CaptureGate() {
   const property = useCurrentProperty();
   const landing = useRef<string>("");
   const bypass = useRef("");
+  // Split test: "single" = one-screen form, "two" = email first, then details. Sticky per browser.
+  const [variant, setVariant] = useState<"two" | "single">("two");
   const loggedPath = useRef("");
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -117,6 +119,12 @@ export default function CaptureGate() {
       // A client who came from one of our alert links (cookie set by /m/<token>) is already a known contact,
       // but never for a fresh ad click: those always see the gate unless actually signed in.
       const knownClient = !adClick && !window.sessionStorage.getItem(AD_KEY) && /(?:^|;\s*)lhg_client=[a-f0-9]{32}/.test(document.cookie);
+      const forced = q.get("gv");
+      let gv = window.localStorage.getItem("lhg_gate_variant");
+      if (forced === "single" || forced === "two") gv = forced;
+      else if (gv !== "single" && gv !== "two") gv = Math.random() < leadGate.singleShare ? "single" : "two";
+      window.localStorage.setItem("lhg_gate_variant", gv);
+      setVariant(gv as "two" | "single");
       const sessionDone = window.sessionStorage.getItem(KEY) === "1";
       bypass.current = sessionDone ? "skipped_session_flag" : knownClient ? "skipped_client_cookie" : "";
       setCaptured(sessionDone || knownClient);
@@ -166,8 +174,8 @@ export default function CaptureGate() {
     if (!enabled || !checked || !ready || loggedPath.current === base) return;
     loggedPath.current = base;
     const outcome = user ? "skipped_signed_in" : captured ? (bypass.current || "skipped_session_flag") : "shown";
-    logGate(outcome, adVisit || onAdPage ? "ad" : "organic", base);
-  }, [enabled, checked, ready, user, captured, base, adVisit, onAdPage]);
+    logGate(outcome, adVisit || onAdPage ? "ad" : "organic", base, { variant });
+  }, [enabled, checked, ready, user, captured, base, adVisit, onAdPage, variant]);
 
   // One "gate_step" event per screen shown (step_name tells you where people stop).
   const shownSteps = useRef<Set<number>>(new Set());
@@ -177,10 +185,10 @@ export default function CaptureGate() {
     shownSteps.current.add(step);
     const traffic = adVisit || onAdPage ? "ad" : "organic";
     if (shownSteps.current.size === 1) track("gate_view", { traffic });
-    const names: readonly string[] = leadGate.mode === "form" ? ["email", "details"] : STEPS;
+    const names: readonly string[] = leadGate.mode === "form" ? (variant === "single" ? ["all"] : ["email", "details"]) : STEPS;
     track("gate_step", { step_name: names[step], step_number: step + 1, steps_total: names.length, traffic, gate_mode: leadGate.mode });
-    if (leadGate.mode === "form") logGate(`step_${names[step]}`, traffic, base);
-  }, [locked, checked, ready, step, adVisit, onAdPage]);
+    if (leadGate.mode === "form") logGate(`step_${names[step]}`, traffic, base, { variant });
+  }, [locked, checked, ready, step, adVisit, onAdPage, variant]);
 
   useEffect(() => {
     if (!locked) return;
@@ -218,20 +226,20 @@ export default function CaptureGate() {
         source_url: landing.current || window.location.pathname,
         name: `${first} ${last}`.trim(), first_name: first, last_name: last,
         phone: a.phone, email: a.email.trim(),
-        message: `${property ? `Property inquiry: ${propertySummary(property)}` : `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`}`} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}) · wants new-listing alerts`,
-        criteria: { quiz_source: "listing_gate_form", listing_alerts: true },
+        message: `${property ? `Property inquiry: ${propertySummary(property)}` : `Inquiry ${listingKey ? `about listing ${listingKey}` : `from ${base || "/"}`}`} (listing gate form${isAdTraffic ? ", Google Ads visitor" : ""}, ${variant === "single" ? "one-screen" : "two-step"} form) · wants new-listing alerts`,
+        criteria: { quiz_source: "listing_gate_form", listing_alerts: true, gate_variant: variant },
       });
       if (!ok) throw new Error("bad");
       await createAccount();
       try { window.sessionStorage.setItem(KEY, "1"); } catch { /* ignore */ }
-      logGate("complete", isAdTraffic ? "ad" : "organic", base);
+      logGate("complete", isAdTraffic ? "ad" : "organic", base, { variant });
       track("gate_complete", { traffic: isAdTraffic ? "ad" : "organic", gate_mode: "form" });
       track("generate_lead", { traffic: isAdTraffic ? "ad" : "organic", method: "listing_gate_form" });
       trackBuyerRegistration(isAdTraffic);
       window.dispatchEvent(new Event("lhg:captured"));
       setCaptured(true);
     } catch (e) {
-      logGate("error", isAdTraffic ? "ad" : "organic", base, { message: e instanceof Error ? e.message : "unknown" });
+      logGate("error", isAdTraffic ? "ad" : "organic", base, { variant, message: e instanceof Error ? e.message : "unknown" });
       setErr(`Something went wrong. Please call us at ${site.phone}.`);
     }
     setBusy(false);
@@ -257,7 +265,7 @@ export default function CaptureGate() {
           <FormGate
             a={a} set={set0} step={step} setStep={setStep} busy={busy} err={err} hpRef={guard.hpRef}
             onSubmit={submitForm} onOAuth={startOAuth} providers={{ ...leadGate.oauth, facebook: leadGate.oauth.facebook || fbPreview }}
-            property={property}
+            property={property} variant={variant}
           />
         </div>
         {debug}
